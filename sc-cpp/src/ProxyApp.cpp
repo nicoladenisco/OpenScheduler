@@ -1,0 +1,631 @@
+#include "ProxyApp.hpp"
+#include "Console.hpp"
+#include "File.hpp"
+#include "SchedResource.hpp"
+#include "SchedStamper.hpp"
+#include "SimpleTimer.hpp"
+#include "XmlHelper.hpp"
+#include "common.hpp"
+#include "dataStructure.hpp"
+#include <algorithm>
+#include <fcntl.h>
+#include <stdio.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+
+#include <boost/program_options/cmdline.hpp>
+#include <boost/program_options/config.hpp>
+#include <boost/program_options/environment_iterator.hpp>
+#include <boost/program_options/eof_iterator.hpp>
+#include <boost/program_options/errors.hpp>
+#include <boost/program_options/option.hpp>
+#include <boost/program_options/options_description.hpp>
+#include <boost/program_options/parsers.hpp>
+#include <boost/program_options/positional_options.hpp>
+#include <boost/program_options/value_semantic.hpp>
+#include <boost/program_options/variables_map.hpp>
+#include <boost/program_options/version.hpp>
+
+#define LOCK_RUNNER std::lock_guard<std::mutex> lck(mtxRunner);
+
+extern ProxyApp theApp;
+namespace po = boost::program_options;
+
+BEGIN_COMMAND_LIST()
+COMMAND_ITEM(
+    help, "create <codice> [nomefile]",
+    "crea un file risorsa con il codice e il nomefile indicato (opzionale)")
+COMMAND_ITEM(defval, "defval", "visualizza defaults")
+COMMAND_ITEM(set, "set <nome campo> <valore>",
+             "inserisce il valore nel campo indicato")
+COMMAND_ITEM(
+    create, "create <codice> [nomefile]",
+    "crea un file risorsa con il codice e il nomefile indicato (opzionale)")
+COMMAND_ITEM(list, "list [scan][verbose]", "visualizza slot nell'area corrente")
+COMMAND_ITEM(stamp, "stamp <codice> <algo> [parameters algo]",
+             "inizializza la risorsa con l'algoritmo indicato")
+COMMAND_ITEM(stampfile, "stampfile <nomefile> <algo> [parameters algo]",
+             "come stamp ma con indicazione esplicita del nome file")
+COMMAND_ITEM(dump, "dump <codice> [dayStart] [dayStop]",
+             "dump della risorsa con il codice indicato")
+COMMAND_ITEM(dumpfile, "dumpfile <nomefile> [dayStart] [dayStop]",
+             "come dump ma con indicazione esplicita del nome file")
+END_COMMAND_LIST()
+
+ProxyApp::ProxyApp()
+    : configFile("config.xml"), verbose(0), workPath("/tmp/euridice") {
+  doc = NULL;
+  root_element = NULL;
+  __registerConsoleCommands();
+
+  if (strStartWith(workPath, "/tmp"))
+    buildDir = true;
+
+  initSlotFile(2026, 4, 8, 18, "DUMMY", defslot);
+
+  /*
+   * this initialize the library and check potential ABI mismatches
+   * between the version it was compiled for and the actual shared
+   * library used.
+   */
+  LIBXML_TEST_VERSION
+}
+
+ProxyApp::~ProxyApp() {
+  if (doc != NULL) {
+    // free the document
+    xmlFreeDoc(doc);
+  }
+}
+
+int ProxyApp::main(int argc, char **argv) {
+  // Declare the supported options.
+  po::options_description desc("Allowed options");
+  desc.add_options()("help", "produce help message")("verbose",
+                                                     "produce more output")(
+      "workdir", po::value<std::string>(&workPath)->default_value(workPath),
+      "set working directory")("builddir", "create working directories")(
+      "config", po::value<std::string>(&configFile)->default_value(configFile),
+      "set config file")("cmd", "execute command; all parameters on the right "
+                                "are command and its arguments")(
+      "cmdfile", po::value<std::string>(&scriptFile),
+      "execute commands from file like console");
+
+  po::variables_map vm;
+  po::store(po::parse_command_line(argc, argv, desc), vm);
+  po::notify(vm);
+
+  if (vm.count("help")) {
+    cout << desc << "\n";
+    return 1;
+  }
+
+  verbose = vm.count("verbose");
+  if (!buildDir)
+    buildDir = vm.count("builddir");
+
+  // recupera tutti i parametri dopo --cmd
+  if (vm.count("cmd")) {
+    for (int i = 0; i < argc; i++) {
+      if (strcmp(argv[i], "--cmd") == 0) {
+        for (int j = i + 1; j < argc; j++) {
+          directCommand.push_back(argv[j]);
+        }
+        if (directCommand.empty()) {
+          cout << "Invalid parameters for --cmd; must specify command and its "
+                  "arguments\n";
+          return -1;
+        }
+        break;
+      }
+    }
+  }
+
+  return rumble();
+}
+
+int ProxyApp::readConfig() {
+  /* parse the file and get the DOM */
+  doc = xmlReadFile(configFile.c_str(), NULL, 0);
+
+  if (doc == NULL) {
+    printf("error: could not parse file %s\n", configFile.c_str());
+    return -1;
+  }
+
+  /* Get the root element node */
+  root_element = xmlDocGetRootElement(doc);
+
+  if (verbose)
+    printElementNames(root_element);
+
+  /*
+   * Free the global variables that may
+   * have been allocated by the parser.
+   */
+  xmlCleanupParser();
+
+  return 0;
+}
+
+/**
+ * print_element_names:
+ * @a_node: the initial xml node to consider.
+ *
+ * Prints the names of the all the xml elements
+ * that are siblings or children of a given xml node.
+ */
+void ProxyApp::printElementNames(xmlNode *a_node) {
+  xmlNode *cur_node = NULL;
+
+  for (cur_node = a_node; cur_node; cur_node = cur_node->next) {
+    if (cur_node->type == XML_ELEMENT_NODE) {
+      printf("node type: Element, name: %s\n", cur_node->name);
+    }
+
+    printElementNames(cur_node->children);
+  }
+}
+
+int ProxyApp::rumble() {
+  try {
+    if (readConfig())
+      return -1;
+
+    if (loadDefaults())
+      return -1;
+
+    if (overrideCommandLine())
+      return -1;
+
+    if (setupDirectory())
+      return -1;
+
+    if (!directCommand.empty()) {
+      return runCommand();
+    }
+
+    if (!scriptFile.empty()) {
+      return runCommandsFromFile();
+    }
+
+    // avvia colloquio con utente
+    if (mainLoop())
+      return -1;
+
+    return 0;
+  } catch (std::exception &e) {
+    fprintf(stderr, "Fatal error: %s\n", e.what());
+    return -1;
+  } catch (...) {
+    fprintf(stderr, "Fatal error: unknow cause\n");
+    return -1;
+  }
+}
+
+int ProxyApp::loadDefaults() {
+  XmlHelper xh(root_element);
+  const xmlNode *defaults = xh.findElementXml("defaults");
+  if (defaults == NULL)
+    return 0;
+
+  XmlHelper dh(defaults);
+  const xmlNode *stamper = dh.findElementXml("stamper");
+  if (stamper != NULL) {
+    XmlHelper sh(stamper);
+    NodeVector params = sh.getChildren("param");
+    for (auto p : params) {
+      XmlHelper ph(p);
+      String name = ph.getAttribute("name");
+      String value = ph.getAttribute("value");
+      defstamper[name] = value;
+    }
+  }
+
+  return 0;
+}
+
+int ProxyApp::overrideCommandLine() {
+  XmlHelper xh(root_element);
+  const xmlNode *override = xh.findElementXml("override");
+  if (override == NULL)
+    return 0;
+
+  XmlHelper xo(override);
+  // xo.findElementXmlContent("host", lifeconHost);
+  return 0;
+}
+
+int ProxyApp::setupDirectory() {
+  String main("/tmp/euridice");
+  String slot = main + "/slots";
+  String logs = main + "/logs";
+
+  XmlHelper xh(root_element);
+  const xmlNode *dirs = xh.findElementXml("dirs");
+  if (dirs != NULL) {
+    XmlHelper xd(dirs);
+    xd.findElementXmlContent("main", main);
+    xd.findElementXmlContent("slot", slot);
+    xd.findElementXmlContent("logs", logs);
+  }
+
+  {
+    File test(main);
+    if (!test.isDirectory() && !buildDir)
+      throw FileException(format(
+          "Directory %s inesistente o non è una directory.", main.c_str()));
+
+    workDir = test;
+    workDir.mkdirs();
+  }
+
+  {
+    File test(slot);
+    if (!test.isDirectory() && !buildDir)
+      throw FileException(format(
+          "Directory %s inesistente o non è una directory.", slot.c_str()));
+
+    slotDir = test;
+    slotDir.mkdirs();
+  }
+
+  {
+    File test(logs);
+    if (!test.isDirectory() && !buildDir)
+      throw FileException(format(
+          "Directory %s inesistente o non è una directory.", logs.c_str()));
+
+    logsDir = test;
+    logsDir.mkdirs();
+  }
+
+  return 0;
+}
+
+void ProxyApp::segnali(int segnale, siginfo_t *info, void *bo) {
+  switch (segnale) {
+  case SIGCHLD:
+    segnaleChld(info, bo);
+    break;
+
+  case SIGHUP:
+    segnaleHup(info, bo);
+    break;
+
+  case SIGUSR1:
+    segnaleUsr1(info, bo);
+    break;
+
+  case SIGBUS:
+    segnaleBus(info, bo);
+    break;
+  }
+}
+
+void ProxyApp::segnaleChld(siginfo_t *info, void *bo) {
+  try {
+    // se il PID non è associato ad una istanza in esecuzione cattura qui
+    int exitCode = 0;
+    int pid = waitpid(0, &exitCode, WNOHANG);
+    if (pid)
+      cout << "unqualifed child pid=" << pid
+           << " defunct (exitCode=" << exitCode << ")\n";
+  } catch (std::exception &e) {
+    fprintf(stderr, "SIGCHLD error: %s\n", e.what());
+  } catch (...) {
+    fprintf(stderr, "SIGCHLD error: unknow cause\n");
+  }
+}
+
+void ProxyApp::segnaleHup(siginfo_t *info, void *bo) {
+  cout << "Segnale HUP aggiornamento configurazione ricevuto.\n";
+
+  try {
+    LOCK_RUNNER
+
+    if (verbose)
+      cout << "Segnale HUP aggiornamento configurazione eseguito.\n";
+  } catch (std::exception &e) {
+    fprintf(stderr, "SIGHUP error: %s\n", e.what());
+  } catch (...) {
+    fprintf(stderr, "SIGHUP error: unknow cause\n");
+  }
+}
+
+void ProxyApp::segnaleUsr1(siginfo_t *info, void *bo) {
+  cout << "Segnale USR1 dump configurazione.\n";
+
+  try {
+    LOCK_RUNNER
+
+    if (verbose)
+      cout << "Segnale USR1 dump configurazione eseguito.\n";
+  } catch (std::exception &e) {
+    fprintf(stderr, "SIGUSR1 error: %s\n", e.what());
+  } catch (...) {
+    fprintf(stderr, "SIGUSR1 error: unknow cause\n");
+  }
+}
+
+void ProxyApp::segnaleBus(siginfo_t *info, void *bo) {
+  cout << "Segnale BUS troncamento inatteso di file mappato in memoria.\n";
+}
+
+int ProxyApp::mainLoop() {
+  try {
+    LOCK_RUNNER
+    return mainLoopRunner();
+  } catch (std::exception &e) {
+    fprintf(stderr, "Fatal error: %s\n", e.what());
+  } catch (...) {
+    fprintf(stderr, "Fatal error: unknow cause\n");
+  }
+
+  return -1;
+}
+
+int ProxyApp::mainLoopRunner() {
+  runConsole();
+  cout << "bye\n";
+  return 0;
+}
+
+void ProxyApp::__registerCommandItem(ConsoleCommandVector &cmdarray,
+                                     String commandName, String helpCmd,
+                                     String helpDescr, CommandFunction function,
+                                     CommandFunction completeFunction) {
+  ConsoleCommand cmd;
+  cmd.commandName = commandName;
+  cmd.helpCmd = helpCmd;
+  cmd.helpDescr = helpDescr;
+  cmd.function = function;
+  cmd.completeFunction = completeFunction;
+  cmdarray.push_back(cmd);
+}
+
+int ProxyApp::runConsole(const File *fileScript /* = nullptr */) {
+  Console c(">");
+  c.registerCommands(basicCommands);
+
+  if (fileScript != nullptr && fileScript->isFile()) {
+    c.executeFile(fileScript->getAbsolutePath());
+    return 0;
+  }
+
+  using ret = Console::ReturnCode;
+
+  int retCode;
+  do {
+    retCode = c.readLine();
+  } while (retCode != ret::Quit);
+
+  return 0;
+}
+
+int ProxyApp::cmd_help(const StringVector &args) {
+  cout << "Help comandi:\n";
+  for (auto cmd : basicCommands) {
+    cout << "    " << cmd.helpCmd << "\n"
+         << "\t- " << cmd.helpDescr << "\n";
+  }
+  cout << "    exit/quit\n"
+          "\t- esce dal programma\n";
+  return 0;
+}
+
+int ProxyApp::cmd_defval(const StringVector &args) {
+  cout << toString(defslot) << "\n";
+  return 0;
+}
+
+int ProxyApp::cmd_set(const StringVector &args) { return 0; }
+
+int ProxyApp::cmd_create(const StringVector &args) {
+  if (args.size() < 2) {
+    cout << "Necessari almeno due parametri.\n";
+    return 1;
+  }
+
+  String codice = args[1];
+  String nomeFile = nomeFileDaCodice(codice);
+  if (args.size() >= 3)
+    nomeFile = args[2];
+
+  SlotFile generato;
+  File genfile(slotDir, nomeFile);
+  if (genfile.isFile()) {
+    cout << "Il file " << genfile.getAbsolutePath()
+         << " già esiste! Comando create ignorato.\n";
+    return 0;
+  }
+
+  initSlotFile(defslot.anno, defslot.slotOra, defslot.oraIniziale,
+               defslot.oraFinale, codice, generato, genfile);
+
+  cout << "Generato nuovo file slot:\n"
+       << genfile.str() << "\n"
+       << toString(generato) << "\n\n";
+  return 0;
+}
+
+String ProxyApp::nomeFileDaCodice(String codice) {
+  return "Slot_" + codice + ".bin";
+}
+
+int ProxyApp::cmd_list(const StringVector &args) {
+  FileVector files;
+  slotDir.listFiles(files);
+
+  if (args.size() > 1 && (args[1] == "scan" || args[1] == "verbose")) {
+    bool showdet = args[1] == "verbose";
+
+    for (auto f : files) {
+      SlotFile tmp;
+      int fd;
+      if ((fd = open(f.c_str(), O_RDONLY)) != -1) {
+        read(fd, &tmp, sizeof(tmp));
+        close(fd);
+
+        if (strncmp(MAGIC, tmp.magic, 2) == 0) {
+          cout << f.getAbsolutePath() << "\n";
+
+          if (strncmp(FIRMA, tmp.firma, 16) == 0) {
+            if (showdet)
+              cout << toString(tmp) << "\n";
+          } else {
+            String ss(tmp.firma);
+            cout << "Formato incompatibile: atteso '" << FIRMA << "' letto '"
+                 << trim(ss.substr(0, 16)) << "' versione non compatibile.\n";
+          }
+        }
+      }
+    }
+
+    return 0;
+  }
+
+  for (auto f : files)
+    cout << f.getAbsolutePath() << "\n";
+
+  return 0;
+}
+
+int ProxyApp::runCommand() {
+  for (auto cmd : basicCommands) {
+    if (directCommand[0] == cmd.commandName) {
+      this->directCommand.erase(this->directCommand.begin());
+      return cmd.function(this->directCommand);
+    }
+  }
+
+  cout << "unknow command " << directCommand[0] << "\n";
+  return -1;
+}
+
+int ProxyApp::runCommandsFromFile() {
+  File fileScript(scriptFile);
+  if (!fileScript.isFile()) {
+    cout << "Script file " << scriptFile << " not exists.\n";
+    return -1;
+  }
+  return runConsole(&fileScript);
+}
+
+int ProxyApp::cmd_stamp(const StringVector &args) {
+  String codice = args[1];
+  String nomeFile = nomeFileDaCodice(codice);
+  File genfile(slotDir, nomeFile);
+  if (!genfile.isFile()) {
+    cout << "La risorsa con codice " << codice
+         << " non ha un corrispondente file in " << slotDir.getAbsolutePath()
+         << "\n";
+    return -1;
+  }
+
+  return stampFile(genfile, args);
+}
+
+int ProxyApp::cmd_stampfile(const StringVector &args) {
+  String nomeFile = args[1];
+  File genfile(slotDir, nomeFile);
+  if (!genfile.isFile()) {
+    cout << "Il file indicato non esiste in " << slotDir.getAbsolutePath()
+         << "\n";
+    return -1;
+  }
+
+  return stampFile(genfile, args);
+}
+
+int ProxyApp::stampFile(const File &toStamp, const StringVector &args) {
+  SchedStamper stamper;
+  String algo = args[2];
+
+  // verifica per algoritmo esistente
+  StringVector names;
+  stamper.getAlgoNames(names);
+  if (find(names.begin(), names.end(), algo) == names.end()) {
+    cout << "Algoritmo " << algo << " inesistente: deve essere uno di "
+         << join(names, ",", "'") << "\n";
+    return -1;
+  }
+
+  SimpleTimer st;
+
+  // carica risorsa e applica stamper
+  SchedResource res(toStamp);
+  AnyStringMap properties = defstamper;
+  vector2Properties(properties, args);
+  if (!is_int(properties["model"]))
+    properties["model"] = (slotType)SLOT_SCHEDULABLE;
+
+  // lock della risorsa
+  SchedResourceLock reslock(res, "stamp", true, true, 3000);
+  if (!reslock.isLocked()) {
+    cout << "Non riesco a bloccare la risorsa; operazione abortita.\n";
+    return 1;
+  }
+
+  stamper.stampResource(res, algo, properties);
+
+  cout << "Stamper eseguito in " << st.getElapsedMillis() << " millisecondi.\n";
+  return 0;
+}
+
+int ProxyApp::cmd_dump(const StringVector &args) {
+  String codice = args[1];
+  String nomeFile = nomeFileDaCodice(codice);
+  File genfile(slotDir, nomeFile);
+  if (!genfile.isFile()) {
+    cout << "La risorsa con codice " << codice
+         << " non ha un corrispondente file in " << slotDir.getAbsolutePath()
+         << "\n";
+    return -1;
+  }
+
+  return dumpFile(genfile, args);
+}
+
+int ProxyApp::cmd_dumpfile(const StringVector &args) {
+  String nomeFile = args[1];
+  File genfile(slotDir, nomeFile);
+  if (!genfile.isFile()) {
+    cout << "Il file indicato non esiste in " << slotDir.getAbsolutePath()
+         << "\n";
+    return -1;
+  }
+
+  return dumpFile(genfile, args);
+}
+
+int ProxyApp::dumpFile(const File &toDump, const StringVector &args) {
+  cout << "File: " << toDump.getAbsolutePath() << "\n";
+
+  int dayStart = 0, dayStop = 365;
+  if (args.size() > 2) {
+    dayStart = atoi(args[2].c_str());
+  }
+  if (args.size() > 3) {
+    dayStop = atoi(args[3].c_str());
+  }
+
+  // carica risorsa e applica stamper
+  SchedResource res(toDump);
+  cout << toString(*res.getSlotFile()) << "\n";
+
+  // lock della risorsa
+  SchedResourceLock reslock(res, "dump", true, true, 3000);
+  if (!reslock.isLocked()) {
+    cout << "Non riesco a bloccare la risorsa; operazione abortita.\n";
+    return 1;
+  }
+
+  if (res.isInitialized())
+    cout << dump(*res.getSlotFile(), dayStart, dayStop) << "\n";
+  else
+    cout << "La risorsa non è stata inizializzata; usare uno stamper per "
+            "poterla usare.\n";
+
+  return 0;
+}

@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<pcsdm>
+  <!-- questa sezione è opzionale (linea di comando) -->
+  <override>
+  </override>
+  <!-- directory di lavoro -->
+  <dirs>
+    <main>/tmp/euridice</main>
+    <slot>/tmp/euridice/slots</slot>
+    <logs>/tmp/euridice/logs</logs>
+  </dirs>
+  <defaults>
+    <res>
+      <param name="slotOra"          value="4" />
+      <param name="oraIniziale"      value="8" />
+      <param name="oraFinale"        value="18" />
+    </res>
+    <stamper>
+      <param name="hourmap"          value="5,6,7,8,9,10,11,12" />
+      <param name="model"            value="1" />
+    </stamper>
+  </defaults>
+</pcsdm>

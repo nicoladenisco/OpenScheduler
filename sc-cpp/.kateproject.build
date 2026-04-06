@@ -1,0 +1,31 @@
+{
+    "Auto_generated": "This file is auto-generated. Any extra tags or formatting will be lost",
+    "target_sets": [
+        {
+            "cmake_config": "Debug",
+            "directory": "/home/nicola/cvsgithub/OpenScheduler/sc-cpp/debug",
+            "loaded_via_cmake": true,
+            "name": "euridice [Debug]",
+            "targets": [
+                {
+                    "build_cmd": "make",
+                    "name": "Build euridice debug",
+                    "run_cmd": "/home/nicola/cvsgithub/OpenScheduler/sc-cpp/debug/euridice"
+                }
+            ]
+        },
+        {
+            "cmake_config": "Release",
+            "directory": "/home/nicola/cvsgithub/OpenScheduler/sc-cpp/release",
+            "loaded_via_cmake": false,
+            "name": "euridice [Release]",
+            "targets": [
+                {
+                    "build_cmd": "make",
+                    "name": "Build euridice release",
+                    "run_cmd": "/home/nicola/NetBeansProjects/OpenScheduler/sc-cpp/release/uridice"
+                }
+            ]
+        }
+    ]
+}
