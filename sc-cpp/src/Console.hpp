@@ -18,12 +18,13 @@ using Arguments = StringVector;
  * error (>=1).
  */
 using CommandFunction = std::function<int(const Arguments &)>;
+using CommandCompleter = std::function<char **(const Arguments &)>;
 
 struct ConsoleCommand {
   String commandName;
   CommandFunction function;
   String helpCmd, helpDescr;
-  CommandFunction completeFunction;
+  CommandCompleter completeFunction;
 };
 
 using ConsoleCommandVector = std::vector<ConsoleCommand>;
@@ -67,6 +68,8 @@ public:
    * @param f The function that will be called once the user writes the command.
    */
   void registerCommand(const String &s, CommandFunction f);
+
+  void registerCommand(ConsoleCommand cc);
 
   /**
    * @brief This function registers new commands within the Console.
@@ -156,6 +159,8 @@ private:
 
   static commandCompleterFunction getCommandCompletions;
   static commandIteratorFunction commandIterator;
+
+  static char **buildCustomCompletation(const char *text, int start, int);
 };
 
 #endif

@@ -1,4 +1,5 @@
 #include "Console.hpp"
+#include "common.hpp"
 
 #include <algorithm>
 #include <fstream>
@@ -20,11 +21,13 @@ HISTORY_STATE *emptyHistory = history_get_history_state();
 
 struct Console::Impl {
   using RegisteredCommands = std::unordered_map<String, CommandFunction>;
+  using RegisteredCommandsExtended = std::unordered_map<String, ConsoleCommand>;
 
   String greeting_;
   // These are hardcoded commands. They do not do anything and are catched
   // manually in the executeCommand function.
   RegisteredCommands commands_;
+  RegisteredCommandsExtended extcmds_;
   HISTORY_STATE *history_ = nullptr;
 
   Impl(String const &greeting) : greeting_(greeting), commands_() {}
@@ -51,6 +54,7 @@ Console::Console(String const &greeting) : pimpl_{new Impl{greeting}} {
       cout << "\t" << command << "\n";
     return ReturnCode::Ok;
   };
+
   // Run command executes all commands in an external file.
   pimpl_->commands_["run"] = [this](const Arguments &input) {
     if (input.size() < 2) {
@@ -59,6 +63,7 @@ Console::Console(String const &greeting) : pimpl_{new Impl{greeting}} {
     }
     return executeFile(input[1]);
   };
+
   // Quit and Exit simply terminate the console.
   pimpl_->commands_["quit"] = [this](const Arguments &) {
     return ReturnCode::Quit;
@@ -75,9 +80,14 @@ void Console::registerCommand(const String &s, CommandFunction f) {
   pimpl_->commands_[s] = f;
 }
 
+void Console::registerCommand(ConsoleCommand cc) {
+  pimpl_->commands_[cc.commandName] = cc.function;
+  pimpl_->extcmds_[cc.commandName] = cc;
+}
+
 void Console::registerCommands(const ConsoleCommandVector &commands) {
   for (auto cmd : commands) {
-    registerCommand(cmd.commandName, cmd.function);
+    registerCommand(cmd);
   }
 }
 
@@ -184,11 +194,14 @@ int Console::readLine() {
   return executeCommand(line);
 }
 
-char **Console::getCommandCompletions(const char *text, int start, int) {
+char **Console::getCommandCompletions(const char *text, int start, int end) {
   char **completionList = nullptr;
 
-  if (start == 0)
+  if (start == 0) {
     completionList = rl_completion_matches(text, &Console::commandIterator);
+  } else {
+    completionList = buildCustomCompletation(text, start, end);
+  }
 
   return completionList;
 }
@@ -209,5 +222,22 @@ char *Console::commandIterator(const char *text, int state) {
       return strdup(command.c_str());
     }
   }
+  return nullptr;
+}
+
+char **Console::buildCustomCompletation(const char *text, int start, int end) {
+  StringVector parts;
+  split(rl_line_buffer, parts);
+  if (parts.size() > 0) {
+    printf("\nCOMPLETE: buffer='%s' start=%d %s\n", rl_line_buffer, start,
+           text);
+    auto cmds = currentConsole->pimpl_->extcmds_;
+    auto cmd = cmds.find(trim(parts[0]));
+    if (cmd != cmds.end()) {
+      printf("COMPLETE FOR: %s\n", cmd->first.c_str());
+      return cmd->second.completeFunction(parts);
+    }
+  }
+
   return nullptr;
 }

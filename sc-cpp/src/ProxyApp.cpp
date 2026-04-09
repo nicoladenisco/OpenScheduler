@@ -32,9 +32,7 @@ extern ProxyApp theApp;
 namespace po = boost::program_options;
 
 BEGIN_COMMAND_LIST()
-COMMAND_ITEM(
-    help, "create <codice> [nomefile]",
-    "crea un file risorsa con il codice e il nomefile indicato (opzionale)")
+COMMAND_ITEM(help, "visualizza help", "visualizza comandi disponibili")
 COMMAND_ITEM(defval, "defval", "visualizza defaults")
 COMMAND_ITEM(set, "set <nome campo> <valore>",
              "inserisce il valore nel campo indicato")
@@ -42,14 +40,14 @@ COMMAND_ITEM(
     create, "create <codice> [nomefile]",
     "crea un file risorsa con il codice e il nomefile indicato (opzionale)")
 COMMAND_ITEM(list, "list [scan][verbose]", "visualizza slot nell'area corrente")
-COMMAND_ITEM(stamp, "stamp <codice> <algo> [parameters algo]",
-             "inizializza la risorsa con l'algoritmo indicato")
-COMMAND_ITEM(stampfile, "stampfile <nomefile> <algo> [parameters algo]",
-             "come stamp ma con indicazione esplicita del nome file")
-COMMAND_ITEM(dump, "dump <codice> [dayStart] [dayStop]",
-             "dump della risorsa con il codice indicato")
-COMMAND_ITEM(dumpfile, "dumpfile <nomefile> [dayStart] [dayStop]",
-             "come dump ma con indicazione esplicita del nome file")
+COMMAND_ITEM2(stamp, "stamp <codice> <algo> [parameters algo]",
+              "inizializza la risorsa con l'algoritmo indicato")
+COMMAND_ITEM2(stampfile, "stampfile <nomefile> <algo> [parameters algo]",
+              "come stamp ma con indicazione esplicita del nome file")
+COMMAND_ITEM2(dump, "dump <codice> [dayStart] [dayStop]",
+              "dump della risorsa con il codice indicato")
+COMMAND_ITEM2(dumpfile, "dumpfile <nomefile> [dayStart] [dayStop]",
+              "come dump ma con indicazione esplicita del nome file")
 END_COMMAND_LIST()
 
 ProxyApp::ProxyApp()
@@ -374,7 +372,7 @@ int ProxyApp::mainLoopRunner() {
 void ProxyApp::__registerCommandItem(ConsoleCommandVector &cmdarray,
                                      String commandName, String helpCmd,
                                      String helpDescr, CommandFunction function,
-                                     CommandFunction completeFunction) {
+                                     CommandCompleter completeFunction) {
   ConsoleCommand cmd;
   cmd.commandName = commandName;
   cmd.helpCmd = helpCmd;
@@ -409,6 +407,8 @@ int ProxyApp::cmd_help(const StringVector &args) {
     cout << "    " << cmd.helpCmd << "\n"
          << "\t- " << cmd.helpDescr << "\n";
   }
+  cout << "    run <file comandi>\n"
+          "\t- esegue una lista di comandi contenuti in un file di testo\n";
   cout << "    exit/quit\n"
           "\t- esce dal programma\n";
   return 0;
@@ -628,4 +628,45 @@ int ProxyApp::dumpFile(const File &toDump, const StringVector &args) {
             "poterla usare.\n";
 
   return 0;
+}
+
+char **ProxyApp::complete_stamp(const StringVector &args) { return nullptr; }
+char **ProxyApp::complete_stampfile(const StringVector &args) {
+  return nullptr;
+}
+
+char **ProxyApp::complete_dump(const StringVector &args) {
+  StringVector resources;
+  resourcesFromArea(resources);
+  if (!resources.empty()) {
+    char **rv = (char **)malloc(sizeof(char **) + 1);
+    int i = 0;
+    for (auto codice : resources)
+      rv[i++] = strdup(codice.c_str());
+    rv[i] = NULL;
+    return rv;
+  }
+  return nullptr;
+}
+
+char **ProxyApp::complete_dumpfile(const StringVector &args) { return nullptr; }
+
+void ProxyApp::resourcesFromArea(StringVector &rv) {
+  FileVector files;
+  slotDir.listFiles(files);
+
+  for (auto f : files) {
+    SlotFile tmp;
+    int fd;
+    if ((fd = open(f.c_str(), O_RDONLY)) != -1) {
+      read(fd, &tmp, sizeof(tmp));
+      close(fd);
+
+      if (strncmp(MAGIC, tmp.magic, 2) == 0) {
+        if (strncmp(FIRMA, tmp.firma, 16) == 0) {
+          rv.push_back(tmp.codiceRisorsa);
+        }
+      }
+    }
+  }
 }

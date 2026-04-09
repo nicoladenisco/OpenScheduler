@@ -49,15 +49,21 @@ private:
   int cmd_stampfile(const StringVector &args);
   int cmd_dump(const StringVector &args);
   int cmd_dumpfile(const StringVector &args);
+  char **complete_stamp(const StringVector &args);
+  char **complete_stampfile(const StringVector &args);
+  char **complete_dump(const StringVector &args);
+  char **complete_dumpfile(const StringVector &args);
 
   int dumpFile(const File &toStamp, const StringVector &args);
   int stampFile(const File &toStamp, const StringVector &args);
+
+  void resourcesFromArea(StringVector &rv);
 
   void __registerConsoleCommands();
   void __registerCommandItem(ConsoleCommandVector &cmdarray, String commandName,
                              String helpCmd, String helpDescr,
                              CommandFunction function,
-                             CommandFunction completeFunction);
+                             CommandCompleter completeFunction);
 
 public:
   String configFile, workPath, scriptFile;
