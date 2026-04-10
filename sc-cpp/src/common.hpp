@@ -73,6 +73,7 @@ inline String anyCastString(Any value) {
 
 int vector2Properties(AnyStringMap &rv, const StringVector &vstr);
 AnyStringMap vector2Properties(const StringVector &vstr);
+int countMatchInRegex(String s, String expr);
 
 #ifndef linux
 #define strdupa(x) (strcpy((char *)alloca((strlen(x) + 1) * sizeof(char)), (x)))

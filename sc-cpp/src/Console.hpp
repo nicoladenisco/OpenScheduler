@@ -18,7 +18,8 @@ using Arguments = StringVector;
  * error (>=1).
  */
 using CommandFunction = std::function<int(const Arguments &)>;
-using CommandCompleter = std::function<char **(const Arguments &)>;
+using CommandCompleter =
+    std::function<int(const Arguments &, StringVector &, int np)>;
 
 struct ConsoleCommand {
   String commandName;
@@ -28,6 +29,9 @@ struct ConsoleCommand {
 };
 
 using ConsoleCommandVector = std::vector<ConsoleCommand>;
+
+using RegisteredCommands = std::unordered_map<String, CommandFunction>;
+using RegisteredCommandsExtended = std::unordered_map<String, ConsoleCommand>;
 
 class Console {
 public:
@@ -160,7 +164,10 @@ private:
   static commandCompleterFunction getCommandCompletions;
   static commandIteratorFunction commandIterator;
 
-  static char **buildCustomCompletation(const char *text, int start, int);
+  static commandIteratorFunction customIterator;
+  static StringVector lastCompletition;
+  static Arguments argsLastCommand;
+  static RegisteredCommandsExtended::iterator itrLastCommand;
 };
 
 #endif

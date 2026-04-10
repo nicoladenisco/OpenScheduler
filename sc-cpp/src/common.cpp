@@ -320,3 +320,9 @@ AnyStringMap vector2Properties(const StringVector &vstr) {
   vector2Properties(rv, vstr);
   return rv;
 }
+
+int countMatchInRegex(String s, String sexpr) {
+  boost::regex expr(sexpr);
+  auto begin = boost::make_regex_iterator(s, expr);
+  return std::distance(begin, {});
+}

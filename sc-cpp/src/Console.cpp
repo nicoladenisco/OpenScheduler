@@ -20,9 +20,6 @@ Console *currentConsole = nullptr;
 HISTORY_STATE *emptyHistory = history_get_history_state();
 
 struct Console::Impl {
-  using RegisteredCommands = std::unordered_map<String, CommandFunction>;
-  using RegisteredCommandsExtended = std::unordered_map<String, ConsoleCommand>;
-
   String greeting_;
   // These are hardcoded commands. They do not do anything and are catched
   // manually in the executeCommand function.
@@ -140,7 +137,7 @@ int Console::executeCommand(const String &command) {
   if (inputs.size() == 0)
     return ReturnCode::Ok;
 
-  Impl::RegisteredCommands::iterator it;
+  RegisteredCommands::iterator it;
   if ((it = pimpl_->commands_.find(inputs[0])) != end(pimpl_->commands_)) {
     return static_cast<int>((it->second)(inputs));
   }
@@ -200,14 +197,14 @@ char **Console::getCommandCompletions(const char *text, int start, int end) {
   if (start == 0) {
     completionList = rl_completion_matches(text, &Console::commandIterator);
   } else {
-    completionList = buildCustomCompletation(text, start, end);
+    completionList = rl_completion_matches(text, &Console::customIterator);
   }
 
   return completionList;
 }
 
 char *Console::commandIterator(const char *text, int state) {
-  static Impl::RegisteredCommands::iterator it;
+  static RegisteredCommands::iterator it;
   if (!currentConsole)
     return nullptr;
   auto &commands = currentConsole->pimpl_->commands_;
@@ -225,17 +222,38 @@ char *Console::commandIterator(const char *text, int state) {
   return nullptr;
 }
 
-char **Console::buildCustomCompletation(const char *text, int start, int end) {
-  StringVector parts;
-  split(rl_line_buffer, parts);
-  if (parts.size() > 0) {
-    printf("\nCOMPLETE: buffer='%s' start=%d %s\n", rl_line_buffer, start,
-           text);
-    auto cmds = currentConsole->pimpl_->extcmds_;
-    auto cmd = cmds.find(trim(parts[0]));
-    if (cmd != cmds.end()) {
-      printf("COMPLETE FOR: %s\n", cmd->first.c_str());
-      return cmd->second.completeFunction(parts);
+StringVector Console::lastCompletition;
+Arguments Console::argsLastCommand;
+RegisteredCommandsExtended::iterator Console::itrLastCommand;
+
+char *Console::customIterator(const char *text, int state) {
+  static StringVector::iterator it;
+
+  if (state == 0) {
+    // carica completamenti custom per il comando
+    lastCompletition.clear();
+    StringVector args;
+    split(rl_line_buffer, args);
+    int np = countMatchInRegex(rl_line_buffer, "[\\s]+");
+
+    // printf("DEBUG line '%s' text '%s' np=%d\n", rl_line_buffer, text, np);
+
+    if (!args.empty()) {
+      auto cmds = currentConsole->pimpl_->extcmds_;
+      itrLastCommand = cmds.find(trim(args[0]));
+      if (itrLastCommand != cmds.end())
+        itrLastCommand->second.completeFunction(argsLastCommand,
+                                                lastCompletition, np);
+    }
+
+    it = begin(lastCompletition);
+  }
+
+  while (it != end(lastCompletition)) {
+    String &command = *it;
+    ++it;
+    if (command.find(text) != String::npos) {
+      return strdup(command.c_str());
     }
   }
 

@@ -569,7 +569,11 @@ int ProxyApp::stampFile(const File &toStamp, const StringVector &args) {
 
   stamper.stampResource(res, algo, properties);
 
-  cout << "Stamper eseguito in " << st.getElapsedMillis() << " millisecondi.\n";
+  long tempo = st.getElapsedMillis();
+  if (tempo == 0)
+    cout << "Stamper eseguito in meno di un millisecondo.\n";
+  else
+    cout << "Stamper eseguito in " << tempo << " millisecondi.\n";
   return 0;
 }
 
@@ -630,26 +634,37 @@ int ProxyApp::dumpFile(const File &toDump, const StringVector &args) {
   return 0;
 }
 
-char **ProxyApp::complete_stamp(const StringVector &args) { return nullptr; }
-char **ProxyApp::complete_stampfile(const StringVector &args) {
-  return nullptr;
-}
+int ProxyApp::complete_stamp(const StringVector &args, StringVector &complete,
+                             int np) {
+  if (np == 1)
+    resourcesFromArea(complete);
 
-char **ProxyApp::complete_dump(const StringVector &args) {
-  StringVector resources;
-  resourcesFromArea(resources);
-  if (!resources.empty()) {
-    char **rv = (char **)malloc(sizeof(char **) + 1);
-    int i = 0;
-    for (auto codice : resources)
-      rv[i++] = strdup(codice.c_str());
-    rv[i] = NULL;
-    return rv;
+  if (np == 2) {
+    SchedStamper stamper;
+    stamper.getAlgoNames(complete);
   }
-  return nullptr;
+
+  return 0;
 }
 
-char **ProxyApp::complete_dumpfile(const StringVector &args) { return nullptr; }
+int ProxyApp::complete_stampfile(const StringVector &args,
+                                 StringVector &complete, int np) {
+  return 0;
+}
+
+int ProxyApp::complete_dump(const StringVector &args, StringVector &complete,
+                            int np) {
+  if (np == 1)
+    resourcesFromArea(complete);
+  return 1;
+}
+
+int ProxyApp::complete_dumpfile(const StringVector &args,
+                                StringVector &complete, int np) {
+  if (np == 1)
+    filesFromArea(complete);
+  return 1;
+}
 
 void ProxyApp::resourcesFromArea(StringVector &rv) {
   FileVector files;
@@ -665,6 +680,26 @@ void ProxyApp::resourcesFromArea(StringVector &rv) {
       if (strncmp(MAGIC, tmp.magic, 2) == 0) {
         if (strncmp(FIRMA, tmp.firma, 16) == 0) {
           rv.push_back(tmp.codiceRisorsa);
+        }
+      }
+    }
+  }
+}
+
+void ProxyApp::filesFromArea(StringVector &rv) {
+  FileVector files;
+  slotDir.listFiles(files);
+
+  for (auto f : files) {
+    SlotFile tmp;
+    int fd;
+    if ((fd = open(f.c_str(), O_RDONLY)) != -1) {
+      read(fd, &tmp, sizeof(tmp));
+      close(fd);
+
+      if (strncmp(MAGIC, tmp.magic, 2) == 0) {
+        if (strncmp(FIRMA, tmp.firma, 16) == 0) {
+          rv.push_back(f.getAbsolutePath());
         }
       }
     }

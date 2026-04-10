@@ -49,15 +49,18 @@ private:
   int cmd_stampfile(const StringVector &args);
   int cmd_dump(const StringVector &args);
   int cmd_dumpfile(const StringVector &args);
-  char **complete_stamp(const StringVector &args);
-  char **complete_stampfile(const StringVector &args);
-  char **complete_dump(const StringVector &args);
-  char **complete_dumpfile(const StringVector &args);
+  int complete_stamp(const StringVector &args, StringVector &complete, int np);
+  int complete_stampfile(const StringVector &args, StringVector &complete,
+                         int np);
+  int complete_dump(const StringVector &args, StringVector &complete, int np);
+  int complete_dumpfile(const StringVector &args, StringVector &complete,
+                        int np);
 
   int dumpFile(const File &toStamp, const StringVector &args);
   int stampFile(const File &toStamp, const StringVector &args);
 
   void resourcesFromArea(StringVector &rv);
+  void filesFromArea(StringVector &rv);
 
   void __registerConsoleCommands();
   void __registerCommandItem(ConsoleCommandVector &cmdarray, String commandName,
@@ -95,7 +98,9 @@ public:
   __registerCommandItem(                                                       \
       cmdarray, #nome, hpar, hdesc,                                            \
       [this](const Arguments &args) { return this->cmd_##nome(args); },        \
-      [this](const Arguments &args) { return this->complete_##nome(args); });
+      [this](const Arguments &args, StringVector &complete, int np) {          \
+        return this->complete_##nome(args, complete, np);                      \
+      });
 
 #define END_COMMAND_LIST() }
 
