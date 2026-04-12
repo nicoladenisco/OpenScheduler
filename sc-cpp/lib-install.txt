@@ -4,6 +4,7 @@ INSTALLAZIONE LIBRERIE NECESSARIE
 SVILUPPO
 apt install libboost-all-dev
 apt install libxml2-dev
+apt install libreadline-dev
 
 RUNTIME
 apt install libboost-thread1.74.0
@@ -12,4 +13,3 @@ apt install libboost-system1.74.0
 apt install libboost-regex1.74.0
 apt install libboost-program-options1.74.0
 apt install libboost-chrono1.74.0
-
