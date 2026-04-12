@@ -75,23 +75,8 @@ DailyStamper::DailyStamper() {}
 DailyStamper::~DailyStamper() {}
 
 void DailyStamper::apply(SchedResource &resource, AnyStringMap &properties) {
-  int dayStart = 0;
-  int dayStop = 365;
-  if (is_int(properties["daystart"])) {
-    anyCastInt(properties["daystart"]);
-    if (dayStart == 0)
-      dayStart = 365;
-  }
-  if (is_int(properties["daystop"])) {
-    anyCastInt(properties["daystop"]);
-    if (dayStop == 0)
-      dayStop = 365;
-  }
-
-  if (dayStart < 0 || dayStart > 365 || dayStop < dayStart || dayStop > 365)
-    throw StructureException("Valori non corretti per daystart/daystop.");
-
-  applyCommon(dayStart, dayStop, resource, properties);
+  IntPair rd = parseDays(properties);
+  applyCommon(rd.first, rd.second, resource, properties);
 }
 
 //////////////////////////////////////////////////////////////////////////////////////

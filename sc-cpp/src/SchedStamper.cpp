@@ -1,10 +1,10 @@
 #include "SchedStamper.hpp"
 #include "SchedStamperAlgo.hpp"
 
-BEGIN_TABLE_ALGOS()
-ADD_ALGO("daily", DailyStamper)
-ADD_ALGO("free", FreeStamper)
-END_TABLE_ALGOS()
+BEGIN_TABLE_STAMPER_ALGOS()
+ADD_STAMPER_ALGO("daily", DailyStamper)
+ADD_STAMPER_ALGO("free", FreeStamper)
+END_TABLE_STAMPER_ALGOS()
 
 SchedStamper::SchedStamper() { __buildStampersTable(); }
 

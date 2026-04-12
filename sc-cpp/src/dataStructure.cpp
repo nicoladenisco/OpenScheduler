@@ -3,6 +3,7 @@
 #include <cstdio>
 #include <cstring>
 #include <unistd.h>
+#include <utility>
 
 /**
  * Inizializza uno slot file.
@@ -83,7 +84,7 @@ static String fmtfield(String des, int val, const char *sep) {
 
 #define TOS(x) fmtfield(#x, sf.x, s)
 
-String toString(SlotFile &sf, String separator /*= "\n"*/) {
+String toString(const SlotFile &sf, String separator /*= "\n"*/) {
   const char *s = separator.c_str();
 
   String tmp = TOS(magic) + TOS(codiceRisorsa) + TOS(anno) + TOS(slotOra) +
@@ -94,10 +95,15 @@ String toString(SlotFile &sf, String separator /*= "\n"*/) {
   return tmp;
 }
 
-String dump(SlotFile &sf, int dayStart /*= 0*/, int dayStop /*= 365*/,
+String dump(const SlotFile &sf, int dayStart /*= 0*/, int dayStop /*= 365*/,
             String separator /*= "\n"*/) {
   String rv, bo;
   rv.reserve(sf.numSlotsTotali + 1000);
+  std::map<int, String> display;
+  display[0] = "_";
+  display[1] = ".";
+  display[2] = "B";
+  display[3] = "X";
 
   // tabella orario; solo se c'è spazio (slotOra > 2)
   if (sf.slotOra > 2) {
@@ -113,7 +119,7 @@ String dump(SlotFile &sf, int dayStart /*= 0*/, int dayStop /*= 365*/,
 
   // determina indirizzo del primo slot da visualizzare
   int offset = dayStart * sf.numSlotsGiorno;
-  slotType *ptSlot = sf.arrySlot + offset;
+  const slotType *ptSlot = sf.arrySlot + offset;
 
   for (int g = dayStart; g < dayStop; g++) {
     String giorno = format("%03d", g + 1);
@@ -123,28 +129,8 @@ String dump(SlotFile &sf, int dayStart /*= 0*/, int dayStop /*= 365*/,
       if ((i % sf.slotOra) == 0)
         rv.append("|");
 
-      slotType val = *ptSlot++;
-
-      switch (val) {
-      case SLOT_UNAVAILABLE:
-        rv.append("_");
-        break;
-
-      case SLOT_SCHEDULABLE:
-        rv.append(".");
-        break;
-
-      case SLOT_LOOKED:
-        rv.append("B");
-        break;
-
-      default:
-        if (val < SLOT_RESERVED)
-          rv.append("?");
-        else
-          rv.append("X");
-        break;
-      }
+      rv.append(display[ptSlot->status]);
+      ptSlot++;
     }
     rv.append("|");
     rv.append(giorno);

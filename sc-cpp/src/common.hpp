@@ -32,6 +32,7 @@ using AnyVector = std::vector<Any>;
 using AnyStringMap = std::unordered_map<String, Any>;
 
 using IntVector = std::vector<int>;
+using IntPair = std::pair<int, int>;
 
 String format(String format, ...);
 bool strStartWith(const String &a, const String &b);
@@ -74,11 +75,32 @@ inline String anyCastString(Any value) {
 int vector2Properties(AnyStringMap &rv, const StringVector &vstr);
 AnyStringMap vector2Properties(const StringVector &vstr);
 int countMatchInRegex(String s, String expr);
+IntPair parseDays(AnyStringMap &prop);
 
 #ifndef linux
 #define strdupa(x) (strcpy((char *)alloca((strlen(x) + 1) * sizeof(char)), (x)))
 #endif
 
 #define TS ("[" + formatDateTime(0) + "] ")
+
+class GenericException : public std::exception {
+public:
+  inline GenericException(const String &cause) {
+    this->cause = cause;
+    this->errorStore = errno;
+  }
+
+  inline GenericException(const String &cause, int errore) {
+    this->cause = cause;
+    this->errorStore = errore;
+  }
+
+  virtual ~GenericException() throw() {}
+
+  inline virtual const char *what() const throw() { return cause.c_str(); }
+
+  String cause;
+  int errorStore;
+};
 
 #endif

@@ -8,11 +8,15 @@
 #include "File.hpp"
 #include <sys/types.h>
 
-using slotType = u_int64_t;
 #define SLOT_UNAVAILABLE 0
 #define SLOT_SCHEDULABLE 1
 #define SLOT_LOOKED 2
-#define SLOT_RESERVED 10
+#define SLOT_BOOKED 3
+
+struct slotType {
+  u_char status;
+  u_int64_t info;
+};
 
 struct SlotFile {
   char magic[2];
@@ -37,7 +41,7 @@ struct SlotFile {
   char riservatoFutureEspansioni[64];
 
   slotType arrySlot[1];
-}; // __attribute__((packed));
+};
 
 #define MAGIC "KK"
 #define FIRMA "Slots file v1"
@@ -47,8 +51,8 @@ void initSlotFile(int anno, int slotOra, int oraIniziale, int oraFinale,
 void initSlotFile(int anno, int slotOra, int oraIniziale, int oraFinale,
                   String codiceRisorsa, SlotFile &sf, File &tosave);
 
-String toString(SlotFile &sf, String separator = "\n");
-String dump(SlotFile &sf, int dayStart = 0, int dayStop = 365,
+String toString(const SlotFile &sf, String separator = "\n");
+String dump(const SlotFile &sf, int dayStart = 0, int dayStop = 365,
             String separator = "\n");
 
 //////////////////////////////////////////////////////////////////////

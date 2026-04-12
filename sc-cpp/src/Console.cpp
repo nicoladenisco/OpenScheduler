@@ -1,4 +1,5 @@
 #include "Console.hpp"
+#include "SimpleTimer.hpp"
 #include "common.hpp"
 
 #include <algorithm>
@@ -137,6 +138,17 @@ int Console::executeCommand(const String &command) {
   if (inputs.size() == 0)
     return ReturnCode::Ok;
 
+  RegisteredCommandsExtended::iterator ite;
+  if ((ite = pimpl_->extcmds_.find(inputs[0])) != end(pimpl_->extcmds_)) {
+    if (inputs.size() < ite->second.minParams) {
+      cout << "Command '" << inputs[0] << "' require at least "
+           << ite->second.minParams << " parameters.\n";
+      return 0;
+    }
+
+    return static_cast<int>((ite->second.function)(inputs));
+  }
+
   RegisteredCommands::iterator it;
   if ((it = pimpl_->commands_.find(inputs[0])) != end(pimpl_->commands_)) {
     return static_cast<int>((it->second)(inputs));
@@ -153,19 +165,24 @@ int Console::executeFile(const String &filename) {
     return ReturnCode::Error;
   }
   String command;
-  int counter = 0, result;
+  int counter = 0, result, cmdcount = 0;
+  SimpleTimer st;
 
   while (std::getline(input, command)) {
     if (command[0] == '#')
       continue; // Ignore comments
     // Report what the Console is executing.
-    if (command != "")
+    if (command != "") {
+      cmdcount++;
       cout << "[" << counter << "] " << command << '\n';
-    if ((result = executeCommand(command)))
-      return result;
+      if ((result = executeCommand(command)))
+        return result;
+    }
     ++counter;
     cout << '\n';
   }
+
+  st.showElapsed(format("%d comandi", cmdcount));
 
   // If we arrived successfully at the end, all is ok
   return ReturnCode::Ok;

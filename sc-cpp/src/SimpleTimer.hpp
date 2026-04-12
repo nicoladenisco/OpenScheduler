@@ -1,6 +1,7 @@
 #ifndef __SIMPLE_TIMER_HPP
 #define __SIMPLE_TIMER_HPP
 
+#include "common.hpp"
 #include <boost/chrono.hpp>
 
 class SimpleTimer {
@@ -26,6 +27,8 @@ public:
   long getElapsedMillis() const;
   long getParzialeMillis() const;
   long getParzialeMillisAndReset();
+
+  long showElapsed(String prompt);
 
   boost::chrono::system_clock::time_point startTime, parziale;
 };

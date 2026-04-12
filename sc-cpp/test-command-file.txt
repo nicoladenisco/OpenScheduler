@@ -1,10 +1,31 @@
 # crea risorsa
 create R001
+create R002
+create R003
+create R004
+create R005
 
 # applica stamper daily
 # stamp R001 daily hourmap=4,5,6,7,8
 stamp R001 daily
+stamp R002 daily hourmap=9,10,11,12,13,14,15,16
+stamp R003 daily
+stamp R004 daily
+stamp R005 daily
 
 # dump della risorsa
 dump R001 0 31
+dump R002 0 31
 
+# merge risorse
+merge R001 default
+merge R002 default
+dumpmerge 0 31
+dump R001 0 31
+dump R002 0 31
+
+infomerge
+clearmerge
+infomerge
+dump R001 0 31
+dump R002 0 31

@@ -28,3 +28,12 @@ long SimpleTimer::getParzialeMillisAndReset() {
   double secondi = sec.count();
   return secondi * 1000.0;
 }
+
+long SimpleTimer::showElapsed(String prompt) {
+  long tempo = getElapsedMillis();
+  if (tempo == 0)
+    cout << prompt << " eseguito in meno di un millisecondo.\n";
+  else
+    cout << prompt << " eseguito in " << tempo << " millisecondi.\n";
+  return tempo;
+}

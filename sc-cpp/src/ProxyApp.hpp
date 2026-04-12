@@ -1,8 +1,10 @@
 #ifndef __PROXYAPP_HPP
 #define __PROXYAPP_HPP
 
+#include "Classificatore.hpp"
 #include "Console.hpp"
 #include "File.hpp"
+#include "SchedMerger.hpp"
 #include "common.hpp"
 #include "dataStructure.hpp"
 #include "properties.h"
@@ -38,6 +40,7 @@ private:
   int mainLoop();
   int mainLoopRunner();
   int testConfig(File &temp, String &error);
+  int scanArea();
 
   int runConsole(const File *fileScript = nullptr);
   int cmd_help(const StringVector &args);
@@ -49,12 +52,18 @@ private:
   int cmd_stampfile(const StringVector &args);
   int cmd_dump(const StringVector &args);
   int cmd_dumpfile(const StringVector &args);
+  int cmd_merge(const StringVector &args);
+  int cmd_dumpmerge(const StringVector &args);
+  int cmd_infomerge(const StringVector &args);
+  int cmd_clearmerge(const StringVector &args);
+
   int complete_stamp(const StringVector &args, StringVector &complete, int np);
   int complete_stampfile(const StringVector &args, StringVector &complete,
                          int np);
   int complete_dump(const StringVector &args, StringVector &complete, int np);
   int complete_dumpfile(const StringVector &args, StringVector &complete,
                         int np);
+  int complete_merge(const StringVector &args, StringVector &complete, int np);
 
   int dumpFile(const File &toStamp, const StringVector &args);
   int stampFile(const File &toStamp, const StringVector &args);
@@ -64,7 +73,7 @@ private:
 
   void __registerConsoleCommands();
   void __registerCommandItem(ConsoleCommandVector &cmdarray, String commandName,
-                             String helpCmd, String helpDescr,
+                             int minParams, String helpCmd, String helpDescr,
                              CommandFunction function,
                              CommandCompleter completeFunction);
 
@@ -82,21 +91,23 @@ public:
   AnyStringMap defstamper;
   StringVector directCommand;
   ConsoleCommandVector basicCommands;
+  SchedMerger merger;
+  Classificatore<String, File> cacheRisorse;
 };
 
 #define BEGIN_COMMAND_LIST()                                                   \
   void ProxyApp::__registerConsoleCommands() {                                 \
     ConsoleCommandVector &cmdarray = basicCommands;
 
-#define COMMAND_ITEM(nome, hpar, hdesc)                                        \
+#define COMMAND_ITEM(nome, minpar, hpar, hdesc)                                \
   __registerCommandItem(                                                       \
-      cmdarray, #nome, hpar, hdesc,                                            \
+      cmdarray, #nome, minpar, hpar, hdesc,                                    \
       [this](const Arguments &args) { return this->cmd_##nome(args); },        \
       nullptr);
 
-#define COMMAND_ITEM2(nome, hpar, hdesc)                                       \
+#define COMMAND_ITEM2(nome, minpar, hpar, hdesc)                               \
   __registerCommandItem(                                                       \
-      cmdarray, #nome, hpar, hdesc,                                            \
+      cmdarray, #nome, minpar, hpar, hdesc,                                    \
       [this](const Arguments &args) { return this->cmd_##nome(args); },        \
       [this](const Arguments &args, StringVector &complete, int np) {          \
         return this->complete_##nome(args, complete, np);                      \

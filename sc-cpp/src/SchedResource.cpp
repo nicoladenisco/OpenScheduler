@@ -1,4 +1,6 @@
 #include "SchedResource.hpp"
+#include "dataStructure.hpp"
+#include <cstring>
 #include <fcntl.h>    // open
 #include <sys/mman.h> // mmap, munmap
 #include <sys/stat.h> // fstat
@@ -107,9 +109,7 @@ slotType *SchedResource::getSlot(int day) {
 void SchedResource::initializeSlotFile() {
   if (slotFile->initalized == 0) {
     slotType *ptSlots = slotFile->arrySlot;
-    for (int i = 0; i < slotFile->numSlotsTotali; i++) {
-      *ptSlots++ = SLOT_UNAVAILABLE;
-    }
+    memset(ptSlots, 0, sizeof(slotType) * slotFile->numSlotsTotali);
     slotFile->initalized = 1;
   }
 }

@@ -24,10 +24,11 @@ protected:
   SchedStamperAlgoPtrMap stampers;
 };
 
-#define BEGIN_TABLE_ALGOS() void SchedStamper::__buildStampersTable() {
+#define BEGIN_TABLE_STAMPER_ALGOS() void SchedStamper::__buildStampersTable() {
 
-#define ADD_ALGO(nome, classe) stampers[nome] = std::make_shared<classe>();
+#define ADD_STAMPER_ALGO(nome, classe)                                         \
+  stampers[nome] = std::make_shared<classe>();
 
-#define END_TABLE_ALGOS() }
+#define END_TABLE_STAMPER_ALGOS() }
 
 #endif

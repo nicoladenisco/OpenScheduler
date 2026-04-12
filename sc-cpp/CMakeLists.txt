@@ -15,6 +15,8 @@ set(TEST_SRCS
   src/SchedResource.cpp
   src/SchedStamper.cpp
   src/SchedStamperAlgo.cpp
+  src/SchedMerger.cpp
+  src/SchedMergerAlgo.cpp
   src/Console.cpp
   src/SimpleTimer.cpp
 )

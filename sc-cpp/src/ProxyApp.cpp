@@ -1,6 +1,7 @@
 #include "ProxyApp.hpp"
 #include "Console.hpp"
 #include "File.hpp"
+#include "SchedMerger.hpp"
 #include "SchedResource.hpp"
 #include "SchedStamper.hpp"
 #include "SimpleTimer.hpp"
@@ -25,6 +26,7 @@
 #include <boost/program_options/value_semantic.hpp>
 #include <boost/program_options/variables_map.hpp>
 #include <boost/program_options/version.hpp>
+#include <unistd.h>
 
 #define LOCK_RUNNER std::lock_guard<std::mutex> lck(mtxRunner);
 
@@ -32,26 +34,34 @@ extern ProxyApp theApp;
 namespace po = boost::program_options;
 
 BEGIN_COMMAND_LIST()
-COMMAND_ITEM(help, "visualizza help", "visualizza comandi disponibili")
-COMMAND_ITEM(defval, "defval", "visualizza defaults")
-COMMAND_ITEM(set, "set <nome campo> <valore>",
+COMMAND_ITEM(help, 1, "visualizza help", "visualizza comandi disponibili")
+COMMAND_ITEM(defval, 1, "defval", "visualizza defaults")
+COMMAND_ITEM(set, 3, "set <nome campo> <valore>",
              "inserisce il valore nel campo indicato")
 COMMAND_ITEM(
-    create, "create <codice> [nomefile]",
+    create, 2, "create <codice> [nomefile]",
     "crea un file risorsa con il codice e il nomefile indicato (opzionale)")
-COMMAND_ITEM(list, "list [scan][verbose]", "visualizza slot nell'area corrente")
-COMMAND_ITEM2(stamp, "stamp <codice> <algo> [parameters algo]",
+COMMAND_ITEM(list, 1, "list [scan][verbose]",
+             "visualizza slot nell'area corrente")
+COMMAND_ITEM2(stamp, 3, "stamp <codice> <algo> [parameters algo]",
               "inizializza la risorsa con l'algoritmo indicato")
-COMMAND_ITEM2(stampfile, "stampfile <nomefile> <algo> [parameters algo]",
+COMMAND_ITEM2(stampfile, 3, "stampfile <nomefile> <algo> [parameters algo]",
               "come stamp ma con indicazione esplicita del nome file")
-COMMAND_ITEM2(dump, "dump <codice> [dayStart] [dayStop]",
+COMMAND_ITEM2(dump, 2, "dump <codice> [dayStart] [dayStop]",
               "dump della risorsa con il codice indicato")
-COMMAND_ITEM2(dumpfile, "dumpfile <nomefile> [dayStart] [dayStop]",
+COMMAND_ITEM2(dumpfile, 2, "dumpfile <nomefile> [dayStart] [dayStop]",
               "come dump ma con indicazione esplicita del nome file")
+COMMAND_ITEM2(merge, 3, "merge <codice> <algo> [parameters algo]",
+              "merge della risorsa")
+COMMAND_ITEM(dumpmerge, 1, "dumpmerge [dayStart] [dayStop]",
+             "dump della fusione corrente")
+COMMAND_ITEM(infomerge, 1, "infomerge", "informazioni della fusione corrente")
+COMMAND_ITEM(clearmerge, 1, "clearmerge", "pulisce la fusione corrente")
 END_COMMAND_LIST()
 
 ProxyApp::ProxyApp()
-    : configFile("config.xml"), verbose(0), workPath("/tmp/euridice") {
+    : configFile("config.xml"), verbose(0), workPath("/tmp/euridice"),
+      merger(getpid()) {
   doc = NULL;
   root_element = NULL;
   __registerConsoleCommands();
@@ -177,6 +187,9 @@ int ProxyApp::rumble() {
       return -1;
 
     if (setupDirectory())
+      return -1;
+
+    if (scanArea())
       return -1;
 
     if (!directCommand.empty()) {
@@ -370,11 +383,13 @@ int ProxyApp::mainLoopRunner() {
 }
 
 void ProxyApp::__registerCommandItem(ConsoleCommandVector &cmdarray,
-                                     String commandName, String helpCmd,
-                                     String helpDescr, CommandFunction function,
+                                     String commandName, int minParams,
+                                     String helpCmd, String helpDescr,
+                                     CommandFunction function,
                                      CommandCompleter completeFunction) {
   ConsoleCommand cmd;
   cmd.commandName = commandName;
+  cmd.minParams = minParams;
   cmd.helpCmd = helpCmd;
   cmd.helpDescr = helpDescr;
   cmd.function = function;
@@ -422,11 +437,6 @@ int ProxyApp::cmd_defval(const StringVector &args) {
 int ProxyApp::cmd_set(const StringVector &args) { return 0; }
 
 int ProxyApp::cmd_create(const StringVector &args) {
-  if (args.size() < 2) {
-    cout << "Necessari almeno due parametri.\n";
-    return 1;
-  }
-
   String codice = args[1];
   String nomeFile = nomeFileDaCodice(codice);
   if (args.size() >= 3)
@@ -548,7 +558,7 @@ int ProxyApp::stampFile(const File &toStamp, const StringVector &args) {
   if (find(names.begin(), names.end(), algo) == names.end()) {
     cout << "Algoritmo " << algo << " inesistente: deve essere uno di "
          << join(names, ",", "'") << "\n";
-    return -1;
+    return 0;
   }
 
   SimpleTimer st;
@@ -557,23 +567,23 @@ int ProxyApp::stampFile(const File &toStamp, const StringVector &args) {
   SchedResource res(toStamp);
   AnyStringMap properties = defstamper;
   vector2Properties(properties, args);
-  if (!is_int(properties["model"]))
-    properties["model"] = (slotType)SLOT_SCHEDULABLE;
+  if (!is_int(properties["model"])) {
+    slotType model;
+    model.status = SLOT_SCHEDULABLE;
+    model.info = 0;
+    properties["model"] = model;
+  }
 
   // lock della risorsa
   SchedResourceLock reslock(res, "stamp", true, true, 3000);
   if (!reslock.isLocked()) {
     cout << "Non riesco a bloccare la risorsa; operazione abortita.\n";
-    return 1;
+    return 0;
   }
 
   stamper.stampResource(res, algo, properties);
+  st.showElapsed("Stamper ");
 
-  long tempo = st.getElapsedMillis();
-  if (tempo == 0)
-    cout << "Stamper eseguito in meno di un millisecondo.\n";
-  else
-    cout << "Stamper eseguito in " << tempo << " millisecondi.\n";
   return 0;
 }
 
@@ -622,7 +632,7 @@ int ProxyApp::dumpFile(const File &toDump, const StringVector &args) {
   SchedResourceLock reslock(res, "dump", true, true, 3000);
   if (!reslock.isLocked()) {
     cout << "Non riesco a bloccare la risorsa; operazione abortita.\n";
-    return 1;
+    return 0;
   }
 
   if (res.isInitialized())
@@ -667,26 +677,79 @@ int ProxyApp::complete_dumpfile(const StringVector &args,
 }
 
 void ProxyApp::resourcesFromArea(StringVector &rv) {
-  FileVector files;
-  slotDir.listFiles(files);
-
-  for (auto f : files) {
-    SlotFile tmp;
-    int fd;
-    if ((fd = open(f.c_str(), O_RDONLY)) != -1) {
-      read(fd, &tmp, sizeof(tmp));
-      close(fd);
-
-      if (strncmp(MAGIC, tmp.magic, 2) == 0) {
-        if (strncmp(FIRMA, tmp.firma, 16) == 0) {
-          rv.push_back(tmp.codiceRisorsa);
-        }
-      }
-    }
+  for (auto it : cacheRisorse) {
+    rv.push_back(it.first);
   }
 }
 
 void ProxyApp::filesFromArea(StringVector &rv) {
+  for (auto it : cacheRisorse) {
+    for (auto f : it.second)
+      rv.push_back(f.getAbsolutePath());
+  }
+}
+
+int ProxyApp::cmd_merge(const StringVector &args) {
+  String codice = args[1];
+  String algo = args[2];
+
+  if (merger.checkRisorsa(codice)) {
+    cout << "La risorsa con codice " << codice << " è stata già inclusa.\n";
+    return 0;
+  }
+
+  String nomeFile = nomeFileDaCodice(codice);
+  File genfile(slotDir, nomeFile);
+  if (!genfile.isFile()) {
+    cout << "La risorsa con codice " << codice
+         << " non ha un corrispondente file in " << slotDir.getAbsolutePath()
+         << "\n";
+    return 0;
+  }
+
+  // verifica per algoritmo esistente
+  StringVector names;
+  merger.getAlgoNames(names);
+  if (find(names.begin(), names.end(), algo) == names.end()) {
+    cout << "Algoritmo " << algo << " inesistente: deve essere uno di "
+         << join(names, ",", "'") << "\n";
+    return 0;
+  }
+
+  // carica risorsa e applica stamper
+  SchedResourcePtr res = buildResource(genfile);
+  if (!res->isInitialized()) {
+    cout << "La risorsa non è stata inizializzata; usare uno stamper per "
+            "poterla usare.\n";
+    return 0;
+  }
+  cout << toString(*res->getSlotFile()) << "\n";
+
+  SimpleTimer st;
+  AnyStringMap properties;
+  vector2Properties(properties, args);
+  SchedResourceMultiLock multilock("merge", true, true, 5000);
+  merger.addResource(multilock, res, algo, properties);
+  st.showElapsed("Merge");
+  return 0;
+}
+
+int ProxyApp::complete_merge(const StringVector &args, StringVector &complete,
+                             int np) {
+  if (np == 1)
+    resourcesFromArea(complete);
+
+  if (np == 2) {
+    merger.getAlgoNames(complete);
+  }
+
+  return 0;
+}
+
+int ProxyApp::scanArea() {
+  SimpleTimer st;
+  cout << "Scan directory " << slotDir.getAbsolutePath() << " for data.\n";
+
   FileVector files;
   slotDir.listFiles(files);
 
@@ -699,9 +762,43 @@ void ProxyApp::filesFromArea(StringVector &rv) {
 
       if (strncmp(MAGIC, tmp.magic, 2) == 0) {
         if (strncmp(FIRMA, tmp.firma, 16) == 0) {
-          rv.push_back(f.getAbsolutePath());
+          cacheRisorse.aggiungi(tmp.codiceRisorsa, f);
         }
       }
     }
   }
+
+  st.showElapsed("Scan area");
+  return 0;
+}
+
+int ProxyApp::cmd_dumpmerge(const StringVector &args) {
+  const SlotFile *ptSlot = merger.getMerged();
+
+  if (ptSlot == nullptr) {
+    cout << "Il merger è vuoto\n";
+    return 0;
+  }
+
+  int dayStart = 0, dayStop = 365;
+  if (args.size() > 1) {
+    dayStart = atoi(args[1].c_str());
+  }
+  if (args.size() > 2) {
+    dayStop = atoi(args[2].c_str());
+  }
+
+  cout << dump(*ptSlot, dayStart, dayStop) << "\n";
+  return 0;
+}
+
+int ProxyApp::cmd_infomerge(const StringVector &args) {
+  cout << merger.toString() << "\n";
+  return 0;
+}
+
+int ProxyApp::cmd_clearmerge(const StringVector &args) {
+  merger.clear();
+  cout << "Accorpamento risorse svuotato.\n";
+  return 0;
 }

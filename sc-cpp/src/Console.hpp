@@ -26,6 +26,7 @@ struct ConsoleCommand {
   CommandFunction function;
   String helpCmd, helpDescr;
   CommandCompleter completeFunction;
+  int minParams;
 };
 
 using ConsoleCommandVector = std::vector<ConsoleCommand>;

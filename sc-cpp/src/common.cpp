@@ -326,3 +326,23 @@ int countMatchInRegex(String s, String sexpr) {
   auto begin = boost::make_regex_iterator(s, expr);
   return std::distance(begin, {});
 }
+
+IntPair parseDays(AnyStringMap &properties) {
+  int dayStart = 0;
+  int dayStop = 365;
+  if (is_int(properties["daystart"])) {
+    dayStart = anyCastInt(properties["daystart"]);
+    if (dayStart < 0)
+      dayStart = 0;
+  }
+  if (is_int(properties["daystop"])) {
+    dayStop = anyCastInt(properties["daystop"]);
+    if (dayStop > 365)
+      dayStop = 365;
+  }
+
+  if (dayStart < 0 || dayStart > 365 || dayStop < dayStart || dayStop > 365)
+    throw GenericException("Valori non corretti per daystart/daystop.");
+
+  return std::make_pair(dayStart, dayStop);
+}
