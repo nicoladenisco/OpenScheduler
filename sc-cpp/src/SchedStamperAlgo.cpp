@@ -1,15 +1,19 @@
 #include "SchedStamperAlgo.hpp"
+#include "Properties.hpp"
 #include "SchedResource.hpp"
 #include "common.hpp"
+#include "dataStructure.hpp"
 
 void SchedStamperAlgo::applyCommon(int dayStart, int dayStop,
                                    SchedResource &resource,
-                                   AnyStringMap &properties) {
+                                   Properties &properties) {
   if (!resource.isInitialized())
     resource.initializeSlotFile();
 
   SlotFile *sfil = resource.getSlotFile();
-  slotType model = anyCastSlot(properties["model"]);
+  slotType model;
+  model.status = properties.get("model", SLOT_SCHEDULABLE);
+  model.info = 0;
 
   if (is_string(properties["hourmap"])) {
     String hourmap = anyCastString(properties["hourmap"]);
@@ -38,12 +42,14 @@ void SchedStamperAlgo::applyCommon(int dayStart, int dayStop,
 }
 
 void SchedStamperAlgo::applyCommon(IntVector days, SchedResource &resource,
-                                   AnyStringMap &properties) {
+                                   Properties &properties) {
   if (!resource.isInitialized())
     resource.initializeSlotFile();
 
   SlotFile *sfil = resource.getSlotFile();
-  slotType model = anyCastSlot(properties["model"]);
+  slotType model;
+  model.status = properties.get("model", SLOT_SCHEDULABLE);
+  model.info = 0;
 
   if (is_string(properties["hourmap"])) {
     String hourmap = anyCastString(properties["hourmap"]);
@@ -74,8 +80,8 @@ void SchedStamperAlgo::applyCommon(IntVector days, SchedResource &resource,
 DailyStamper::DailyStamper() {}
 DailyStamper::~DailyStamper() {}
 
-void DailyStamper::apply(SchedResource &resource, AnyStringMap &properties) {
-  IntPair rd = parseDays(properties);
+void DailyStamper::apply(SchedResource &resource, Properties &properties) {
+  IntPair rd = properties.parseDays();
   applyCommon(rd.first, rd.second, resource, properties);
 }
 
@@ -84,8 +90,8 @@ void DailyStamper::apply(SchedResource &resource, AnyStringMap &properties) {
 FreeStamper::FreeStamper() {}
 FreeStamper::~FreeStamper() {}
 
-void FreeStamper::apply(SchedResource &resource, AnyStringMap &properties) {
-  String daymap = anyCastString(properties["daymap"]);
+void FreeStamper::apply(SchedResource &resource, Properties &properties) {
+  String daymap = properties.get("daymap", "");
   IntVector days;
   splitComma(daymap, days);
 

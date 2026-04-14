@@ -8,10 +8,6 @@
 #include <cstddef>
 #include <memory>
 
-inline slotType anyCastSlot(Any value) {
-  return boost::any_cast<slotType>(value);
-}
-
 class SchedResource {
   friend class SchedResourceLock;
 

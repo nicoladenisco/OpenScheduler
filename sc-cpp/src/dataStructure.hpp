@@ -55,6 +55,8 @@ String toString(const SlotFile &sf, String separator = "\n");
 String dump(const SlotFile &sf, int dayStart = 0, int dayStop = 365,
             String separator = "\n");
 
+#define SIZE_SLOT_FILE (sizeof(SlotFile) - sizeof(slotType))
+
 //////////////////////////////////////////////////////////////////////
 
 class StructureException : public std::exception {

@@ -346,3 +346,34 @@ IntPair parseDays(AnyStringMap &properties) {
 
   return std::make_pair(dayStart, dayStop);
 }
+
+IntPair parseDays(const StringVector &args, int index) {
+  int dayStart = 0, dayStop = 365;
+  if (args.size() > index) {
+    dayStart = atoi(args[index].c_str());
+  }
+  index++;
+  if (args.size() > index) {
+    dayStop = atoi(args[index].c_str());
+  }
+
+  if (dayStart < 0 || dayStart > 365 || dayStop < dayStart || dayStop > 365)
+    throw GenericException("Valori non corretti per daystart/daystop.");
+
+  return std::make_pair(dayStart, dayStop);
+}
+
+String toString(const AnyStringMap &properties,
+                const String &separator /* = "," */) {
+  String rv;
+  rv.reserve(1024);
+
+  for (auto it : properties) {
+    if (!rv.empty())
+      rv.append(separator);
+    auto copy = it.second;
+    rv.append(it.first + "=" + boost::any_cast<std::string>(copy));
+  }
+
+  return rv;
+}

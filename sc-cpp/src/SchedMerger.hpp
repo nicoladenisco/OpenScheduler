@@ -1,6 +1,7 @@
 #ifndef __SCHEDMERGER_HPP
 #define __SCHEDMERGER_HPP
 
+#include "Properties.hpp"
 #include "SchedMergerAlgo.hpp"
 #include "SchedResource.hpp"
 #include "dataStructure.hpp"
@@ -12,7 +13,7 @@ public:
 
   virtual void addResource(SchedResourceMultiLock &multilock,
                            SchedResourcePtr resource, String nomeAlgoritmo,
-                           AnyStringMap &properties);
+                           Properties &properties);
 
   virtual int checkRisorsa(String codice);
 

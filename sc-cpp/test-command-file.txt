@@ -18,8 +18,8 @@ dump R001 0 31
 dump R002 0 31
 
 # merge risorse
-merge R001 default
-merge R002 default
+merge R001 default daystart=10 daystop=20
+merge R002 default daystart=10 daystop=20
 dumpmerge 0 31
 dump R001 0 31
 dump R002 0 31

@@ -1,6 +1,7 @@
 #include "ProxyApp.hpp"
 #include "Console.hpp"
 #include "File.hpp"
+#include "Properties.hpp"
 #include "SchedMerger.hpp"
 #include "SchedResource.hpp"
 #include "SchedStamper.hpp"
@@ -565,14 +566,8 @@ int ProxyApp::stampFile(const File &toStamp, const StringVector &args) {
 
   // carica risorsa e applica stamper
   SchedResource res(toStamp);
-  AnyStringMap properties = defstamper;
-  vector2Properties(properties, args);
-  if (!is_int(properties["model"])) {
-    slotType model;
-    model.status = SLOT_SCHEDULABLE;
-    model.info = 0;
-    properties["model"] = model;
-  }
+  Properties properties = defstamper;
+  properties.vector2Properties(args);
 
   // lock della risorsa
   SchedResourceLock reslock(res, "stamp", true, true, 3000);
@@ -616,13 +611,7 @@ int ProxyApp::cmd_dumpfile(const StringVector &args) {
 int ProxyApp::dumpFile(const File &toDump, const StringVector &args) {
   cout << "File: " << toDump.getAbsolutePath() << "\n";
 
-  int dayStart = 0, dayStop = 365;
-  if (args.size() > 2) {
-    dayStart = atoi(args[2].c_str());
-  }
-  if (args.size() > 3) {
-    dayStop = atoi(args[3].c_str());
-  }
+  IntPair days = parseDays(args, 2);
 
   // carica risorsa e applica stamper
   SchedResource res(toDump);
@@ -636,7 +625,7 @@ int ProxyApp::dumpFile(const File &toDump, const StringVector &args) {
   }
 
   if (res.isInitialized())
-    cout << dump(*res.getSlotFile(), dayStart, dayStop) << "\n";
+    cout << dump(*res.getSlotFile(), days.first, days.second) << "\n";
   else
     cout << "La risorsa non è stata inizializzata; usare uno stamper per "
             "poterla usare.\n";
@@ -726,8 +715,9 @@ int ProxyApp::cmd_merge(const StringVector &args) {
   cout << toString(*res->getSlotFile()) << "\n";
 
   SimpleTimer st;
-  AnyStringMap properties;
-  vector2Properties(properties, args);
+  Properties properties;
+  properties.vector2Properties(args);
+  // cout << properties.toString() << "\n";
   SchedResourceMultiLock multilock("merge", true, true, 5000);
   merger.addResource(multilock, res, algo, properties);
   st.showElapsed("Merge");
@@ -739,9 +729,8 @@ int ProxyApp::complete_merge(const StringVector &args, StringVector &complete,
   if (np == 1)
     resourcesFromArea(complete);
 
-  if (np == 2) {
+  if (np == 2)
     merger.getAlgoNames(complete);
-  }
 
   return 0;
 }
@@ -780,15 +769,8 @@ int ProxyApp::cmd_dumpmerge(const StringVector &args) {
     return 0;
   }
 
-  int dayStart = 0, dayStop = 365;
-  if (args.size() > 1) {
-    dayStart = atoi(args[1].c_str());
-  }
-  if (args.size() > 2) {
-    dayStop = atoi(args[2].c_str());
-  }
-
-  cout << dump(*ptSlot, dayStart, dayStop) << "\n";
+  IntPair days = parseDays(args, 1);
+  cout << dump(*ptSlot, days.first, days.second) << "\n";
   return 0;
 }
 

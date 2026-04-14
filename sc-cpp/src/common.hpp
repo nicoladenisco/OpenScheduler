@@ -76,6 +76,8 @@ int vector2Properties(AnyStringMap &rv, const StringVector &vstr);
 AnyStringMap vector2Properties(const StringVector &vstr);
 int countMatchInRegex(String s, String expr);
 IntPair parseDays(AnyStringMap &prop);
+IntPair parseDays(const StringVector &args, int index);
+String toString(const AnyStringMap &properties, const String &separator = ",");
 
 #ifndef linux
 #define strdupa(x) (strcpy((char *)alloca((strlen(x) + 1) * sizeof(char)), (x)))

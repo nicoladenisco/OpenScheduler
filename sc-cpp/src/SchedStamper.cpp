@@ -12,12 +12,12 @@ SchedStamper::~SchedStamper() {}
 
 void SchedStamper::stampResource(SchedResource &resource,
                                  SchedStamperAlgo &algo,
-                                 AnyStringMap &properties) {
+                                 Properties &properties) {
   algo.apply(resource, properties);
 }
 
 void SchedStamper::stampResource(SchedResource &resource, String nomeAlgoritmo,
-                                 AnyStringMap &properties) {
+                                 Properties &properties) {
 
   auto it = stampers.find(nomeAlgoritmo);
   if (it == stampers.end())

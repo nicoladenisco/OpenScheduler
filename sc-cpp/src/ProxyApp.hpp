@@ -4,6 +4,7 @@
 #include "Classificatore.hpp"
 #include "Console.hpp"
 #include "File.hpp"
+#include "Properties.hpp"
 #include "SchedMerger.hpp"
 #include "common.hpp"
 #include "dataStructure.hpp"
@@ -88,7 +89,7 @@ public:
   std::mutex mtxRunner;
   StringMap requestHeaders;
   SlotFile defslot;
-  AnyStringMap defstamper;
+  Properties defstamper;
   StringVector directCommand;
   ConsoleCommandVector basicCommands;
   SchedMerger merger;

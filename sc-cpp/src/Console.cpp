@@ -240,8 +240,6 @@ char *Console::commandIterator(const char *text, int state) {
 }
 
 StringVector Console::lastCompletition;
-Arguments Console::argsLastCommand;
-RegisteredCommandsExtended::iterator Console::itrLastCommand;
 
 char *Console::customIterator(const char *text, int state) {
   static StringVector::iterator it;
@@ -251,26 +249,27 @@ char *Console::customIterator(const char *text, int state) {
     lastCompletition.clear();
     StringVector args;
     split(rl_line_buffer, args);
-    int np = countMatchInRegex(rl_line_buffer, "[\\s]+");
-
-    // printf("DEBUG line '%s' text '%s' np=%d\n", rl_line_buffer, text, np);
 
     if (!args.empty()) {
+      int np = countMatchInRegex(rl_line_buffer, "[\\s]+");
+      // printf("DEBUG line '%s' text '%s' np=%d\n", rl_line_buffer, text, np);
+
       auto cmds = currentConsole->pimpl_->extcmds_;
-      itrLastCommand = cmds.find(trim(args[0]));
-      if (itrLastCommand != cmds.end())
-        itrLastCommand->second.completeFunction(argsLastCommand,
-                                                lastCompletition, np);
+      auto cmd = cmds.find(trim(args[0]));
+      if (cmd != cmds.end() && cmd->second.completeFunction != nullptr)
+        cmd->second.completeFunction(args, lastCompletition, np);
     }
+
+    if (lastCompletition.empty())
+      return nullptr;
 
     it = begin(lastCompletition);
   }
 
   while (it != end(lastCompletition)) {
-    String &command = *it;
-    ++it;
-    if (command.find(text) != String::npos) {
-      return strdup(command.c_str());
+    String &argument = *it++;
+    if (argument.find(text) != String::npos) {
+      return strdup(argument.c_str());
     }
   }
 

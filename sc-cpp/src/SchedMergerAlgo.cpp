@@ -34,7 +34,8 @@ SlotFile *SchedMergerAlgo::inizializzaMerge(SlotFile *merged,
   if (merged == nullptr) {
     SlotFile *origin = tomerge.getSlotFile();
     merged = (SlotFile *)malloc(origin->dimensioneByte);
-    memcpy(merged, origin, origin->dimensioneByte);
+    memset(merged, 0, origin->dimensioneByte);
+    memcpy(merged, origin, SIZE_SLOT_FILE);
   }
 
   return merged;
@@ -44,7 +45,7 @@ SlotFile *SchedMergerAlgo::sbloccaAltri(SlotFile *merged,
                                         SchedResource &tomerge,
                                         SchedResourcePtrVector otherResources,
                                         u_int64_t idUniqueLoock,
-                                        AnyStringMap &properties) {
+                                        Properties &properties) {
 
   for (auto othr : otherResources) {
     slotType *ptm = merged->arrySlot;
@@ -70,45 +71,60 @@ SlotFile *SchedMergerAlgo::sbloccaAltri(SlotFile *merged,
 SlotFile *DefaultMerger::apply(SlotFile *merged, SchedResource &tomerge,
                                SchedResourcePtrVector otherResources,
                                u_int64_t idUniqueLoock,
-                               AnyStringMap &properties) {
+                               Properties &properties) {
+  IntPair days = properties.parseDays();
+
   if (merged == nullptr) {
     merged = inizializzaMerge(merged, tomerge);
+    // inizializza gli slots nell'intervallo richiesto
+    for (int day = days.first; day < days.second; day++) {
+      int offset = day * merged->numSlotsGiorno;
+      slotType *ptm = merged->arrySlot + offset;
+      for (int i = 0; i < merged->numSlotsGiorno; i++, ptm++) {
+        ptm->status = SLOT_SCHEDULABLE;
+      }
+    }
   } else {
-    if (checkCompatibilita(merged, tomerge))
-      return merged;
+    checkCompatibilita(merged, tomerge, true);
   }
 
-  slotType *ptm = merged->arrySlot;
-  slotType *ptc = tomerge.getSlotFile()->arrySlot;
+  for (int day = days.first; day < days.second; day++) {
 
-  for (int i = 0; i < merged->numSlotsTotali; i++, ptm++, ptc++) {
-    // se uno dei due è non disponibile la destinazione diventa non
-    // disponibile
-    if (ptm->status == SLOT_UNAVAILABLE || ptc->status == SLOT_UNAVAILABLE) {
+    int offset = day * merged->numSlotsGiorno;
+    slotType *ptm = merged->arrySlot + offset;
+    slotType *ptc = tomerge.getSlotFile()->arrySlot + offset;
+
+    for (int i = 0; i < merged->numSlotsGiorno; i++, ptm++, ptc++) {
+      // se uno dei due è non disponibile la destinazione diventa non
+      // disponibile
+      if (ptm->status == SLOT_UNAVAILABLE || ptc->status == SLOT_UNAVAILABLE) {
+        ptm->status = SLOT_UNAVAILABLE;
+        ptm->info = 0;
+        continue;
+      }
+
+      // se il merge è disponibile ...
+      if (ptm->status == SLOT_SCHEDULABLE && ptc->status == SLOT_SCHEDULABLE) {
+        ptm->status = SLOT_SCHEDULABLE;
+        ptm->info = 0;
+
+        // ... blocca lo slot in tomerge
+        ptc->status = SLOT_LOOKED;
+        ptc->info = idUniqueLoock;
+
+        continue;
+      }
+
+      // se il merge non è disponibile rimuove eventuale lock sulla risorsa
+      if (ptm->status != SLOT_SCHEDULABLE && ptc->status == SLOT_LOOKED) {
+        ptc->status = SLOT_SCHEDULABLE;
+        ptc->info = 0;
+      }
+
+      // in tutti gli altri casi lo slot merge diventa non disponibile
       ptm->status = SLOT_UNAVAILABLE;
       ptm->info = 0;
-      continue;
     }
-
-    // se il merge è disponibile ...
-    if (ptm->status == SLOT_SCHEDULABLE && ptc->status == SLOT_SCHEDULABLE) {
-      ptm->status = SLOT_SCHEDULABLE;
-      ptm->info = 0;
-
-      // ... blocca lo slot in tomerge
-      ptc->status = SLOT_LOOKED;
-      ptc->info = idUniqueLoock;
-
-      continue;
-    }
-
-    // se il merge non è disponibile rimuove eventuale lock sulla risorsa
-    if (ptm->status != SLOT_SCHEDULABLE && ptc->status == SLOT_LOOKED) {
-    }
-
-    // in tutti gli altri casi lo slot merge diventa non disponibile
-    ptm->status = SLOT_UNAVAILABLE;
-    ptm->info = 0;
   }
 
   tomerge.flush();

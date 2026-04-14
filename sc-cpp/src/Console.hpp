@@ -167,8 +167,6 @@ private:
 
   static commandIteratorFunction customIterator;
   static StringVector lastCompletition;
-  static Arguments argsLastCommand;
-  static RegisteredCommandsExtended::iterator itrLastCommand;
 };
 
 #endif

@@ -1,6 +1,7 @@
 #ifndef __SCHEDMERGERALGO_HPP
 #define __SCHEDMERGERALGO_HPP
 
+#include "Properties.hpp"
 #include "SchedResource.hpp"
 #include "common.hpp"
 #include "dataStructure.hpp"
@@ -17,13 +18,12 @@ public:
 
   virtual SlotFile *apply(SlotFile *merged, SchedResource &tomerge,
                           SchedResourcePtrVector otherResources,
-                          u_int64_t idUniqueLoock,
-                          AnyStringMap &properties) = 0;
+                          u_int64_t idUniqueLoock, Properties &properties) = 0;
 
   virtual SlotFile *sbloccaAltri(SlotFile *merged, SchedResource &tomerge,
                                  SchedResourcePtrVector otherResources,
                                  u_int64_t idUniqueLoock,
-                                 AnyStringMap &properties);
+                                 Properties &properties);
 };
 
 using SchedMergerAlgoPtr = std::shared_ptr<SchedMergerAlgo>;
@@ -37,7 +37,7 @@ public:
 
   virtual SlotFile *apply(SlotFile *merged, SchedResource &tomerge,
                           SchedResourcePtrVector otherResources,
-                          u_int64_t idUniqueLoock, AnyStringMap &properties);
+                          u_int64_t idUniqueLoock, Properties &properties);
 };
 
 #endif // __SCHEDMERGERALGO_HPP

@@ -1,6 +1,7 @@
 #ifndef __SHEDSTAMPER_HPP
 #define __SHEDSTAMPER_HPP
 
+#include "Properties.hpp"
 #include "SchedResource.hpp"
 #include "SchedStamperAlgo.hpp"
 #include "common.hpp"
@@ -11,9 +12,9 @@ public:
   virtual ~SchedStamper();
 
   virtual void stampResource(SchedResource &resource, String nomeAlgoritmo,
-                             AnyStringMap &properties);
+                             Properties &properties);
   virtual void stampResource(SchedResource &resource, SchedStamperAlgo &algo,
-                             AnyStringMap &properties);
+                             Properties &properties);
 
   virtual void getAlgoNames(StringVector &names) const;
 

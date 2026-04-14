@@ -26,14 +26,14 @@ void SchedMerger::getAlgoNames(StringVector &names) const {
 
 void SchedMerger::addResource(SchedResourceMultiLock &multilock,
                               SchedResourcePtr resource, String nomeAlgoritmo,
-                              AnyStringMap &properties) {
+                              Properties &properties) {
 
   auto it = mergers.find(nomeAlgoritmo);
   if (it == mergers.end())
     throw StructureException("Algoritmo specificato non esiste.");
 
   if (!resource->isInitialized())
-    throw StructureException("la risorse indicata non è stata inizializzata.");
+    throw StructureException("la risorsa indicata non è stata inizializzata.");
 
   // blocca tutte le risorse
   multilock.addResource(resource);
