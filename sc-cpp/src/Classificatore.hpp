@@ -1,12 +1,12 @@
 
+#include <map>
 #include <string>
-#include <unordered_map>
 #include <vector>
 
 template <typename K, typename T>
-class Classificatore : private std::unordered_map<K, std::vector<T>> {
+class Classificatore : private std::map<K, std::vector<T>> {
   // Alias interno per comodità
-  using Base = std::unordered_map<K, std::vector<T>>;
+  using Base = std::map<K, std::vector<T>>;
 
 public:
   Classificatore() = default;
@@ -34,17 +34,21 @@ public:
     }
   }
 
-  // Aggiungi tu un metodo sicuro per inserire i dati
+  // Aggiunge un metodo sicuro per inserire i dati
   void aggiungi(const K &chiave, const T &valore) {
     (*this)[chiave].push_back(valore);
   }
 
   // Metodo per visualizzare i risultati (opzionale, per test)
-  std::string toString() const {
+  std::string toString(std::string separator = ",") const {
     std::string rv;
     rv.reserve(1024);
 
     for (const auto &[chiave, lista] : *this) {
+
+      if (!rv.empty())
+        rv.append(separator);
+
       rv.append("[")
           .append(chiave)
           .append("{")

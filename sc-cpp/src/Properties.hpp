@@ -6,7 +6,7 @@
 
 class Properties : public StringMap {
 public:
-  Properties() {}
+  Properties() = default;
   Properties(const StringVector &vstr) { vector2Properties(vstr); }
 
   inline const String &get(const String &key, const String &defVal) const {
