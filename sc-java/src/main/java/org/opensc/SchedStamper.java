@@ -16,12 +16,67 @@
  */
 package org.opensc;
 
+import java.io.File;
+import java.io.IOException;
+import java.lang.ref.Cleaner;
+import java.util.Properties;
+
 /**
  * Inizializzatore delle risorse.
  *
  * @author Nicola De Nisco
  */
-public class SchedStamper
+public class SchedStamper implements AutoCloseable
 {
+  private long nativeAddress;
+  private static final Cleaner cleaner = Cleaner.create();
+  private Cleaner.Cleanable cleanable;
 
+  /**
+   * Apre una risorsa.
+   * @param risorsa file da aprire
+   * @throws IOException
+   */
+  public SchedStamper(File risorsa)
+     throws IOException
+  {
+    cleanable = cleaner.register(this, () -> closeNative());
+    openNative(risorsa.getAbsolutePath());
+  }
+
+  private SchedStamper()
+  {
+    cleanable = cleaner.register(this, () -> closeNative());
+  }
+
+  /**
+   * creazione oggetto c++.
+   * @param path
+   */
+  private native void openNative(String path);
+
+  /**
+   * distruzione oggetto c++.
+   */
+  private native void closeNative();
+
+  /**
+   * distruzione oggetto c++.
+   */
+  private native void buildNative(String prop);
+
+  @Override
+  public void close()
+     throws Exception
+  {
+    closeNative();
+  }
+
+  public static SchedStamper build(Properties properties)
+  {
+    String prop = Utils.Properties2String(properties);
+    SchedStamper rv = new SchedStamper();
+    rv.buildNative(prop);
+    return rv;
+  }
 }

@@ -16,12 +16,67 @@
  */
 package org.opensc;
 
+import java.io.File;
+import java.io.IOException;
+import java.lang.ref.Cleaner;
+import java.util.Properties;
+
 /**
  * Fusore di risorse.
  *
  * @author Nicola De Nisco
  */
-public class SchedMerger
+public class SchedMerger implements AutoCloseable
 {
+  private long nativeAddress;
+  private static final Cleaner cleaner = Cleaner.create();
+  private Cleaner.Cleanable cleanable;
 
+  /**
+   * Apre una risorsa.
+   * @param risorsa file da aprire
+   * @throws IOException
+   */
+  public SchedMerger(File risorsa)
+     throws IOException
+  {
+    cleanable = cleaner.register(this, () -> closeNative());
+    openNative(risorsa.getAbsolutePath());
+  }
+
+  private SchedMerger()
+  {
+    cleanable = cleaner.register(this, () -> closeNative());
+  }
+
+  /**
+   * creazione oggetto c++.
+   * @param path
+   */
+  private native void openNative(String path);
+
+  /**
+   * distruzione oggetto c++.
+   */
+  private native void closeNative();
+
+  /**
+   * distruzione oggetto c++.
+   */
+  private native void buildNative(String prop);
+
+  @Override
+  public void close()
+     throws Exception
+  {
+    closeNative();
+  }
+
+  public static SchedMerger build(Properties properties)
+  {
+    String prop = Utils.Properties2String(properties);
+    SchedMerger rv = new SchedMerger();
+    rv.buildNative(prop);
+    return rv;
+  }
 }
