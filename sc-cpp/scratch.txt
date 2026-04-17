@@ -1,13 +1,21 @@
---cmdfile test-command-file.txt
-
 cmake_minimum_required(VERSION 3.30)
 project(oskcli VERSION 0.1)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# 1. Sorgenti della LOGICA (condivisi tra eseguibile e libreria)
-set(CORE_SRCS
+# --- 1. Trova le dipendenze (tutte insieme all'inizio) ---
+find_package(Boost REQUIRED CONFIG COMPONENTS thread date_time system regex program_options chrono)
+find_package(Threads REQUIRED)
+find_package(LibXml2 REQUIRED)
+find_package(JNI REQUIRED) # <--- AGGIUNTO QUESTO
+
+find_library(READLINE_LIBRARY NAMES readline)
+find_library(NCURSES_LIBRARY NAMES ncurses tinfo)
+
+# --- 2. Definizione dei Sorgenti ---
+set(CLI_SRCS
+  src/main.cpp   # Messo qui il main
   src/common.cpp
   src/ProxyApp.cpp
   src/XmlHelper.cpp
@@ -22,29 +30,31 @@ set(CORE_SRCS
   src/SimpleTimer.cpp
 )
 
-# 2. Creazione dell'eseguibile (come prima, include main + logica)
-add_executable(oskcli src/main.cpp ${CORE_SRCS})
+set(LIB_SRCS
+  src/common.cpp
+  src/XmlHelper.cpp
+  src/File.cpp
+  src/dataStructure.cpp
+  src/SchedResource.cpp
+  src/SchedStamper.cpp
+  src/SchedStamperAlgo.cpp
+  src/SchedMerger.cpp
+  src/SchedMergerAlgo.cpp
+  src/SimpleTimer.cpp
+  # Aggiungi qui il tuo file JNI_adapter.cpp se ne hai uno!
+)
 
-# 3. Creazione della libreria dinamica (solo la logica)
-# La chiamiamo 'oskcore', produrrà un file 'liboskcore.so'
-add_library(oskcore SHARED ${CORE_SRCS})
+# --- 3. Creazione Target (Prima si creano, poi si configurano) ---
 
-# Importante per le librerie dinamiche: genera codice indipendente dalla posizione
+# Creazione Eseguibile
+add_executable(oskcli ${CLI_SRCS})
+
+# Creazione Libreria
+add_library(oskcore SHARED ${LIB_SRCS})
 set_target_properties(oskcore PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
-# --- DIPENDENZE ---
 
-# Boost
-set(BOOST_LIBS thread date_time system regex program_options chrono)
-find_package(Boost REQUIRED CONFIG COMPONENTS ${BOOST_LIBS})
-
-# Altre librerie
-find_package(Threads REQUIRED)
-find_package(LibXml2 REQUIRED)
-find_library(READLINE_LIBRARY NAMES readline)
-find_library(NCURSES_LIBRARY NAMES ncurses tinfo)
-
-# --- LINKING ESEGUIBILE (Invariato) ---
+# --- 4. Configurazione Eseguibile (oskcli) ---
 target_link_libraries(oskcli PRIVATE
     Boost::headers Boost::thread Boost::date_time Boost::system
     Boost::regex Boost::program_options Boost::chrono
@@ -54,15 +64,24 @@ target_link_libraries(oskcli PRIVATE
 )
 target_link_options(oskcli PRIVATE "-no-pie")
 
-# --- LINKING LIBRERIA (Per le app esterne) ---
-# Colleghiamo le dipendenze anche alla .so, così chi la usa ha tutto il necessario
+
+# --- 5. Configurazione Libreria (oskcore) ---
+
+# Spostato qui dopo add_library
+target_include_directories(oskcore PRIVATE
+    src
+    ${JNI_INCLUDE_DIRS}
+)
+
 target_link_libraries(oskcore PRIVATE
     Boost::headers Boost::thread Boost::date_time Boost::system
     Boost::regex Boost::program_options Boost::chrono
     Threads::Threads
     LibXml2::LibXml2
     ${READLINE_LIBRARY} ${NCURSES_LIBRARY}
+    ${JNI_LIBRARIES}
 )
 
 # Se vuoi che chi usa la tua libreria sappia dove sono gli header:
 target_include_directories(oskcore PUBLIC src)
+
