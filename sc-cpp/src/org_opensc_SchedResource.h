@@ -10,25 +10,57 @@ extern "C" {
 /*
  * Class:     org_opensc_SchedResource
  * Method:    openNative
- * Signature: (Ljava/lang/String;)V
+ * Signature: (Ljava/lang/String;)I
  */
-JNIEXPORT void JNICALL Java_org_opensc_SchedResource_openNative
+JNIEXPORT jint JNICALL Java_org_opensc_SchedResource_openNative
   (JNIEnv *, jobject, jstring);
 
 /*
  * Class:     org_opensc_SchedResource
  * Method:    closeNative
- * Signature: ()V
+ * Signature: ()I
  */
-JNIEXPORT void JNICALL Java_org_opensc_SchedResource_closeNative
+JNIEXPORT jint JNICALL Java_org_opensc_SchedResource_closeNative
   (JNIEnv *, jobject);
 
 /*
  * Class:     org_opensc_SchedResource
  * Method:    buildNative
- * Signature: (Ljava/lang/String;)V
+ * Signature: (Ljava/lang/String;)I
  */
-JNIEXPORT void JNICALL Java_org_opensc_SchedResource_buildNative
+JNIEXPORT jint JNICALL Java_org_opensc_SchedResource_buildNative
+  (JNIEnv *, jobject, jstring);
+
+/*
+ * Class:     org_opensc_SchedResource
+ * Method:    stampResourcesNative
+ * Signature: (Ljava/lang/String;Ljava/lang/String;)I
+ */
+JNIEXPORT jint JNICALL Java_org_opensc_SchedResource_stampResourcesNative
+  (JNIEnv *, jobject, jstring, jstring);
+
+/*
+ * Class:     org_opensc_SchedResource
+ * Method:    getStamperAlgosNative
+ * Signature: ()Ljava/lang/String;
+ */
+JNIEXPORT jstring JNICALL Java_org_opensc_SchedResource_getStamperAlgosNative
+  (JNIEnv *, jobject);
+
+/*
+ * Class:     org_opensc_SchedResource
+ * Method:    dumpHeaderNative
+ * Signature: (Ljava/lang/String;)Ljava/lang/String;
+ */
+JNIEXPORT jstring JNICALL Java_org_opensc_SchedResource_dumpHeaderNative
+  (JNIEnv *, jobject, jstring);
+
+/*
+ * Class:     org_opensc_SchedResource
+ * Method:    dumpSlotsNative
+ * Signature: (Ljava/lang/String;)Ljava/lang/String;
+ */
+JNIEXPORT jstring JNICALL Java_org_opensc_SchedResource_dumpSlotsNative
   (JNIEnv *, jobject, jstring);
 
 #ifdef __cplusplus

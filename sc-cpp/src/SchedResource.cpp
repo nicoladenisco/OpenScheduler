@@ -6,7 +6,15 @@
 #include <sys/stat.h> // fstat
 #include <unistd.h>   // close
 
-SchedResource::SchedResource(const File &fileSlot) {
+SchedResource::SchedResource() : slotFile(nullptr) {}
+SchedResource::SchedResource(const File &fileSlot) : slotFile(nullptr) {
+  attachSlotFile(fileSlot);
+}
+
+void SchedResource::attachSlotFile(const File &fileSlot) {
+  if (slotFile != nullptr)
+    detachSlotFile();
+
   slotFile = nullptr;
   originFile = fileSlot;
   lockFile = File(originFile.getAbsolutePath() + ".lock");
@@ -41,7 +49,9 @@ SchedResource::SchedResource(const File &fileSlot) {
   }
 }
 
-SchedResource::~SchedResource() {
+SchedResource::~SchedResource() { detachSlotFile(); }
+
+void SchedResource::detachSlotFile() {
   if (slotFile != nullptr) {
     // Pulizia (l'ordine è importante)
     if (::munmap(slotFile, lengthSlotFile) == -1) {
@@ -49,6 +59,7 @@ SchedResource::~SchedResource() {
     }
 
     close(fdSlotFile);
+    slotFile = nullptr;
   }
 
   // rimuove eventuale lock su risorsa

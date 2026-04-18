@@ -8,10 +8,18 @@ class Properties : public StringMap {
 public:
   Properties() = default;
   Properties(const StringVector &vstr) { vector2Properties(vstr); }
+  Properties(const String &mapPipe) { mapPipe2Properties(mapPipe); }
 
   inline const String &get(const String &key, const String &defVal) const {
     auto it = find(key);
     return it == end() ? defVal : it->second;
+  }
+
+  inline const String &getNotNull(const String &key) const {
+    auto it = find(key);
+    if (it == end())
+      throw GenericException("Missing value " + key + " in properties.");
+    return it->second;
   }
 
   inline int get(const String &key, int defVal) const {
@@ -71,6 +79,12 @@ public:
       throw GenericException("Valori non corretti per daystart/daystop.");
 
     return std::make_pair(dayStart, dayStop);
+  }
+
+  int mapPipe2Properties(const String &mapPipe) {
+    StringVector tmp;
+    split(mapPipe, "[^|]+", tmp);
+    return vector2Properties(tmp);
   }
 };
 

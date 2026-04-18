@@ -57,6 +57,8 @@ int spawn(const String &commandPath, const StringVector &commandLine);
 int split(const String &s, StringVector &v);
 int split(const String &input, boost::regex &expr, StringVector &v);
 int split(const String &input, boost::regex &expr, IntVector &v);
+int split(const String &input, const String &expr, StringVector &v);
+int split(const String &input, const String &expr, IntVector &v);
 int splitComma(const String &input, StringVector &v);
 int splitComma(const String &input, IntVector &v);
 

@@ -10,27 +10,26 @@ extern "C" {
 /*
  * Class:     org_opensc_SchedMerger
  * Method:    openNative
- * Signature: (Ljava/lang/String;)V
+ * Signature: (J)I
  */
-JNIEXPORT void JNICALL Java_org_opensc_SchedMerger_openNative(JNIEnv *, jobject,
-                                                              jstring);
+JNIEXPORT jint JNICALL Java_org_opensc_SchedMerger_openNative
+  (JNIEnv *, jobject, jlong);
 
 /*
  * Class:     org_opensc_SchedMerger
  * Method:    closeNative
- * Signature: ()V
+ * Signature: ()I
  */
-JNIEXPORT void JNICALL Java_org_opensc_SchedMerger_closeNative(JNIEnv *,
-                                                               jobject);
+JNIEXPORT jint JNICALL Java_org_opensc_SchedMerger_closeNative
+  (JNIEnv *, jobject);
 
 /*
  * Class:     org_opensc_SchedMerger
- * Method:    buildNative
- * Signature: (Ljava/lang/String;)V
+ * Method:    dumpSlotsNative
+ * Signature: (Ljava/lang/String;)Ljava/lang/String;
  */
-JNIEXPORT void JNICALL Java_org_opensc_SchedMerger_buildNative(JNIEnv *,
-                                                               jobject,
-                                                               jstring);
+JNIEXPORT jstring JNICALL Java_org_opensc_SchedMerger_dumpSlotsNative
+  (JNIEnv *, jobject, jstring);
 
 #ifdef __cplusplus
 }

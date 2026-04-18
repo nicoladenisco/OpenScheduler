@@ -1,4 +1,5 @@
 #include "dataStructure.hpp"
+#include "Properties.hpp"
 #include "common.hpp"
 #include <cstdio>
 #include <cstring>
@@ -143,4 +144,21 @@ String dump(const SlotFile &sf, int dayStart /*= 0*/, int dayStop /*= 365*/,
   }
 
   return rv;
+}
+
+#define TOPROP(x) prop[#x] = #x
+
+void toProperties(const SlotFile &sf, Properties &prop) {
+  TOPROP(magic);
+  TOPROP(codiceRisorsa);
+  TOPROP(anno);
+  TOPROP(slotOra);
+  TOPROP(oraIniziale);
+  TOPROP(oraFinale);
+  TOPROP(numSlotsGiorno);
+  TOPROP(numSlotsTotali);
+  TOPROP(dimensioneByte);
+  TOPROP(dimensionePagine);
+  TOPROP(pageSize);
+  TOPROP(dimensioneFile);
 }

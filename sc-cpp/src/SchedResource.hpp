@@ -12,8 +12,12 @@ class SchedResource {
   friend class SchedResourceLock;
 
 public:
+  SchedResource();
   SchedResource(const File &fileSlot);
   virtual ~SchedResource();
+
+  virtual void attachSlotFile(const File &fileSlot);
+  virtual void detachSlotFile();
 
   inline SlotFile *getSlotFile() { return slotFile; }
   virtual slotType *getSlot(int day);

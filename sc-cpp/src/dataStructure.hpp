@@ -6,6 +6,7 @@
 #define __DATA_STRUCTURE_HPP
 
 #include "File.hpp"
+#include "Properties.hpp"
 #include <sys/types.h>
 
 #define SLOT_UNAVAILABLE 0
@@ -54,6 +55,7 @@ void initSlotFile(int anno, int slotOra, int oraIniziale, int oraFinale,
 String toString(const SlotFile &sf, String separator = "\n");
 String dump(const SlotFile &sf, int dayStart = 0, int dayStop = 365,
             String separator = "\n");
+void toProperties(const SlotFile &sf, Properties &prop);
 
 #define SIZE_SLOT_FILE (sizeof(SlotFile) - sizeof(slotType))
 

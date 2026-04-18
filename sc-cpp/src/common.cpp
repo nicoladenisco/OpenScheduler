@@ -248,6 +248,16 @@ int splitComma(const String &input, IntVector &v) {
   return split(input, expr, v);
 }
 
+int split(const String &input, const String &expr, StringVector &v) {
+  boost::regex expr1(expr);
+  return split(input, expr1, v);
+}
+
+int split(const String &input, const String &expr, IntVector &v) {
+  boost::regex expr1(expr);
+  return split(input, expr1, v);
+}
+
 String itoa(int i) {
   char buffer[64];
   snprintf(buffer, sizeof(buffer), "%d", i);
