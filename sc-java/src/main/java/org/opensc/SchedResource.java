@@ -17,8 +17,8 @@
 package org.opensc;
 
 import java.io.File;
-import java.io.IOException;
 import java.lang.ref.Cleaner;
+import java.util.List;
 import java.util.Properties;
 
 /**
@@ -29,19 +29,21 @@ import java.util.Properties;
 public class SchedResource implements AutoCloseable
 {
   private long nativeAddress;
+  private String nativeError;
   private static final Cleaner cleaner = Cleaner.create();
   private Cleaner.Cleanable cleanable;
 
   /**
    * Apre una risorsa.
    * @param risorsa file da aprire
-   * @throws IOException
+   * @throws OscNativeException
    */
   public SchedResource(File risorsa)
-     throws IOException
+     throws OscNativeException
   {
     cleanable = cleaner.register(this, () -> closeNative());
-    openNative(risorsa.getAbsolutePath());
+    if(openNative(risorsa.getAbsolutePath()) != 0)
+      throw new OscNativeException(nativeError);
   }
 
   private SchedResource()
@@ -53,30 +55,92 @@ public class SchedResource implements AutoCloseable
    * creazione oggetto c++.
    * @param path
    */
-  private native void openNative(String path);
+  private native int openNative(String path);
 
   /**
    * distruzione oggetto c++.
    */
-  private native void closeNative();
-
-  /**
-   * distruzione oggetto c++.
-   */
-  private native void buildNative(String prop);
+  private native int closeNative();
 
   @Override
   public void close()
      throws Exception
   {
-    closeNative();
+    if(closeNative() != 0)
+      throw new OscNativeException(nativeError);
   }
 
+  private native int buildNative(String pipeProps);
+
+  /**
+   * Crea una nuova risorsa.
+   * @param properties parametri per la creazione
+   * @return la risorsa creata
+   * @throws OscNativeException
+   */
   public static SchedResource build(Properties properties)
+     throws OscNativeException
   {
     String prop = Utils.Properties2String(properties);
     SchedResource rv = new SchedResource();
-    rv.buildNative(prop);
+    if(rv.buildNative(prop) != 0)
+      throw new OscNativeException(rv.nativeError);
+    return rv;
+  }
+
+  private native int stampResourcesNative(String algo, String prop);
+
+  /**
+   * Imposta slots iniziali in una risorsa.
+   * @param algoName nome dell'algoritmo
+   * @param properties parametri operazione (dipende dall'algoritmo)
+   * @throws OscNativeException
+   */
+  public void stampResources(String algoName, Properties properties)
+     throws OscNativeException
+  {
+    String prop = Utils.Properties2String(properties);
+    stampResourcesNative(algoName, prop);
+  }
+
+  private native String getStamperAlgosNative();
+
+  /**
+   * Ritorna un elenco degli algoritmi stamper implementati.
+   * @return lista degli algoritmi
+   * @throws OscNativeException
+   */
+  public static List<String> getStamperAlgos()
+     throws OscNativeException
+  {
+    SchedResource rv = new SchedResource();
+    String pipeList = rv.getStamperAlgosNative();
+    if("ERROR".equals(pipeList))
+      throw new OscNativeException(rv.nativeError);
+    return Utils.String2List(pipeList);
+  }
+
+  private native String dumpHeaderNative(String pipeProps);
+
+  public String dumpHeader(Properties properties)
+     throws OscNativeException
+  {
+    String prop = Utils.Properties2String(properties);
+    String rv = dumpHeaderNative(prop);
+    if("ERROR".equals(rv))
+      throw new OscNativeException(nativeError);
+    return rv;
+  }
+
+  private native String dumpSlotsNative(String pipeProps);
+
+  public String dumpSlots(Properties properties)
+     throws OscNativeException
+  {
+    String prop = Utils.Properties2String(properties);
+    String rv = dumpSlotsNative(prop);
+    if("ERROR".equals(rv))
+      throw new OscNativeException(nativeError);
     return rv;
   }
 }

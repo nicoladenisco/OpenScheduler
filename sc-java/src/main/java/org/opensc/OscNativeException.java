@@ -16,29 +16,29 @@
  */
 package org.opensc;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Properties;
-import java.util.stream.Collectors;
-
 /**
- * Utilita.
+ * Eccezione sollevata da errori nel codice c++.
  *
  * @author Nicola De Nisco
  */
-public class Utils
+public class OscNativeException extends Exception
 {
-  public static String Properties2String(Properties properties)
+  public OscNativeException()
   {
-    StringBuilder rv = new StringBuilder(128);
-    properties.forEach((k, v) -> rv.append(k).append('=').append(v).append('|'));
-    return rv.toString();
   }
 
-  public static List<String> String2List(String pipeList)
+  public OscNativeException(String message)
   {
-    return Arrays.asList(pipeList.split("\\|")).stream()
-       .filter((s) -> !s.isEmpty())
-       .collect(Collectors.toList());
+    super(message);
+  }
+
+  public OscNativeException(String message, Throwable cause)
+  {
+    super(message, cause);
+  }
+
+  public OscNativeException(Throwable cause)
+  {
+    super(cause);
   }
 }

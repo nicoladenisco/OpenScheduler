@@ -16,7 +16,6 @@
  */
 package org.opensc;
 
-import java.io.File;
 import java.io.IOException;
 import java.lang.ref.Cleaner;
 import java.util.Properties;
@@ -29,41 +28,36 @@ import java.util.Properties;
 public class SchedMerger implements AutoCloseable
 {
   private long nativeAddress;
+  private String nativeError;
   private static final Cleaner cleaner = Cleaner.create();
   private Cleaner.Cleanable cleanable;
+  private long unique;
 
   /**
    * Apre una risorsa.
    * @param risorsa file da aprire
    * @throws IOException
    */
-  public SchedMerger(File risorsa)
-     throws IOException
+  public SchedMerger()
+     throws OscNativeException
   {
+    nativeAddress = 0;
+    unique = System.currentTimeMillis();
     cleanable = cleaner.register(this, () -> closeNative());
-    openNative(risorsa.getAbsolutePath());
-  }
-
-  private SchedMerger()
-  {
-    cleanable = cleaner.register(this, () -> closeNative());
+    if(openNative(unique) != 0)
+      throw new OscNativeException(nativeError);
   }
 
   /**
    * creazione oggetto c++.
    * @param path
    */
-  private native void openNative(String path);
+  private native int openNative(long unique);
 
   /**
    * distruzione oggetto c++.
    */
-  private native void closeNative();
-
-  /**
-   * distruzione oggetto c++.
-   */
-  private native void buildNative(String prop);
+  private native int closeNative();
 
   @Override
   public void close()
@@ -72,11 +66,15 @@ public class SchedMerger implements AutoCloseable
     closeNative();
   }
 
-  public static SchedMerger build(Properties properties)
+  private native String dumpSlotsNative(String pipeProps);
+
+  public String dumpSlots(Properties properties)
+     throws OscNativeException
   {
     String prop = Utils.Properties2String(properties);
-    SchedMerger rv = new SchedMerger();
-    rv.buildNative(prop);
+    String rv = dumpSlotsNative(prop);
+    if("ERROR".equals(rv))
+      throw new OscNativeException(nativeError);
     return rv;
   }
 }
