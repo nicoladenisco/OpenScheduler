@@ -41,6 +41,7 @@ public class SchedResource implements AutoCloseable
   public SchedResource(File risorsa)
      throws OscNativeException
   {
+    nativeAddress = 0;
     cleanable = cleaner.register(this, () -> closeNative());
     if(openNative(risorsa.getAbsolutePath()) != 0)
       throw new OscNativeException(nativeError);
@@ -48,6 +49,7 @@ public class SchedResource implements AutoCloseable
 
   private SchedResource()
   {
+    nativeAddress = 0;
     cleanable = cleaner.register(this, () -> closeNative());
   }
 

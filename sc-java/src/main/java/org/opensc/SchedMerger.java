@@ -18,6 +18,7 @@ package org.opensc;
 
 import java.io.IOException;
 import java.lang.ref.Cleaner;
+import java.util.List;
 import java.util.Properties;
 
 /**
@@ -76,5 +77,87 @@ public class SchedMerger implements AutoCloseable
     if("ERROR".equals(rv))
       throw new OscNativeException(nativeError);
     return rv;
+  }
+
+  private native String getMergerAlgosNative();
+
+  /**
+   * Ritorna un elenco degli algoritmi merger implementati.
+   * @return lista degli algoritmi
+   * @throws OscNativeException
+   */
+  public List<String> getMergerAlgos()
+     throws OscNativeException
+  {
+    String pipeList = getMergerAlgosNative();
+    if("ERROR".equals(pipeList))
+      throw new OscNativeException(nativeError);
+    return Utils.String2List(pipeList);
+  }
+
+  private native int mergeResourcesNative(String algoName, String pipeProps);
+
+  /**
+   * Aggiunge una risorsa al merger.
+   * @param algoName nome dell'algoritmo
+   * @param properties parametri operazione (dipende dall'algoritmo)
+   * @throws OscNativeException
+   */
+  public void mergeResources(String algoName, Properties properties)
+     throws OscNativeException
+  {
+    String prop = Utils.Properties2String(properties);
+    if(mergeResourcesNative(algoName, prop) != 0)
+      throw new OscNativeException(nativeError);
+  }
+
+  private native String getResourcesListNative();
+
+  /**
+   * Ritorna un elenco delle risorse presenti nel merger.
+   * @return lista codici risorsa
+   * @throws OscNativeException
+   */
+  public List<String> getResourcesList()
+     throws OscNativeException
+  {
+    String pipeList = getResourcesListNative();
+    if("ERROR".equals(pipeList))
+      throw new OscNativeException(nativeError);
+    return Utils.String2List(pipeList);
+  }
+
+  private native int clearResourcesNative();
+
+  /**
+   * Pulisce il merger rilasciando tutte le risorse.
+   * Gli slot occupati temporaneamente vengono rilasciati.
+   * @throws OscNativeException
+   */
+  public void clearResources()
+     throws OscNativeException
+  {
+    if(clearResourcesNative() != 0)
+      throw new OscNativeException(nativeError);
+  }
+
+  private native int reserveSlotNative(String codiceRisorsa, int giorno, int slotgiorno, long uniqueID, String pipeProps);
+
+  /**
+   * Riserva uno slot fra quelli liberi del merger.
+   * Effettua l'impegno definitivo dello slot per la risorsa indicata.
+   * @param codiceRisorsa codice della risorsa da impegnare (ALL=tutte le risorse nel merger)
+   * @param giorno indice del giorno (0 based)
+   * @param slotgiorno numero dello slot all'interno del giorno (0 based)
+   * @param uniqueID identificatore univoco per lo slot
+   * @param properties opzioni di prenotazione
+   * @throws OscNativeException
+   */
+  public void reserveSlot(String codiceRisorsa, int giorno, int slotgiorno, long uniqueID, Properties properties)
+     throws OscNativeException
+  {
+    String prop = Utils.Properties2String(properties);
+    if(reserveSlotNative(codiceRisorsa, giorno, slotgiorno, uniqueID, prop) != 0)
+      throw new OscNativeException(nativeError);
   }
 }
