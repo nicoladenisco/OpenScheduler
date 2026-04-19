@@ -16,16 +16,20 @@ public:
                            Properties &properties);
 
   virtual int checkRisorsa(String codice);
+  virtual void reserveSlot(SchedResourceMultiLock &multilock, int giorno,
+                           int slotgiorno, u_int64_t uniqueid,
+                           Properties &properties);
 
   virtual void clear();
   virtual void getAlgoNames(StringVector &names) const;
-
+  virtual void getResourcesCode(StringVector &names) const;
   virtual const SlotFile *getMerged() const { return merged; }
-
   virtual String toString();
 
 private:
   void __buildMergersTable();
+  virtual void reserveSlotWorker(SlotFile *sf, int giorno, int slotgiorno,
+                                 u_int64_t uniqueid, Properties &properties);
 
 protected:
   SchedResourcePtrVector resources;

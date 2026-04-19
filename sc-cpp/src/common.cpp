@@ -387,3 +387,7 @@ String toString(const AnyStringMap &properties,
 
   return rv;
 }
+
+bool contains(String toSearch, const StringVector &names) {
+  return !(find(names.begin(), names.end(), toSearch) == names.end());
+}

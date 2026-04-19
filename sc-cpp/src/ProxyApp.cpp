@@ -705,7 +705,7 @@ int ProxyApp::cmd_merge(const StringVector &args) {
     return 0;
   }
 
-  // carica risorsa e applica stamper
+  // carica risorsa
   SchedResourcePtr res = buildResource(genfile);
   if (!res->isInitialized()) {
     cout << "La risorsa non è stata inizializzata; usare uno stamper per "

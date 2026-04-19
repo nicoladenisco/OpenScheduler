@@ -31,6 +31,46 @@ JNIEXPORT jint JNICALL Java_org_opensc_SchedMerger_closeNative
 JNIEXPORT jstring JNICALL Java_org_opensc_SchedMerger_dumpSlotsNative
   (JNIEnv *, jobject, jstring);
 
+/*
+ * Class:     org_opensc_SchedMerger
+ * Method:    getMergerAlgosNative
+ * Signature: ()Ljava/lang/String;
+ */
+JNIEXPORT jstring JNICALL Java_org_opensc_SchedMerger_getMergerAlgosNative
+  (JNIEnv *, jobject);
+
+/*
+ * Class:     org_opensc_SchedMerger
+ * Method:    mergeResourcesNative
+ * Signature: (Ljava/lang/String;Ljava/lang/String;)I
+ */
+JNIEXPORT jint JNICALL Java_org_opensc_SchedMerger_mergeResourcesNative
+  (JNIEnv *, jobject, jstring, jstring);
+
+/*
+ * Class:     org_opensc_SchedMerger
+ * Method:    getResourcesListNative
+ * Signature: ()Ljava/lang/String;
+ */
+JNIEXPORT jstring JNICALL Java_org_opensc_SchedMerger_getResourcesListNative
+  (JNIEnv *, jobject);
+
+/*
+ * Class:     org_opensc_SchedMerger
+ * Method:    clearResourcesNative
+ * Signature: ()I
+ */
+JNIEXPORT jint JNICALL Java_org_opensc_SchedMerger_clearResourcesNative
+  (JNIEnv *, jobject);
+
+/*
+ * Class:     org_opensc_SchedMerger
+ * Method:    reserveSlotNative
+ * Signature: (Ljava/lang/String;IIJLjava/lang/String;)I
+ */
+JNIEXPORT jint JNICALL Java_org_opensc_SchedMerger_reserveSlotNative
+  (JNIEnv *, jobject, jstring, jint, jint, jlong, jstring);
+
 #ifdef __cplusplus
 }
 #endif

@@ -109,6 +109,15 @@ JNIEXPORT jint JNICALL Java_org_opensc_SchedResource_stampResourcesNative(
   const char *ptrAlgo = env->GetStringUTFChars(jalgo, NULL);
   const char *ptrMapPipe = env->GetStringUTFChars(jproperties, NULL);
   Properties prop(ptrMapPipe);
+  SchedStamper stamper;
+
+  // verifica per algoritmo esistente
+  StringVector names;
+  stamper.getAlgoNames(names);
+  if (!contains(ptrAlgo, names))
+    throw StructureException(
+        format("Algoritmo %s inesistente: deve essere uno di %s", ptrAlgo,
+               join(names, ",", "'").c_str()));
 
   // lock della risorsa
   long timeout = prop.get("lockDelayMillis", 3000);
@@ -117,7 +126,6 @@ JNIEXPORT jint JNICALL Java_org_opensc_SchedResource_stampResourcesNative(
     throw StructureException(
         "Non riesco a bloccare la risorsa; operazione abortita.");
 
-  SchedStamper stamper;
   stamper.stampResource(*res, ptrAlgo, prop);
   EPILOG(env, othis)
 }
@@ -165,6 +173,8 @@ JNIEXPORT jstring JNICALL Java_org_opensc_SchedResource_dumpSlotsNative(
   retVal = dump(*res->getSlotFile(), days.first, days.second);
   EPILOG_STR(env, othis)
 }
+
+////////////////////////////////////////////////////////////////////////////////////
 
 /*
  * Class:     org_opensc_SchedMerger
@@ -216,4 +226,114 @@ JNIEXPORT jstring JNICALL Java_org_opensc_SchedMerger_dumpSlotsNative(
 
   retVal = dump(*ptSlot, days.first, days.second);
   EPILOG_STR(env, othis)
+}
+
+/*
+ * Class:     org_opensc_SchedMerger
+ * Method:    getMergerAlgosNative
+ * Signature: ()Ljava/lang/String;
+ */
+JNIEXPORT jstring JNICALL
+Java_org_opensc_SchedMerger_getMergerAlgosNative(JNIEnv *env, jobject othis) {
+  PROLOG_STR(env, othis)
+  SchedMerger *merger = getHandle<SchedMerger>(env, othis);
+  StringVector names;
+  merger->getAlgoNames(names);
+  retVal = join(names, "|", "");
+  EPILOG_STR(env, othis)
+}
+
+/*
+ * Class:     org_opensc_SchedMerger
+ * Method:    mergeResourcesNative
+ * Signature: (Ljava/lang/String;Ljava/lang/String;)I
+ */
+JNIEXPORT jint JNICALL Java_org_opensc_SchedMerger_mergeResourcesNative(
+    JNIEnv *env, jobject othis, jstring jalgo, jstring jproperties) {
+  PROLOG(env, othis)
+  SchedMerger *merger = getHandle<SchedMerger>(env, othis);
+  const char *ptrAlgo = env->GetStringUTFChars(jalgo, NULL);
+  const char *ptrMapPipe = env->GetStringUTFChars(jproperties, NULL);
+  Properties prop(ptrMapPipe);
+
+  String codice = prop.getNotNull("codice");
+  String nomeFile = prop.getNotNull("nomefile");
+
+  // verifica per risorsa gia presente
+  if (merger->checkRisorsa(codice))
+    throw StructureException(format(
+        "La risorsa con codice %s è stata già inclusa.", codice.c_str()));
+
+  // verifica per algoritmo esistente
+  StringVector names;
+  merger->getAlgoNames(names);
+  if (!contains(ptrAlgo, names))
+    throw StructureException(
+        format("Algoritmo %s inesistente: deve essere uno di %s", ptrAlgo,
+               join(names, ",", "'").c_str()));
+
+  // verifica per file risorsa
+  File genfile(nomeFile);
+  if (!genfile.isFile())
+    throw StructureException(
+        format("File di risorsa %s inesistente.", nomeFile.c_str()));
+
+  // carica risorsa
+  SchedResourcePtr res = buildResource(genfile);
+  if (!res->isInitialized())
+    throw StructureException(
+        "La risorsa non è stata inizializzata; usare uno stamper per "
+        "poterla usare.");
+
+  // fonde risorsa
+  long timeout = prop.get("lockDelayMillis", 5000);
+  SchedResourceMultiLock multilock("merge", false, true, timeout);
+  merger->addResource(multilock, res, ptrAlgo, prop);
+  EPILOG(env, othis)
+}
+
+/*
+ * Class:     org_opensc_SchedMerger
+ * Method:    getResourcesListNative
+ * Signature: ()Ljava/lang/String;
+ */
+JNIEXPORT jstring JNICALL
+Java_org_opensc_SchedMerger_getResourcesListNative(JNIEnv *env, jobject othis) {
+  PROLOG_STR(env, othis)
+  SchedMerger *merger = getHandle<SchedMerger>(env, othis);
+  StringVector names;
+  merger->getResourcesCode(names);
+  retVal = join(names, "|", "");
+  EPILOG_STR(env, othis)
+}
+
+/*
+ * Class:     org_opensc_SchedMerger
+ * Method:    clearResourcesNative
+ * Signature: ()I
+ */
+JNIEXPORT jint JNICALL
+Java_org_opensc_SchedMerger_clearResourcesNative(JNIEnv *env, jobject othis) {
+  PROLOG(env, othis)
+  SchedMerger *merger = getHandle<SchedMerger>(env, othis);
+  merger->clear();
+  EPILOG(env, othis)
+}
+
+/*
+ * Class:     org_opensc_SchedMerger
+ * Method:    reserveSlotNative
+ * Signature: (Ljava/lang/String;IIJLjava/lang/String;)I
+ */
+JNIEXPORT jint JNICALL Java_org_opensc_SchedMerger_reserveSlotNative(
+    JNIEnv *env, jobject othis, jstring jcodiceRes, jint giorno,
+    jint slotgiorno, jlong uniqueid, jstring jproperties) {
+  PROLOG(env, othis)
+  SchedMerger *merger = getHandle<SchedMerger>(env, othis);
+  const char *ptrCodiceRes = env->GetStringUTFChars(jcodiceRes, NULL);
+  const char *ptrMapPipe = env->GetStringUTFChars(jproperties, NULL);
+  Properties prop(ptrMapPipe);
+
+  merger->reserveSlot(ptrCodiceRes, giorno, slotgiorno, uniqueid, prop);
+  EPILOG(env, othis)
 }
