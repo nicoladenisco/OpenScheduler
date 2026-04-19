@@ -5,6 +5,8 @@
 #include <string.h>
 #include <unistd.h>
 
+int debugOutput = 1;
+
 String format(String fmt, ...) {
   va_list va;
 

@@ -87,6 +87,8 @@ bool contains(String toSearch, const StringVector &names);
 #endif
 
 #define TS ("[" + formatDateTime(0) + "] ")
+#define DEBUGOUT ("DEBUG: [" + formatDateTime(0) + "] ")
+extern int debugOutput;
 
 class GenericException : public std::exception {
 public:

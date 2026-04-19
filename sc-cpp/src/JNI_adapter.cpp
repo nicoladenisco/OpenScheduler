@@ -11,7 +11,7 @@
 #define EPILOG(env, othis)                                                     \
   return 0;                                                                    \
   }                                                                            \
-  catch (std::exception ex) {                                                  \
+  catch (std::exception & ex) {                                                \
     setError(env, othis, ex.what());                                           \
   }                                                                            \
   catch (...) {                                                                \
@@ -25,7 +25,7 @@
 
 #define EPILOG_STR(env, othis)                                                 \
   }                                                                            \
-  catch (std::exception ex) {                                                  \
+  catch (std::exception & ex) {                                                \
     setError(env, othis, ex.what());                                           \
     retVal = "ERROR";                                                          \
   }                                                                            \
@@ -80,9 +80,9 @@ JNIEXPORT jint JNICALL Java_org_opensc_SchedResource_buildNative(
   String codice = prop.getNotNull("codice");
   String nomeFile = prop.getNotNull("nomefile");
   int anno = prop.get("anno", 2026);
-  int slotOra = prop.get("slotOra", 2026);
-  int oraIniziale = prop.get("oraIniziale", 2026);
-  int oraFinale = prop.get("oraFinale", 2026);
+  int slotOra = prop.get("slotOra", 4);
+  int oraIniziale = prop.get("oraIniziale", 8);
+  int oraFinale = prop.get("oraFinale", 19);
 
   SlotFile generato;
   File genfile(nomeFile);
@@ -110,6 +110,11 @@ JNIEXPORT jint JNICALL Java_org_opensc_SchedResource_stampResourcesNative(
   const char *ptrMapPipe = env->GetStringUTFChars(jproperties, NULL);
   Properties prop(ptrMapPipe);
   SchedStamper stamper;
+
+  if (debugOutput) {
+    cout << DEBUGOUT << "Algo: " << ptrAlgo << std::endl;
+    cout << DEBUGOUT << prop.toString() << std::endl;
+  }
 
   // verifica per algoritmo esistente
   StringVector names;
@@ -334,6 +339,6 @@ JNIEXPORT jint JNICALL Java_org_opensc_SchedMerger_reserveSlotNative(
   const char *ptrMapPipe = env->GetStringUTFChars(jproperties, NULL);
   Properties prop(ptrMapPipe);
 
-  merger->reserveSlot(ptrCodiceRes, giorno, slotgiorno, uniqueid, prop);
+  // merger->reserveSlot(ptrCodiceRes, giorno, slotgiorno, uniqueid, prop);
   EPILOG(env, othis)
 }

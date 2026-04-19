@@ -15,8 +15,8 @@ void SchedStamperAlgo::applyCommon(int dayStart, int dayStop,
   model.status = properties.get("model", SLOT_SCHEDULABLE);
   model.info = 0;
 
-  if (is_string(properties["hourmap"])) {
-    String hourmap = anyCastString(properties["hourmap"]);
+  String hourmap = properties.get("hourmap", "");
+  if (!hourmap.empty()) {
     IntVector iv;
     splitComma(hourmap, iv);
 

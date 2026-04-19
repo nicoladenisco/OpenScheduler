@@ -1,3 +1,5 @@
+/home/nicola/cvsgithub/OpenScheduler/sc-cpp/debug/oskcli --cmdfile test-command-file.txt
+
 cmake_minimum_required(VERSION 3.30)
 project(oskcli VERSION 0.1)
 

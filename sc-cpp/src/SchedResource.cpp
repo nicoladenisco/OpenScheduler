@@ -147,7 +147,8 @@ SchedResourceLock::SchedResourceLock(SchedResource &__tolock,
 SchedResourceLock::~SchedResourceLock() {
   if (reslock.isLocked()) {
     reslock.removeLockFile();
-    cout << "Unlock " << reslock.getSlotFile()->codiceRisorsa << std::endl;
+    if (verbose)
+      cout << "Unlock " << reslock.getSlotFile()->codiceRisorsa << std::endl;
   }
 }
 
