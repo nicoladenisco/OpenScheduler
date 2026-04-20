@@ -27,4 +27,24 @@ inline void setError(JNIEnv *env, jobject obj, String errMsg) {
   env->SetObjectField(obj, errorField, js);
 }
 
+class NativeException : public std::exception {
+public:
+  inline NativeException(const String &cause) {
+    this->cause = cause;
+    this->errorStore = errno;
+  }
+
+  inline NativeException(const String &cause, int errore) {
+    this->cause = cause;
+    this->errorStore = errore;
+  }
+
+  virtual ~NativeException() throw() {}
+
+  inline virtual const char *what() const throw() { return cause.c_str(); }
+
+  String cause;
+  int errorStore;
+};
+
 #endif

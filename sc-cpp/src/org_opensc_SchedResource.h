@@ -9,6 +9,14 @@ extern "C" {
 #endif
 /*
  * Class:     org_opensc_SchedResource
+ * Method:    setDebugMode
+ * Signature: (I)V
+ */
+JNIEXPORT void JNICALL Java_org_opensc_SchedResource_setDebugMode
+  (JNIEnv *, jclass, jint);
+
+/*
+ * Class:     org_opensc_SchedResource
  * Method:    openNative
  * Signature: (Ljava/lang/String;)I
  */
@@ -30,6 +38,14 @@ JNIEXPORT jint JNICALL Java_org_opensc_SchedResource_closeNative
  */
 JNIEXPORT jint JNICALL Java_org_opensc_SchedResource_buildNative
   (JNIEnv *, jobject, jstring);
+
+/*
+ * Class:     org_opensc_SchedResource
+ * Method:    clearAllSlotsNative
+ * Signature: (I)I
+ */
+JNIEXPORT jint JNICALL Java_org_opensc_SchedResource_clearAllSlotsNative
+  (JNIEnv *, jobject, jint);
 
 /*
  * Class:     org_opensc_SchedResource

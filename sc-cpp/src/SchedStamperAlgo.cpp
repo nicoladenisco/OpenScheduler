@@ -20,6 +20,10 @@ void SchedStamperAlgo::applyCommon(int dayStart, int dayStop,
     IntVector iv;
     splitComma(hourmap, iv);
 
+    if (debugOutput) {
+      cout << DEBUGOUT << "Apply hourmap " << hourmap << std::endl;
+    }
+
     // check per slot validi nella hourmap; devono essere 1 based
     for (auto ds : iv)
       if (ds <= 0 || ds > sfil->numSlotsGiorno)
@@ -64,7 +68,7 @@ void SchedStamperAlgo::applyCommon(IntVector days, SchedResource &resource,
     for (auto day : days) {
       slotType *daySlots = resource.getSlot(day - 1);
       for (auto ds : hours)
-        daySlots[ds] = model;
+        daySlots[ds - 1] = model;
     }
   } else {
     for (auto day : days) {

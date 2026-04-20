@@ -125,6 +125,14 @@ void SchedResource::initializeSlotFile() {
   }
 }
 
+void SchedResource::clearAllSlots(int stato) {
+  slotType *ptSlots = slotFile->arrySlot;
+  for (int i = 0; i < slotFile->numSlotsTotali; i++, ptSlots++) {
+    ptSlots->status = stato;
+    ptSlots->info = 0;
+  }
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 SchedResourceLock::SchedResourceLock(SchedResource &__tolock,

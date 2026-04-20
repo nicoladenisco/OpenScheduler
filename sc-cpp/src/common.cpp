@@ -5,7 +5,7 @@
 #include <string.h>
 #include <unistd.h>
 
-int debugOutput = 1;
+int debugOutput = 0;
 
 String format(String fmt, ...) {
   va_list va;

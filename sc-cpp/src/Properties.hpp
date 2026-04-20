@@ -58,7 +58,7 @@ public:
     return count;
   }
 
-  String toString(String separator = ",") const {
+  String toString(String separator = "|") const {
     String rv;
     rv.reserve(1024);
 

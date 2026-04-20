@@ -28,8 +28,8 @@ public:
 
 private:
   void __buildMergersTable();
-  virtual void reserveSlotWorker(SlotFile *sf, int giorno, int slotgiorno,
-                                 u_int64_t uniqueid, Properties &properties);
+  void reserveSlotWorker(SlotFile *sf, int giorno, int slotgiorno,
+                         u_int64_t uniqueid, Properties &properties);
 
 protected:
   SchedResourcePtrVector resources;

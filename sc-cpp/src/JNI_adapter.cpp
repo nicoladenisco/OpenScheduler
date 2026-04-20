@@ -37,6 +37,16 @@
 
 /*
  * Class:     org_opensc_SchedResource
+ * Method:    setDebugMode
+ * Signature: (I)V
+ */
+JNIEXPORT void JNICALL
+Java_org_opensc_SchedResource_setDebugMode(JNIEnv *, jclass, jint jdebugMode) {
+  debugOutput = jdebugMode;
+}
+
+/*
+ * Class:     org_opensc_SchedResource
  * Method:    openNative
  * Signature: (Ljava/lang/String;)V
  */
@@ -87,13 +97,26 @@ JNIEXPORT jint JNICALL Java_org_opensc_SchedResource_buildNative(
   SlotFile generato;
   File genfile(nomeFile);
   if (genfile.isFile())
-    throw GenericException("Il file indicato già esiste.");
+    throw NativeException("Il file indicato già esiste.");
 
   initSlotFile(anno, slotOra, oraIniziale, oraFinale, codice, generato,
                genfile);
 
   SchedResource *ptr = new SchedResource(genfile);
   setHandle<SchedResource>(env, othis, ptr);
+  EPILOG(env, othis)
+}
+
+/*
+ * Class:     org_opensc_SchedResource
+ * Method:    clearAllSlotsNative
+ * Signature: (I)I
+ */
+JNIEXPORT jint JNICALL Java_org_opensc_SchedResource_clearAllSlotsNative(
+    JNIEnv *env, jobject othis, jint stato) {
+  PROLOG(env, othis)
+  SchedResource *res = getHandle<SchedResource>(env, othis);
+  res->clearAllSlots(stato);
   EPILOG(env, othis)
 }
 
@@ -120,7 +143,7 @@ JNIEXPORT jint JNICALL Java_org_opensc_SchedResource_stampResourcesNative(
   StringVector names;
   stamper.getAlgoNames(names);
   if (!contains(ptrAlgo, names))
-    throw StructureException(
+    throw NativeException(
         format("Algoritmo %s inesistente: deve essere uno di %s", ptrAlgo,
                join(names, ",", "'").c_str()));
 
@@ -128,7 +151,7 @@ JNIEXPORT jint JNICALL Java_org_opensc_SchedResource_stampResourcesNative(
   long timeout = prop.get("lockDelayMillis", 3000);
   SchedResourceLock reslock(*res, "stamp", false, true, timeout);
   if (!reslock.isLocked())
-    throw StructureException(
+    throw NativeException(
         "Non riesco a bloccare la risorsa; operazione abortita.");
 
   stamper.stampResource(*res, ptrAlgo, prop);
@@ -227,7 +250,7 @@ JNIEXPORT jstring JNICALL Java_org_opensc_SchedMerger_dumpSlotsNative(
   const SlotFile *ptSlot = merger->getMerged();
 
   if (ptSlot == nullptr)
-    throw StructureException("Il merger è vuoto.");
+    throw NativeException("Il merger è vuoto.");
 
   retVal = dump(*ptSlot, days.first, days.second);
   EPILOG_STR(env, othis)
@@ -266,27 +289,27 @@ JNIEXPORT jint JNICALL Java_org_opensc_SchedMerger_mergeResourcesNative(
 
   // verifica per risorsa gia presente
   if (merger->checkRisorsa(codice))
-    throw StructureException(format(
+    throw NativeException(format(
         "La risorsa con codice %s è stata già inclusa.", codice.c_str()));
 
   // verifica per algoritmo esistente
   StringVector names;
   merger->getAlgoNames(names);
   if (!contains(ptrAlgo, names))
-    throw StructureException(
+    throw NativeException(
         format("Algoritmo %s inesistente: deve essere uno di %s", ptrAlgo,
                join(names, ",", "'").c_str()));
 
   // verifica per file risorsa
   File genfile(nomeFile);
   if (!genfile.isFile())
-    throw StructureException(
+    throw NativeException(
         format("File di risorsa %s inesistente.", nomeFile.c_str()));
 
   // carica risorsa
   SchedResourcePtr res = buildResource(genfile);
   if (!res->isInitialized())
-    throw StructureException(
+    throw NativeException(
         "La risorsa non è stata inizializzata; usare uno stamper per "
         "poterla usare.");
 

@@ -36,6 +36,7 @@ public:
   inline bool isLocked() const { return lockFile.isLocked(); }
 
   virtual void initializeSlotFile();
+  virtual void clearAllSlots(int stato);
 
   // Impediamo la copia della classe per evitare double-free della memoria
   SchedResource(const SchedResource &) = delete;
