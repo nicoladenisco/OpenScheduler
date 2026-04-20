@@ -34,6 +34,7 @@ public class ScJava
   {
     System.out.println("OpenScheduler Java Interface - ver 0.0.1");
     loadNativeLibrary();
+    SchedResource.setDebugMode(1);
 
     try
     {
@@ -85,30 +86,37 @@ public class ScJava
     System.out.println("TEST stampResources daily simple !!!");
     try(SchedResource instance = new SchedResource(fres))
     {
+      instance.clearAllSlots(SchedResource.SLOT_UNAVAILABLE);
       instance.stampResources("daily", properties);
-      properties.setProperty("daystart", "0");
-      properties.setProperty("daystop", "10");
-      System.out.println(instance.dumpSlots(properties));
+      Properties pdump = new Properties(properties);
+      pdump.setProperty("daystart", "0");
+      pdump.setProperty("daystop", "10");
+      System.out.println(instance.dumpSlots(pdump));
     }
 
     System.out.println("TEST stampResources daily hours !!!");
     properties.setProperty("hourmap", "9,10,11,12,13,14,15,16");
     try(SchedResource instance = new SchedResource(fres))
     {
+      instance.clearAllSlots(SchedResource.SLOT_UNAVAILABLE);
       instance.stampResources("daily", properties);
-      properties.setProperty("daystart", "0");
-      properties.setProperty("daystop", "10");
-      System.out.println(instance.dumpSlots(properties));
+      Properties pdump = new Properties(properties);
+      pdump.setProperty("daystart", "0");
+      pdump.setProperty("daystop", "10");
+      System.out.println(instance.dumpSlots(pdump));
     }
 
-    System.out.println("TEST stampResources daily hours !!!");
+    System.out.println("TEST stampResources free hours !!!");
     properties.setProperty("hourmap", "9,10,11,12,13,14,15,16");
+    properties.setProperty("daymap", "1, 3, 5, 7, 9");
     try(SchedResource instance = new SchedResource(fres))
     {
-      instance.stampResources("daily", properties);
-      properties.setProperty("daystart", "0");
-      properties.setProperty("daystop", "10");
-      System.out.println(instance.dumpSlots(properties));
+      instance.clearAllSlots(SchedResource.SLOT_UNAVAILABLE);
+      instance.stampResources("free", properties);
+      Properties pdump = new Properties(properties);
+      pdump.setProperty("daystart", "0");
+      pdump.setProperty("daystop", "10");
+      System.out.println(instance.dumpSlots(pdump));
     }
   }
 

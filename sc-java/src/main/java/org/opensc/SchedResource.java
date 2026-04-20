@@ -28,6 +28,11 @@ import java.util.Properties;
  */
 public class SchedResource implements AutoCloseable
 {
+  public static final int SLOT_UNAVAILABLE = 0;
+  public static final int SLOT_SCHEDULABLE = 1;
+  public static final int SLOT_LOOKED = 2;
+  public static final int SLOT_BOOKED = 3;
+
   private long nativeAddress;
   private String nativeError;
   private static final Cleaner cleaner = Cleaner.create();
@@ -52,6 +57,8 @@ public class SchedResource implements AutoCloseable
     nativeAddress = 0;
     cleanable = cleaner.register(this, () -> closeNative());
   }
+
+  public static native void setDebugMode(int debugMode);
 
   /**
    * creazione oggetto c++.
@@ -90,10 +97,20 @@ public class SchedResource implements AutoCloseable
     return rv;
   }
 
+  private native int clearAllSlotsNative(int stato);
+
+  public void clearAllSlots(int stato)
+     throws OscNativeException
+  {
+    if(clearAllSlotsNative(stato) != 0)
+      throw new OscNativeException(nativeError);
+  }
+
   private native int stampResourcesNative(String algo, String prop);
 
   /**
    * Imposta slots iniziali in una risorsa.
+   * ATTENZIONE: cancella gli slot oggetto dello stamper.
    * @param algoName nome dell'algoritmo
    * @param properties parametri operazione (dipende dall'algoritmo)
    * @throws OscNativeException

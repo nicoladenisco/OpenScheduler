@@ -16,7 +16,6 @@
  */
 package org.opensc;
 
-import java.io.IOException;
 import java.lang.ref.Cleaner;
 import java.util.List;
 import java.util.Properties;
@@ -34,11 +33,6 @@ public class SchedMerger implements AutoCloseable
   private Cleaner.Cleanable cleanable;
   private long unique;
 
-  /**
-   * Apre una risorsa.
-   * @param risorsa file da aprire
-   * @throws IOException
-   */
   public SchedMerger()
      throws OscNativeException
   {
