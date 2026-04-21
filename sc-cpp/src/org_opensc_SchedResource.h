@@ -7,6 +7,14 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+#undef org_opensc_SchedResource_SLOT_UNAVAILABLE
+#define org_opensc_SchedResource_SLOT_UNAVAILABLE 0L
+#undef org_opensc_SchedResource_SLOT_SCHEDULABLE
+#define org_opensc_SchedResource_SLOT_SCHEDULABLE 1L
+#undef org_opensc_SchedResource_SLOT_LOOKED
+#define org_opensc_SchedResource_SLOT_LOOKED 2L
+#undef org_opensc_SchedResource_SLOT_BOOKED
+#define org_opensc_SchedResource_SLOT_BOOKED 3L
 /*
  * Class:     org_opensc_SchedResource
  * Method:    setDebugMode

@@ -351,17 +351,18 @@ Java_org_opensc_SchedMerger_clearResourcesNative(JNIEnv *env, jobject othis) {
 /*
  * Class:     org_opensc_SchedMerger
  * Method:    reserveSlotNative
- * Signature: (Ljava/lang/String;IIJLjava/lang/String;)I
+ * Signature: (IIJLjava/lang/String;)I
  */
 JNIEXPORT jint JNICALL Java_org_opensc_SchedMerger_reserveSlotNative(
-    JNIEnv *env, jobject othis, jstring jcodiceRes, jint giorno,
-    jint slotgiorno, jlong uniqueid, jstring jproperties) {
+    JNIEnv *env, jobject othis, jint giorno, jint slotgiorno, jlong uniqueid,
+    jstring jproperties) {
   PROLOG(env, othis)
   SchedMerger *merger = getHandle<SchedMerger>(env, othis);
-  const char *ptrCodiceRes = env->GetStringUTFChars(jcodiceRes, NULL);
   const char *ptrMapPipe = env->GetStringUTFChars(jproperties, NULL);
   Properties prop(ptrMapPipe);
 
-  // merger->reserveSlot(ptrCodiceRes, giorno, slotgiorno, uniqueid, prop);
+  long timeout = prop.get("lockDelayMillis", 5000);
+  SchedResourceMultiLock multilock("merge", false, true, timeout);
+  merger->reserveSlot(multilock, giorno, slotgiorno, uniqueid, prop);
   EPILOG(env, othis)
 }
