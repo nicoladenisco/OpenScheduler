@@ -135,23 +135,22 @@ public class SchedMerger implements AutoCloseable
       throw new OscNativeException(nativeError);
   }
 
-  private native int reserveSlotNative(String codiceRisorsa, int giorno, int slotgiorno, long uniqueID, String pipeProps);
+  private native int reserveSlotNative(int giorno, int slotgiorno, long uniqueID, String pipeProps);
 
   /**
    * Riserva uno slot fra quelli liberi del merger.
    * Effettua l'impegno definitivo dello slot per la risorsa indicata.
-   * @param codiceRisorsa codice della risorsa da impegnare (ALL=tutte le risorse nel merger)
    * @param giorno indice del giorno (0 based)
    * @param slotgiorno numero dello slot all'interno del giorno (0 based)
    * @param uniqueID identificatore univoco per lo slot
    * @param properties opzioni di prenotazione
    * @throws OscNativeException
    */
-  public void reserveSlot(String codiceRisorsa, int giorno, int slotgiorno, long uniqueID, Properties properties)
+  public void reserveSlot(int giorno, int slotgiorno, long uniqueID, Properties properties)
      throws OscNativeException
   {
     String prop = Utils.Properties2String(properties);
-    if(reserveSlotNative(codiceRisorsa, giorno, slotgiorno, uniqueID, prop) != 0)
+    if(reserveSlotNative(giorno, slotgiorno, uniqueID, prop) != 0)
       throw new OscNativeException(nativeError);
   }
 }
