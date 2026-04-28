@@ -4,6 +4,7 @@
 #include "SchedResource.hpp"
 #include "SchedStamper.hpp"
 #include "common.hpp"
+#include "dataStructure.hpp"
 #include "org_opensc_SchedResource.h"
 
 #define PROLOG(env, othis) try {
@@ -202,6 +203,25 @@ JNIEXPORT jstring JNICALL Java_org_opensc_SchedResource_dumpSlotsNative(
   EPILOG_STR(env, othis)
 }
 
+/*
+ * Class:     org_opensc_SchedResource
+ * Method:    getInfoHeaderNative
+ * Signature: ()Ljava/lang/String;
+ */
+JNIEXPORT jstring JNICALL
+Java_org_opensc_SchedResource_getInfoHeaderNative(JNIEnv *env, jobject othis) {
+  PROLOG_STR(env, othis)
+  SchedResource *res = getHandle<SchedResource>(env, othis);
+  Properties prop;
+  res->populateHeaderProp(prop);
+  if (debugOutput) {
+    cout << DEBUGOUT << "getInfoHeaderNative()" << std::endl;
+    cout << DEBUGOUT << prop.toString() << std::endl;
+  }
+  retVal = prop.toString();
+  EPILOG_STR(env, othis)
+}
+
 ////////////////////////////////////////////////////////////////////////////////////
 
 /*
@@ -365,4 +385,19 @@ JNIEXPORT jint JNICALL Java_org_opensc_SchedMerger_reserveSlotNative(
   SchedResourceMultiLock multilock("merge", false, true, timeout);
   merger->reserveSlot(multilock, giorno, slotgiorno, uniqueid, prop);
   EPILOG(env, othis)
+}
+
+/*
+ * Class:     org_opensc_SchedMerger
+ * Method:    getInfoHeaderNative
+ * Signature: ()Ljava/lang/String;
+ */
+JNIEXPORT jstring JNICALL
+Java_org_opensc_SchedMerger_getInfoHeaderNative(JNIEnv *env, jobject othis) {
+  PROLOG_STR(env, othis)
+  SchedMerger *merger = getHandle<SchedMerger>(env, othis);
+  Properties prop;
+  merger->populateHeaderProp(prop);
+  retVal = prop.toString();
+  EPILOG_STR(env, othis)
 }

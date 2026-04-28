@@ -87,6 +87,14 @@ JNIEXPORT jstring JNICALL Java_org_opensc_SchedResource_dumpHeaderNative
 JNIEXPORT jstring JNICALL Java_org_opensc_SchedResource_dumpSlotsNative
   (JNIEnv *, jobject, jstring);
 
+/*
+ * Class:     org_opensc_SchedResource
+ * Method:    getInfoHeaderNative
+ * Signature: ()Ljava/lang/String;
+ */
+JNIEXPORT jstring JNICALL Java_org_opensc_SchedResource_getInfoHeaderNative
+  (JNIEnv *, jobject);
+
 #ifdef __cplusplus
 }
 #endif

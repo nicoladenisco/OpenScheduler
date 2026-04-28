@@ -133,6 +133,11 @@ void SchedResource::clearAllSlots(int stato) {
   }
 }
 
+void SchedResource::populateHeaderProp(Properties &properties) {
+  if (slotFile != nullptr)
+    toProperties(*slotFile, properties);
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 SchedResourceLock::SchedResourceLock(SchedResource &__tolock,

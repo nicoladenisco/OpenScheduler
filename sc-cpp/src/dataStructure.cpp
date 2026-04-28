@@ -146,7 +146,11 @@ String dump(const SlotFile &sf, int dayStart /*= 0*/, int dayStop /*= 365*/,
   return rv;
 }
 
-#define TOPROP(x) prop[#x] = #x
+static String strfield(const char *val) { return val; }
+
+static String strfield(int val) { return format("%d", val); }
+
+#define TOPROP(x) prop[#x] = strfield(sf.x)
 
 void toProperties(const SlotFile &sf, Properties &prop) {
   TOPROP(magic);

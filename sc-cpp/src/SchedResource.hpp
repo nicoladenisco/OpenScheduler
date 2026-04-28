@@ -37,6 +37,7 @@ public:
 
   virtual void initializeSlotFile();
   virtual void clearAllSlots(int stato);
+  virtual void populateHeaderProp(Properties &properties);
 
   // Impediamo la copia della classe per evitare double-free della memoria
   SchedResource(const SchedResource &) = delete;

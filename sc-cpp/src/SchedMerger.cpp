@@ -137,3 +137,8 @@ void SchedMerger::reserveSlotWorker(SlotFile *sf, int giorno, int slotgiorno,
   slot->status = SLOT_BOOKED;
   slot->info = uniqueid;
 }
+
+void SchedMerger::populateHeaderProp(Properties &properties) {
+  if (merged != nullptr)
+    toProperties(*merged, properties);
+}

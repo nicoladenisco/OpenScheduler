@@ -71,6 +71,14 @@ JNIEXPORT jint JNICALL Java_org_opensc_SchedMerger_clearResourcesNative
 JNIEXPORT jint JNICALL Java_org_opensc_SchedMerger_reserveSlotNative
   (JNIEnv *, jobject, jint, jint, jlong, jstring);
 
+/*
+ * Class:     org_opensc_SchedMerger
+ * Method:    getInfoHeaderNative
+ * Signature: ()Ljava/lang/String;
+ */
+JNIEXPORT jstring JNICALL Java_org_opensc_SchedMerger_getInfoHeaderNative
+  (JNIEnv *, jobject);
+
 #ifdef __cplusplus
 }
 #endif

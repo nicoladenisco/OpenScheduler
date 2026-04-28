@@ -25,6 +25,7 @@ public:
   virtual void getResourcesCode(StringVector &names) const;
   virtual const SlotFile *getMerged() const { return merged; }
   virtual String toString();
+  virtual void populateHeaderProp(Properties &properties);
 
 private:
   void __buildMergersTable();
