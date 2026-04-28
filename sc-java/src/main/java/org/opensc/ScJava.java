@@ -47,12 +47,26 @@ public class ScJava
         case "RESOURCE":
           resourceTest();
           break;
+
+        case "MERGE":
+        case "MERGER":
+          mergerTest();
+          break;
       }
     }
     catch(Exception e)
     {
       e.printStackTrace();
     }
+  }
+
+  protected static void loadNativeLibrary()
+  {
+    Path currentRelativePath = Paths.get("");
+    String s = currentRelativePath.toAbsolutePath().toString();
+    System.out.println("Current absolute path is: " + s);
+    String toload = s.replace("sc-java", "sc-cpp/debug/liboskcore.so");
+    System.load(toload);
   }
 
   private static void resourceTest()
@@ -77,6 +91,13 @@ public class ScJava
     {
       System.out.println(result.dumpHeader(properties));
       //System.out.println(result.dumpSlots(properties));
+    }
+
+    System.out.println("TEST getInfoHeader !!!");
+    try(SchedResource instance = new SchedResource(fres))
+    {
+      Properties prop = instance.getInfoHeader();
+      System.out.println("prop: " + prop + "\n");
     }
 
     System.out.println("TEST getStamperAlgos !!!");
@@ -120,12 +141,101 @@ public class ScJava
     }
   }
 
-  protected static void loadNativeLibrary()
+  private static void mergerTest()
+     throws Exception
   {
-    Path currentRelativePath = Paths.get("");
-    String s = currentRelativePath.toAbsolutePath().toString();
-    System.out.println("Current absolute path is: " + s);
-    String toload = s.replace("sc-java", "sc-cpp/debug/liboskcore.so");
-    System.load(toload);
+    System.out.println("TEST getMergerAlgos !!!");
+    List<String> result = SchedMerger.getMergerAlgos();
+    System.out.println("Algos: " + result + "\n");
+
+    buildMergerResultTest("R001");
+    buildMergerResultTest("R002");
+    buildMergerResultTest("R003");
+    buildMergerResultTest("R004");
+    buildMergerResultTest("R005");
+
+    try(SchedMerger merger = new SchedMerger())
+    {
+      Properties properties = new Properties();
+      merger.mergeResources("default", properties);
+      Properties pdump = new Properties(properties);
+      pdump.setProperty("daystart", "0");
+      pdump.setProperty("daystop", "10");
+      System.out.println(merger.dumpSlots(pdump));
+    }
+  }
+
+  protected static void buildMergerResultTest(String codice)
+     throws Exception
+  {
+    File fres = new File("/tmp/oskjava/" + codice + "_2026.slot");
+    Properties properties = new Properties();
+
+    fres.delete();
+    fres.getParentFile().mkdirs();
+
+    properties.setProperty("codice", codice);
+    properties.setProperty("nomefile", fres.getAbsolutePath());
+//    properties.setProperty("", "");
+//    properties.setProperty("", "");
+//    properties.setProperty("", "");
+//    properties.setProperty("", "");
+//    properties.setProperty("", "");
+
+    System.out.println("TEST build " + codice + " !!!");
+    try(SchedResource instance = SchedResource.build(properties))
+    {
+      System.out.println(instance.dumpHeader(properties));
+      //System.out.println(result.dumpSlots(properties));
+
+      switch(codice)
+      {
+        case "R001":
+          instance.stampResources("daily", properties);
+          break;
+        case "R002":
+          properties.setProperty("hourmap", "9,10,11,12,13,14,15,16");
+          instance.stampResources("daily", properties);
+          break;
+        case "R003":
+          properties.setProperty("hourmap", "13,14,15,16,17,18,19,20");
+          instance.stampResources("daily", properties);
+          break;
+        case "R004":
+          properties.setProperty("hourmap", "9,10,11,12,13,14,15,16");
+          properties.setProperty("daymap", giorniDispari());
+          instance.stampResources("free", properties);
+          break;
+        case "R005":
+          properties.setProperty("hourmap", "9,10,11,12,13,14,15,16");
+          properties.setProperty("daymap", giorniPari());
+          instance.stampResources("free", properties);
+          break;
+      }
+    }
+  }
+
+  private static String giorniDispari()
+  {
+    StringBuilder sb = new StringBuilder(512);
+    for(int i = 1; i <= 365; i += 2)
+    {
+      if(i != 1)
+        sb.append(",");
+      sb.append(i);
+    }
+    return sb.toString();
+  }
+
+  private static String giorniPari()
+  {
+    StringBuilder sb = new StringBuilder(512);
+    for(int i = 2; i <= 365; i += 2)
+    {
+      if(i != 2)
+        sb.append(",");
+      sb.append(i);
+    }
+    return sb.toString();
   }
 }

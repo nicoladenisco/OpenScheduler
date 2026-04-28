@@ -130,13 +130,15 @@ public class SchedResource implements AutoCloseable
    * @throws OscNativeException
    */
   public static List<String> getStamperAlgos()
-     throws OscNativeException
+     throws Exception
   {
-    SchedResource rv = new SchedResource();
-    String pipeList = rv.getStamperAlgosNative();
-    if("ERROR".equals(pipeList))
-      throw new OscNativeException(rv.nativeError);
-    return Utils.String2List(pipeList);
+    try(SchedResource rv = new SchedResource())
+    {
+      String pipeList = rv.getStamperAlgosNative();
+      if("ERROR".equals(pipeList))
+        throw new OscNativeException(rv.nativeError);
+      return Utils.String2List(pipeList);
+    }
   }
 
   private native String dumpHeaderNative(String pipeProps);
@@ -161,5 +163,17 @@ public class SchedResource implements AutoCloseable
     if("ERROR".equals(rv))
       throw new OscNativeException(nativeError);
     return rv;
+  }
+
+  private native String getInfoHeaderNative();
+
+  /**
+   * Recupera informazioni sull'header.
+   * @return informazioni header fusione
+   */
+  public Properties getInfoHeader()
+  {
+    String pipeMap = getInfoHeaderNative();
+    return Utils.String2Properties(pipeMap);
   }
 }

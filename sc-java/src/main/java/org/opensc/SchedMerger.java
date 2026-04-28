@@ -80,13 +80,16 @@ public class SchedMerger implements AutoCloseable
    * @return lista degli algoritmi
    * @throws OscNativeException
    */
-  public List<String> getMergerAlgos()
-     throws OscNativeException
+  public static List<String> getMergerAlgos()
+     throws Exception
   {
-    String pipeList = getMergerAlgosNative();
-    if("ERROR".equals(pipeList))
-      throw new OscNativeException(nativeError);
-    return Utils.String2List(pipeList);
+    try(SchedMerger rv = new SchedMerger())
+    {
+      String pipeList = rv.getMergerAlgosNative();
+      if("ERROR".equals(pipeList))
+        throw new OscNativeException(rv.nativeError);
+      return Utils.String2List(pipeList);
+    }
   }
 
   private native int mergeResourcesNative(String algoName, String pipeProps);
@@ -152,5 +155,17 @@ public class SchedMerger implements AutoCloseable
     String prop = Utils.Properties2String(properties);
     if(reserveSlotNative(giorno, slotgiorno, uniqueID, prop) != 0)
       throw new OscNativeException(nativeError);
+  }
+
+  private native String getInfoHeaderNative();
+
+  /**
+   * Recupera informazioni sull'header.
+   * @return informazioni header fusione
+   */
+  public Properties getInfoHeader()
+  {
+    String pipeMap = getInfoHeaderNative();
+    return Utils.String2Properties(pipeMap);
   }
 }

@@ -19,6 +19,7 @@ package org.opensc;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
+import java.util.StringTokenizer;
 import java.util.stream.Collectors;
 
 /**
@@ -33,6 +34,30 @@ public class Utils
     StringBuilder rv = new StringBuilder(128);
     properties.forEach((k, v) -> rv.append(k).append('=').append(v).append('|'));
     return rv.toString();
+  }
+
+  public static Properties String2Properties(String pipeMap, Properties rv)
+  {
+    StringTokenizer stok = new StringTokenizer(pipeMap, "|");
+    while(stok.hasMoreTokens())
+    {
+      String s = stok.nextToken();
+      if(s.isEmpty())
+        continue;
+      int pos = s.indexOf('=');
+      if(pos != -1)
+      {
+        String key = s.substring(0, pos);
+        String val = s.substring(pos + 1);
+        rv.put(key, val);
+      }
+    }
+    return rv;
+  }
+
+  public static Properties String2Properties(String pipeMap)
+  {
+    return String2Properties(pipeMap, new Properties());
   }
 
   public static List<String> String2List(String pipeList)
