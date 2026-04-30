@@ -154,15 +154,29 @@ public class ScJava
     buildMergerResultTest("R004");
     buildMergerResultTest("R005");
 
+    System.out.println("TEST merge !!!");
     try(SchedMerger merger = new SchedMerger())
     {
       Properties properties = new Properties();
-      merger.mergeResources("default", properties);
-      Properties pdump = new Properties(properties);
-      pdump.setProperty("daystart", "0");
-      pdump.setProperty("daystop", "10");
-      System.out.println(merger.dumpSlots(pdump));
+      mergeResource(merger, "R001", properties);
+      mergeResource(merger, "R002", properties);
+      mergeResource(merger, "R003", properties);
+      mergeResource(merger, "R004", properties);
+      mergeResource(merger, "R005", properties);
     }
+  }
+
+  protected static void mergeResource(final SchedMerger merger, String codice, Properties properties)
+     throws OscNativeException
+  {
+    System.out.println("Merge resource " + codice);
+    properties.setProperty("codice", codice);
+    properties.setProperty("nomefile", "/tmp/oskjava/" + codice + "_2026.slot");
+    merger.mergeResources("default", properties);
+    Properties pdump = new Properties(properties);
+    pdump.setProperty("daystart", "0");
+    pdump.setProperty("daystop", "10");
+    System.out.println(merger.dumpSlots(pdump));
   }
 
   protected static void buildMergerResultTest(String codice)
