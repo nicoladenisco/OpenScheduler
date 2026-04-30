@@ -82,6 +82,18 @@ IntPair parseDays(const StringVector &args, int index);
 String toString(const AnyStringMap &properties, const String &separator = ",");
 bool contains(String toSearch, const StringVector &names);
 
+template <typename T, typename... Args>
+bool isEquAny(const T &ptest, const Args &...args) {
+  // Il corpo della funzione è questa singola riga (Fold Expression C++ 17)
+  return ((ptest == args) || ...);
+}
+
+template <typename T, typename... Args>
+bool isEquAll(const T &ptest, const Args &...args) {
+  // Ritorna true solo se ptest è uguale a TUTTI gli argomenti
+  return ((ptest == args) && ...);
+}
+
 #ifndef linux
 #define strdupa(x) (strcpy((char *)alloca((strlen(x) + 1) * sizeof(char)), (x)))
 #endif

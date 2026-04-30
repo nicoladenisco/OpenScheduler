@@ -5,6 +5,7 @@
 #include "SchedStamper.hpp"
 #include "common.hpp"
 #include "dataStructure.hpp"
+#include "org_opensc_SchedMerger.h"
 #include "org_opensc_SchedResource.h"
 
 #define PROLOG(env, othis) try {

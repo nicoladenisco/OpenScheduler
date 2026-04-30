@@ -22,6 +22,20 @@ public:
     return it->second;
   }
 
+  bool getBool(const String &key, bool defVal) const {
+    auto it = find(key);
+    if (it == end())
+      return defVal;
+
+    if (isEquAny(it->second, "true", "1", "Y", "T"))
+      return true;
+
+    if (isEquAny(it->second, "false", "0", "N", "F"))
+      return false;
+
+    return defVal;
+  }
+
   inline int get(const String &key, int defVal) const {
     try {
       return boost::lexical_cast<int>(get(key, ""));

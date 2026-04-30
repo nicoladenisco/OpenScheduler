@@ -134,6 +134,14 @@ void SchedMerger::reserveSlotWorker(SlotFile *sf, int giorno, int slotgiorno,
 
   int offset = giorno * sf->numSlotsGiorno;
   slotType *slot = sf->arrySlot + offset + slotgiorno;
+
+  // se non impostato force=true verifica che lo slot sia libero
+  if (!properties.getBool("force", false)) {
+    if (!(slot->status == SLOT_LOOKED || slot->status == SLOT_SCHEDULABLE))
+      throw StructureException(
+          format("lo slot non è disponibile (stato %d)", (int)slot->status));
+  }
+
   slot->status = SLOT_BOOKED;
   slot->info = uniqueid;
 }
