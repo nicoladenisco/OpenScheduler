@@ -2,8 +2,12 @@
 #info( $data.getMessage() )
 #end
 
+<a href="$link.setPage('Calendario.vm')"> Calendario </a>
+
+
 <script>
 
+window.addEventListener('DOMContentLoaded', function () {
   const container = document.getElementById('calendar');
   const options = {
     defaultView: 'week',
@@ -33,9 +37,10 @@
     ],
   };
 
-  const calendar = new Calendar(container, options);
+  const calendar = new tui.Calendar(container, options);
+});
 
 </script>
 
-<div id="calendar" style="height: 600px;"></div>
+<div id="calendar" style="height: 600px; width: 1000px;"></div>
 

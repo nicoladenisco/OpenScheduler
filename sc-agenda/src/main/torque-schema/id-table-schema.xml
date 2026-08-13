@@ -27,11 +27,11 @@
 <!-- ========================================================================= -->
 
 <database xmlns="http://db.apache.org/torque/5.0/templates/database"
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://db.apache.org/torque/5.0/templates/database
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://db.apache.org/torque/5.0/templates/database
         http://db.apache.org/torque/torque-5.0/documentation/orm-reference/database-5-0-strict.xsd"
-  name="agenda"
-  defaultIdMethod="native">
+          name="agenda"
+          defaultIdMethod="native">
 
   <table name="ID_TABLE" idMethod="idbroker">
     <column name="ID_TABLE_ID" required="true" primaryKey="true" type="INTEGER" javaName="IdTableId"/>

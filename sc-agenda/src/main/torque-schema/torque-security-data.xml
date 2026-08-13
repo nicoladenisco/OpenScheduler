@@ -34,7 +34,7 @@
   <TurbineRole RoleId="1" Name="turbineadmin"/>
   <TurbineRole RoleId="2" Name="turbineuser"/>
 
- <!-- Turbine Groups -->
+  <!-- Turbine Groups -->
 
   <TurbineGroup GroupId="1" Name="global"/>
   <TurbineGroup GroupId="2" Name="Turbine"/>
