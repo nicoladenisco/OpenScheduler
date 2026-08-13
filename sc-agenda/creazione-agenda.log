@@ -33,11 +33,15 @@ ALTER TABLE
 ERROR:  table "id_table" does not exist
 CREATE TABLE
   eseguo file target/generated-sql/torque/postgresql/application-schema.sql
-ERROR:  relation "book" does not exist
-ERROR:  table "author" does not exist
-ERROR:  table "book" does not exist
+ERROR:  relation "risorse_link" does not exist
+ERROR:  relation "risorse_link" does not exist
+ERROR:  table "prestazioni" does not exist
+ERROR:  table "risorse" does not exist
+ERROR:  table "risorse_link" does not exist
 CREATE TABLE
 CREATE TABLE
+CREATE TABLE
+ALTER TABLE
 ALTER TABLE
   eseguo file target/generated-sql/torque/postgresql/torque-security-viste.sql
   eseguo file target/generated-sql/torque/postgresql/id-table-viste.sql

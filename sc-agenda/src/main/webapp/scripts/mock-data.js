@@ -140,7 +140,7 @@ function generateRandomEvent(calendar, renderStart, renderEnd) {
   generateTime(event, renderStart, renderEnd);
 
   if (event.category === 'milestone') {
-    event.color = '#000'
+    event.color = '#000';
     event.backgroundColor = 'transparent';
     event.borderColor = 'transparent';
     event.dragBackgroundColor = 'transparent';

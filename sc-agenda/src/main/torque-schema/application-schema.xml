@@ -24,6 +24,11 @@
     <column name="RISORSE_ID"    required="true" primaryKey="true" type="INTEGER" />
     <column name="CODICE"        required="true" size="64" type="VARCHAR" />
     <column name="DESCRIZIONE"   required="true" size="255" type="VARCHAR" />
+
+    <column name="color"               size="64" type="VARCHAR" />
+    <column name="borderColor"         size="64" type="VARCHAR" />
+    <column name="backgroundColor"     size="64" type="VARCHAR" />
+    <column name="dragBackgroundColor" size="64" type="VARCHAR" />
   </table>
 
   <table name="RISORSE_LINK" idMethod="none">
@@ -36,6 +41,21 @@
     <foreign-key foreignTable="PRESTAZIONI">
       <reference local="ID_PRESTAZIONI" foreign="PRESTAZIONI_ID"></reference>
     </foreign-key>
+  </table>
+
+  <table name="EVENTI" idMethod="idbroker">
+    <column name="id"                 required="true" primaryKey="true" type="INTEGER" />
+    <column name="calendarId"         required="true" primaryKey="true" type="INTEGER" />
+    <column name="title"              required="true" size="64" type="VARCHAR" />
+    <column name="body"               required="true" size="255" type="VARCHAR" />
+    <column name="isReadOnly"         type="BOOLCHAR" />
+    <column name="isPrivate"          type="BOOLCHAR" />
+    <column name="location"           size="64" type="VARCHAR" />
+    <column name="attendees"          size="64" type="VARCHAR" />
+    <column name="recurrenceRule"     size="64" type="VARCHAR" />
+    <column name="state"              size="64" type="VARCHAR" />
+    <column name="goingDuration"      size="64" type="VARCHAR" />
+    <column name="comingDuration"     size="64" type="VARCHAR" />
   </table>
 
 </database>
