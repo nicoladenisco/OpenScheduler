@@ -1,0 +1,57 @@
+<removed_001>
+  <plugin>
+    <groupId>org.codehaus.mojo</groupId>
+    <artifactId>sql-maven-plugin</artifactId>
+    <version>1.5</version>
+    <configuration>
+      <!-- Please update with your database configuration -->
+      <driver>com.mysql.cj.jdbc.Driver</driver>
+
+      <!--  The serverTimezone parameter is required for MySQL.
+      You may need to remove it for other databases -->
+      <url>${turbine_database_url}${turbine_database_name}?serverTimezone=UTC+1&amp;useSSL=false&amp;verifyServerCertificate=false&amp;requireSSL=false</url>
+      <username>db_user</username>
+      <password>db_password</password>
+      <onError>continue</onError>
+      <autocommit>true</autocommit>
+      <orderFile>descending</orderFile>
+    </configuration>
+    <!-- update with your database driver dependency -->
+    <!-- this is mysql specific -->
+    <executions>
+      <execution>
+        <id>create-db</id>
+        <phase>pre-integration-test</phase>
+        <goals>
+          <goal>execute</goal>
+        </goals>
+        <configuration>
+          <skip>sc-agenda</skip>
+          <orderFile>ascending</orderFile>
+          <fileset>
+            <basedir>${project.build.directory}/generated-sql/torque/mysql</basedir>
+            <!-- basedir>${basedir}/target/generated-sql</basedir -->
+            <includes>
+              <include>*.sql</include>
+            </includes>
+          </fileset>
+        </configuration>
+      </execution>
+      <execution>
+        <id>create-data</id>
+        <phase>pre-integration-test</phase>
+        <goals>
+          <goal>execute</goal>
+        </goals>
+        <configuration>
+          <skip>sc-agenda</skip>
+          <orderFile>ascending</orderFile>
+          <srcFiles>
+            <srcFile>${project.basedir}/src/main/data/sample-mysql-data/_application-data.sql</srcFile>
+            <srcFile>${project.basedir}/src/main/data/sample-mysql-data/_turbine-security-data.sql</srcFile>
+          </srcFiles>
+        </configuration>
+      </execution>
+    </executions>
+  </plugin>
+</removed_001>

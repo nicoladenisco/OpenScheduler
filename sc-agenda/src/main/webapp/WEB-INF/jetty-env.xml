@@ -1,0 +1,27 @@
+<Configure class="org.eclipse.jetty.webapp.WebAppContext">
+  <New id="Turbine" class="org.eclipse.jetty.plus.jndi.Resource">
+    <Arg></Arg> <!-- reference to WebAppContext requires jetty 9.x only  -->
+    <Arg>jdbc/agenda</Arg>
+    <Arg>
+        <New class="org.apache.commons.dbcp.BasicDataSource">
+           <Set name="driverClassName">com.mysql.cj.jdbc.Driver</Set>
+             <Set name="url">jdbc:mysql://localhost:3306/agenda</Set>
+            <Set name="username">db_user</Set>
+            <Set name="password">db_password</Set>
+            <Set name="connectionProperties">serverTimezone=UTC+1;useUnicode=true;characterEncoding=utf8;useSSL=false;allowPublicKeyRetrieval=true</Set>
+            <Set name="validationQuery">SELECT 1</Set>          
+        </New>
+    </Arg>
+  </New>
+  
+  <Set name="extraClasspath"></Set>
+  <Call name="setAttribute">
+      <Arg>org.eclipse.jetty.server.webapp.WebInfIncludeJarPattern</Arg>
+      <Arg>.*/spring-[^/]*\.jar$</Arg>
+  </Call>  
+  <Call name="setAttribute">
+      <Arg>org.eclipse.jetty.annotations.multiThreaded</Arg>
+      <Arg type="Boolean">false</Arg>
+    </Call>
+    
+</Configure>

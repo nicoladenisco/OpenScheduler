@@ -1,0 +1,4 @@
+--
+-- flower-view.sql
+-- viste per uso generale create subito dopo la creazione del db
+--

@@ -1,0 +1,70 @@
+# service configuration for our dockerized Java app
+version: '3.7'
+
+services:
+  app:
+    # use the Dockerfile next to this file
+    build:
+        context: ../
+        dockerfile: ./docker-resources/app/Dockerfile
+    # set MAVEN_OPTS=-Xdebug -Xrunjdwp:transport=dt_socket,address=9000,server=y,suspend=y, if remote debugging app is required
+    environment:
+      - MAVEN_OPTS=
+    
+    # this runs the app server in the container, be sure not to filter resources once again!
+    command: mvn -Pjetty
+    ports:
+      - "8081:8081"
+      # remote debugging port, uncomment if not needed
+      - "9000:9000"
+
+    # makes the app container aware of the DB container   
+    depends_on:
+      - db 
+    # 
+    #expose:
+    #  - "3000"
+
+    volumes:
+      # project root with pom.xml and src folder
+      - ../../:/myapp
+      # or use local app/settings.xml
+      - '${app_volume_local_repo}:/m2repo'
+
+  db:
+      # set the build context 
+    build: 
+      context: ../
+      dockerfile: ./docker-resources/db/Dockerfile
+      args:
+        DB_CONTEXT: ./docker-resources/db
+        MYSQL_ROOT: root
+        MYSQL_ROOT_PASSWORD: changeit
+        MYSQL_DATABASE: agenda
+        MYSQL_USER: db_user
+        MYSQL_PASSWORD: db_password
+        
+    # no environment needed here, only if using image in this file
+      
+    volumes:
+      - ./db/mysql/init:/docker-entrypoint-initdb.d
+      # may activate on *nix
+      #- ./db/mysql/conf:/etc/mysql/conf.d
+      - ./db/mysql/data:/data
+      #- ./db/mysql/log:/mysql/log
+      - db_data_agenda:/var/lib/mysql:rw  
+    restart: always     
+    ports:
+      # host: container
+      - "13306:3306"
+      
+    #networks:
+    #  - db
+    command: [mysqld, --default-authentication-plugin=mysql_native_password]
+
+ # this might work only for *nix, check with docker image inspect db
+volumes:
+  db_data_agenda:
+  
+#networks:
+#  db:

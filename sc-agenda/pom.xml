@@ -1,0 +1,558 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+  <parent>
+    <groupId>org.apache.turbine</groupId>
+    <artifactId>turbine-parent</artifactId>
+    <version>13</version>
+    <relativePath/>
+  </parent>
+
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>org.opensc.agenda</groupId>
+  <artifactId>sc-agenda</artifactId>
+  <version>0.1-SNAPSHOT</version>
+  <packaging>war</packaging>
+
+  <name>OpenScheduler agenda demo</name>
+
+  <build>
+    <resources>
+      <resource>
+        <directory>src/main/java</directory>
+        <includes>
+          <include>**/*.properties</include>
+          <include>**/*.xml</include>
+        </includes>
+      </resource>
+      <resource>
+        <directory>src/main/resources</directory>
+        <filtering>true</filtering>
+        <includes>
+          <include>**/*.properties</include>
+          <include>**/*.xml</include>
+        </includes>
+      </resource>
+      <!-- (target) resource and filtering is not used  at all ?
+      at least removed setting absolute path e.g. with ${project.build.directory},
+      which does thrown an exception with mvn eclipse:eclipse - path is then incorrectly relativized.
+      "Can't canonicalize system path"
+      -->
+      <resource>
+        <directory>src/main/docker-resources</directory>
+        <filtering>true</filtering>
+        <includes>
+          <include>**/*</include>
+        </includes>
+        <targetPath>../docker-resources</targetPath>
+      </resource>
+      <resource>
+        <directory>src/main/data</directory>
+        <includes>
+          <include>**/*</include>
+        </includes>
+        <targetPath>../data</targetPath>
+      </resource>
+      <resource>
+        <targetPath>../torque/schema</targetPath>
+        <filtering>true</filtering>
+        <directory>src/main/torque-schema</directory>
+        <includes>
+          <include>*.xml</include>
+        </includes>
+      </resource>
+    </resources>
+    <testSourceDirectory>src/test/java</testSourceDirectory>
+    <testResources>
+      <testResource>
+        <directory>src/test/resources</directory>
+        <includes>
+          <include>*.xml</include>
+          <include>*.properties</include>
+        </includes>
+      </testResource>
+    </testResources>
+    <plugins>
+      <!-- test will not fail in turbine 4.0.1 -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <!-- if this is not specified throws an error in Eclipse IDE -->
+        <version>${maven.surefire.version}</version>
+        <configuration>
+          <skipTests>${skipTests}</skipTests>
+          <!--default setting is forkCount=1/reuseForks=true -->
+          <reuseForks>false</reuseForks>
+          <forkCount>1</forkCount>
+        </configuration>
+      </plugin>
+      <plugin>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <release>${maven.compile.release}</release>
+          <source>${maven.compile.source}</source>
+          <target>${maven.compile.target}</target>
+          <encoding>${project.build.sourceEncoding}</encoding>
+          <!-- if this is not specified throws an error in Eclipse IDE -->
+          <executable>${java.home}/bin/javac</executable>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.torque</groupId>
+        <artifactId>torque-maven-plugin</artifactId>
+        <version>${torque.version}</version>
+        <configuration>
+          <!--runOnlyOnSourceChange>true</runOnlyOnSourceChange -->
+          <!-- schemaDir>${project.basedir}/src/main/torque-schema</schemaDir>
+          <useClasspath>true</useClasspath>
+          <targetDatabase>auto</targetDatabase -->
+        </configuration>
+        <executions>
+          <execution>
+            <id>torque-om</id>
+            <phase>generate-sources</phase>
+            <goals>
+              <goal>generate</goal>
+            </goals>
+            <configuration>
+              <packaging>classpath</packaging>
+              <configPackage>org.apache.torque.templates.om</configPackage>
+              <sourceDir>${project.basedir}/src/main/torque-schema</sourceDir>
+              <loglevel>error</loglevel>
+              <options>
+                <torque.database>auto</torque.database>
+                <torque.om.package>org.opensc.agenda.om</torque.om.package>
+                <torque.om.addGetByNameMethods>false</torque.om.addGetByNameMethods>
+                <torque.om.save.saveException>TorqueException</torque.om.save.saveException>
+                <torque.om.useIsForBooleanGetters>true</torque.om.useIsForBooleanGetters>
+                <torque.om.useManagers>false</torque.om.useManagers>
+                <torque.om.addTimeStamp>true</torque.om.addTimeStamp>
+                <torque.om.objectIsCaching>true</torque.om.objectIsCaching>
+                <torque.om.save.addSaveMethods>true</torque.om.save.addSaveMethods>
+                <torque.om.addGetByNameMethods>true</torque.om.addGetByNameMethods>
+                <torque.om.complexObjectModel>true</torque.om.complexObjectModel>
+              </options>
+              <!-- keeping defaultOutputDir in default ${project.build.directory}/generated-sources will havee the base classes there -->
+              <!-- we want the classes, which may be custumoized in the source directory. Ignore the warning about generated-java -->
+              <outputDirMap>
+                <modifiable>${project.build.sourceDirectory}</modifiable>
+              </outputDirMap>
+            </configuration>
+          </execution>
+
+          <execution>
+            <id>torque-sql-mysql</id><!-- auto -->
+            <phase>generate-sources</phase>
+            <goals>
+              <goal>generate</goal>
+            </goals>
+            <configuration>
+              <packaging>classpath</packaging>
+              <configPackage>org.apache.torque.templates.sql</configPackage>
+              <sourceDir>${project.basedir}/src/main/torque-schema</sourceDir>
+              <defaultOutputDir>${project.build.directory}/generated-sql/torque/mysql</defaultOutputDir>
+              <defaultOutputDirUsage>none</defaultOutputDirUsage>
+              <loglevel>error</loglevel>
+              <options>
+                <torque.database>mysql</torque.database>
+              </options>
+            </configuration>
+          </execution>
+
+          <execution>
+            <id>torque-sql-postgresql</id>
+            <phase>generate-sources</phase>
+            <goals>
+              <goal>generate</goal>
+            </goals>
+            <configuration>
+              <packaging>classpath</packaging>
+              <configPackage>org.apache.torque.templates.sql</configPackage>
+              <sourceDir>${project.basedir}/src/main/torque-schema</sourceDir>
+              <defaultOutputDir>${project.build.directory}/generated-sql/torque/postgresql</defaultOutputDir>
+              <defaultOutputDirUsage>none</defaultOutputDirUsage>
+              <loglevel>error</loglevel>
+              <options>
+                <torque.database>postgresql</torque.database>
+              </options>
+            </configuration>
+          </execution>
+
+        </executions>
+        <dependencies>
+          <dependency>
+            <groupId>org.apache.torque</groupId>
+            <artifactId>torque-templates</artifactId>
+            <version>${torque.version}</version>
+          </dependency>
+        </dependencies>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-war-plugin</artifactId>
+        <version>3.3.2</version>
+        <configuration>
+          <archive>
+            <manifestEntries>
+              <X-Compile-Source-JDK>${maven.compile.source}</X-Compile-Source-JDK>
+              <X-Compile-Target-JDK>${maven.compile.target}</X-Compile-Target-JDK>
+            </manifestEntries>
+          </archive>
+          <webResources>
+            <resource>
+              <directory>${project.basedir}/src/main/webapp/WEB-INF</directory>
+              <filtering>true</filtering>
+              <targetPath>WEB-INF</targetPath>
+              <includes>
+                <include>jetty-env.xml</include>
+              </includes>
+            </resource>
+            <resource>
+              <directory>${project.basedir}/src/main/webapp/META-INF</directory>
+              <filtering>true</filtering>
+              <targetPath>META-INF</targetPath>
+              <includes>
+                <include>context.xml</include>
+              </includes>
+            </resource>
+          </webResources>
+          <!-- containerConfigXML>WEB-INF/build/context.xml</containerConfigXML -->
+        </configuration>
+      </plugin>
+
+      <!-- Required to execute torque database build -->
+      <!-- rimosso: vedi removed-from-pom.xml / removed_001 -->
+
+      <!-- Jetty plugin mvn jetty:run will startup the application -->
+      <plugin>
+        <groupId>org.eclipse.jetty</groupId>
+        <artifactId>jetty-maven-plugin</artifactId>
+        <!-- latest version that is working -->
+        <version>9.4.51.v20230217</version>
+        <configuration>
+          <!-- https://www.eclipse.org/jetty/documentation/jetty-9/index.html#jars-scanned-for-annotations -->
+          <scanIntervalSeconds>10</scanIntervalSeconds>
+          <httpConnector>
+            <port>8081</port>
+            <idleTimeout>60000</idleTimeout>
+          </httpConnector>
+          <webApp>
+            <jettyEnvXml>${project.build.directory}/${project.build.finalName}/WEB-INF/jetty-env.xml</jettyEnvXml>
+          </webApp>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
+  <dependencies>
+    <!-- in fulcrum intake:
+   dependency>
+        <groupId>jakarta.xml.bind</groupId>
+        <artifactId>jakarta.xml.bind-api</artifactId>
+        <version>2.3.3</version>
+    </dependency-->
+    <!-- use profile with the database driver of your choice -->
+    <!-- Allow lookup of ${web:rootDir} in log4j2 file -->
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-web</artifactId>
+      <version>${log4j2.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-api</artifactId>
+      <version>${log4j2.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>javax.servlet</groupId>
+      <artifactId>javax.servlet-api</artifactId>
+      <version>3.1.0</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.turbine</groupId>
+      <artifactId>turbine</artifactId>
+      <version>${turbine.core}</version>
+      <!-- should be resolved after upgrade to torque-4.1 -->
+      <exclusions>
+        <!--exclusion>
+            <groupId>org.apache.fulcrum</groupId>
+          <artifactId>fulcrum-quartz</artifactId>
+        </exclusion-->
+        <exclusion>
+          <groupId>org.apache.commons</groupId>
+          <artifactId>commons-email</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>jakarta.xml.bind</groupId>
+          <artifactId>jakarta.xml.bind-api</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.fulcrum</groupId>
+      <artifactId>fulcrum-yaafi</artifactId>
+      <version>${fulcrum.yaafi}</version>
+    </dependency>
+    <!-- if using intake -->
+    <dependency>
+      <groupId>org.apache.fulcrum</groupId>
+      <artifactId>fulcrum-intake</artifactId>
+      <version>${fulcrum.intake}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>jakarta.xml.bind</groupId>
+          <artifactId>jakarta.xml.bind-api</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <!-- include some optional dependencies required in example componentConfiguration.xml -->
+
+    <dependency>
+      <groupId>org.apache.fulcrum</groupId>
+      <artifactId>fulcrum-cache</artifactId>
+      <version>${fulcrum.cache}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.fulcrum</groupId>
+      <artifactId>fulcrum-security-memory</artifactId>
+      <version>${fulcrum.security}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.fulcrum</groupId>
+      <artifactId>fulcrum-security-torque</artifactId>
+      <version>${fulcrum.security}</version>
+      <exclusions>
+        <exclusion><!-- will we mapped in jcl-over-slf4j -->
+          <groupId>commons-logging</groupId>
+          <artifactId>commons-logging</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.fulcrum</groupId>
+      <artifactId>fulcrum-security-api</artifactId>
+      <version>${fulcrum.security}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.fulcrum</groupId>
+      <artifactId>fulcrum-json-jackson2</artifactId>
+      <version>${fulcrum.json}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.datatype</groupId>
+      <artifactId>jackson-datatype-json-org</artifactId>
+      <!-- version>${jackson.version}</version-->
+      <!--  https://github.com/FasterXML/jackson/wiki/Jackson-Release-2.11.3 -->
+      <version>2.11.3</version>
+    </dependency>
+    <!-- if activating useJsonPath include jayway dependency  -->
+    <!-- dependency>
+        <groupId>com.jayway.jsonpath</groupId>
+        <artifactId>json-path</artifactId>
+        <version>2.4.0</version>
+        <exclusions>
+          <exclusion>
+            <groupId>net.minidev</groupId>
+            <artifactId>json-smart</artifactId>
+          </exclusion>
+        </exclusions>
+    </dependency-->
+
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.13.2</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.fulcrum</groupId>
+      <artifactId>fulcrum-testcontainer</artifactId>
+      <version>${fulcrum.testcontainer}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>jakarta.xml.bind</groupId>
+      <artifactId>jakarta.xml.bind-api</artifactId>
+      <version>4.0.1</version>
+    </dependency>
+  </dependencies>
+
+  <properties>
+    <maven.compile.release>11</maven.compile.release>
+    <maven.compile.source>11</maven.compile.source>
+    <maven.compile.target>11</maven.compile.target>
+    <maven.surefire.version>3.2.5</maven.surefire.version>
+    <project.build.sourceEncoding>utf-8</project.build.sourceEncoding>
+    <log4j2.version>2.20.0</log4j2.version>
+    <postgresql.version>42.7.4</postgresql.version>
+    <mysql.version>8.0.33</mysql.version>
+    <mariadb.version>3.2.0</mariadb.version><!-- v3 requries java 11 and adapter name mariab instead of mysql -->
+    <driverClassName>com.mysql.cj.jdbc.Driver</driverClassName>
+    <fulcrum.intake>3.0.0</fulcrum.intake>
+    <fulcrum.parser>3.0.0</fulcrum.parser>
+    <fulcrum.security>3.0.0</fulcrum.security>
+    <fulcrum.yaafi>2.0.0</fulcrum.yaafi>
+    <fulcrum.json>2.0.1</fulcrum.json>
+    <fulcrum.cache>2.0.0</fulcrum.cache>
+    <fulcrum.testcontainer>2.0.0</fulcrum.testcontainer>
+    <torque.version>5.1</torque.version>
+    <turbine.core>6.0</turbine.core>
+    <skipTests>true</skipTests>
+    <docker>false</docker>
+    <turbine_database_url>jdbc:mysql://localhost:3306/</turbine_database_url>
+    <turbine_database_name>agenda</turbine_database_name>
+    <app_volume_local_repo>NOT_USED</app_volume_local_repo>
+  </properties>
+
+  <profiles>
+    <profile>
+      <id>mariadb</id>
+      <properties>
+        <driverClassName>org.mariadb.jdbc.Driver</driverClassName>
+        <turbine_database_url>jdbc:mariadb://localhost:3306/</turbine_database_url>
+      </properties>
+      <dependencies>
+        <dependency>
+          <groupId>org.mariadb.jdbc</groupId>
+          <artifactId>mariadb-java-client</artifactId>
+          <version>${mariadb.version}</version>
+        </dependency>
+      </dependencies>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.torque</groupId>
+            <artifactId>torque-maven-plugin</artifactId>
+          </plugin>
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>sql-maven-plugin</artifactId>
+            <dependencies>
+              <dependency>
+                <groupId>org.mariadb.jdbc</groupId>
+                <artifactId>mariadb-java-client</artifactId>
+                <version>${mariadb.version}</version>
+              </dependency>
+            </dependencies>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>mysql</id>
+      <!--activation>
+        <activeByDefault>true</activeByDefault>
+      </activation-->
+      <properties>
+        <driverClassName>com.mysql.cj.jdbc.Driver</driverClassName>
+        <turbine_database_url>jdbc:mysql://localhost:3306/</turbine_database_url>
+      </properties>
+      <dependencies>
+        <dependency>
+          <groupId>com.mysql</groupId>
+          <artifactId>mysql-connector-j</artifactId>
+          <version>${mysql.version}</version>
+          <scope>runtime</scope>
+        </dependency>
+      </dependencies>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.torque</groupId>
+            <artifactId>torque-maven-plugin</artifactId>
+          </plugin>
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>sql-maven-plugin</artifactId>
+            <dependencies>
+              <dependency>
+                <groupId>com.mysql</groupId>
+                <artifactId>mysql-connector-j</artifactId>
+                <version>${mysql.version}</version>
+              </dependency>
+            </dependencies>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>postgresql</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
+      <properties>
+        <driverClassName>org.postgresql.Driver</driverClassName>
+        <turbine_database_url>jdbc:postgresql://localhost:5432/</turbine_database_url>
+      </properties>
+      <dependencies>
+        <dependency>
+          <groupId>org.postgresql</groupId>
+          <artifactId>postgresql</artifactId>
+          <version>${postgresql.version}</version>
+          <scope>runtime</scope>
+        </dependency>
+      </dependencies>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.torque</groupId>
+            <artifactId>torque-maven-plugin</artifactId>
+          </plugin>
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>sql-maven-plugin</artifactId>
+            <dependencies>
+              <dependency>
+                <groupId>org.postgresql</groupId>
+                <artifactId>postgresql</artifactId>
+                <version>${postgresql.version}</version>
+              </dependency>
+            </dependencies>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
+    <profile>
+      <id>docker</id>
+      <activation>
+        <activeByDefault>sc-agenda</activeByDefault>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>sql-maven-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>create-db</id>
+                <configuration>
+                  <skip>true</skip>
+                </configuration>
+              </execution>
+              <execution>
+                <id>create-data</id>
+                <configuration>
+                  <skip>true</skip>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+      <properties>
+        <!-- hard code docker compose service id and port by default -->
+        <turbine_database_url>jdbc:mysql://db:3306/</turbine_database_url>
+        <!-- read from ${settings.localRepository} to provide e.g. local snapshot builds -->
+        <app_volume_local_repo>${settings.localRepository}</app_volume_local_repo>
+        <docker>true</docker>
+      </properties>
+    </profile>
+  </profiles>
+
+</project>

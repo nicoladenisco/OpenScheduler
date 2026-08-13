@@ -1,0 +1,10 @@
+<?xml version='1.0' encoding='utf-8'?>
+<Context>
+    <WatchedResource>WEB-INF/web.xml</WatchedResource>
+    <WatchedResource>${catalina.base}/conf/web.xml</WatchedResource>
+    <Resource name="jdbc/agenda" global="jdbc/agenda" auth="Container" type="javax.sql.DataSource" 
+        driverClassName="com.mysql.cj.jdbc.Driver" 
+        url="jdbc:mysql://localhost:3306/agenda?serverTimezone=UTC+1"
+        username="db_user" password="db_password" 
+        maxTotal="100" maxIdle="20" minIdle="5" maxWaitMillis="10000"/>
+</Context>

@@ -1,0 +1,75 @@
+  eseguo file target/generated-sql/torque/postgresql/torque-security-schema.sql
+ERROR:  relation "turbine_role_permission" does not exist
+ERROR:  relation "turbine_role_permission" does not exist
+ERROR:  relation "turbine_user_group_role" does not exist
+ERROR:  relation "turbine_user_group_role" does not exist
+ERROR:  relation "turbine_user_group_role" does not exist
+ERROR:  table "turbine_permission" does not exist
+ERROR:  sequence "turbine_permission_seq" does not exist
+ERROR:  table "turbine_role" does not exist
+ERROR:  sequence "turbine_role_seq" does not exist
+ERROR:  table "turbine_group" does not exist
+ERROR:  sequence "turbine_group_seq" does not exist
+ERROR:  table "turbine_role_permission" does not exist
+ERROR:  table "turbine_user" does not exist
+ERROR:  sequence "turbine_user_seq" does not exist
+ERROR:  table "turbine_user_group_role" does not exist
+CREATE TABLE
+CREATE SEQUENCE
+CREATE TABLE
+CREATE SEQUENCE
+CREATE TABLE
+CREATE SEQUENCE
+CREATE TABLE
+CREATE TABLE
+CREATE SEQUENCE
+CREATE TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+  eseguo file target/generated-sql/torque/postgresql/id-table-schema.sql
+ERROR:  table "id_table" does not exist
+CREATE TABLE
+  eseguo file target/generated-sql/torque/postgresql/application-schema.sql
+ERROR:  relation "book" does not exist
+ERROR:  table "author" does not exist
+ERROR:  table "book" does not exist
+CREATE TABLE
+CREATE TABLE
+ALTER TABLE
+  eseguo file target/generated-sql/torque/postgresql/torque-security-viste.sql
+  eseguo file target/generated-sql/torque/postgresql/id-table-viste.sql
+  eseguo file target/generated-sql/torque/postgresql/application-viste.sql
+  eseguo file docs/sample-postgresql-data/agenda-extra.sql
+  eseguo file docs/sample-postgresql-data/agenda-view.sql
+  eseguo file docs/sample-postgresql-data/_turbine-security-data.sql
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
