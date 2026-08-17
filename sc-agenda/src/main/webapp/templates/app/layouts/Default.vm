@@ -10,25 +10,25 @@
     <title>OpenScheduler Agenda Demo</title>
     <link
       rel="stylesheet"
-      href="https://uicdn.toast.com/tui.time-picker/latest/tui-time-picker.min.css"
+      href="https://uicdn.toast.com/tui.time-picker/latest/tui-time-picker.css"
       />
     <link
       rel="stylesheet"
-      href="https://uicdn.toast.com/tui.date-picker/latest/tui-date-picker.min.css"
+      href="https://uicdn.toast.com/tui.date-picker/latest/tui-date-picker.css"
       />
-
-    <link rel="stylesheet" href="https://uicdn.toast.com/calendar/latest/toastui-calendar.min.css" />
-    <script src="https://uicdn.toast.com/calendar/latest/toastui-calendar.min.js"></script>
-    <script src="https://uicdn.toast.com/calendar/latest/toastui-calendar.ie11.min.js"></script>
-
-    <link rel="stylesheet" href="$content.getURI('styles/reset.css')" />
-    <link rel="stylesheet" href="$content.getURI('styles/app.css')" />
-    <link rel="stylesheet" href="$content.getURI('styles/icons.css')" />
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.3/moment.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/chance/1.1.8/chance.min.js"></script>
     <script src="https://uicdn.toast.com/tui.time-picker/latest/tui-time-picker.min.js"></script>
     <script src="https://uicdn.toast.com/tui.date-picker/latest/tui-date-picker.min.js"></script>    
+    
+    <link rel="stylesheet" href="https://uicdn.toast.com/calendar/latest/toastui-calendar.css" />
+    <script src="https://uicdn.toast.com/calendar/latest/toastui-calendar.js"></script>
+    <script src="https://uicdn.toast.com/calendar/latest/toastui-calendar.ie11.js"></script>
+
+    <link rel="stylesheet" href="$content.getURI('styles/reset.css')" />
+    <link rel="stylesheet" href="$content.getURI('styles/app.css')" />
+    <link rel="stylesheet" href="$content.getURI('styles/icons.css')" />
   </head>
   <body>
     <div class="app-container code-html">

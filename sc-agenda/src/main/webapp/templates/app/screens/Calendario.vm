@@ -10,6 +10,7 @@
       <label class="checkbox checkbox-all" for="all">View all</label>
     </div>
     <hr>
+#if($randomDemo)
     <div class="sidebar-item">
       <input type="checkbox" id="1" value="1" checked="">
       <label class="checkbox checkbox-calendar checkbox-1" for="1">My Calendar</label>
@@ -30,6 +31,16 @@
       <input type="checkbox" id="5" value="5" checked="">
       <label class="checkbox checkbox-calendar checkbox-5" for="5">Travel</label>
     </div>
+#else
+#set($count = 0)
+#foreach($c in $calendari)
+#set($count = $count + 1)
+    <div class="sidebar-item">
+      <input type="checkbox" id="$count" value="$count" checked="">
+      <label class="checkbox checkbox-calendar checkbox-$count" for="$count">$c.descrizione</label>
+    </div>
+#end
+#end
     <hr>
     <div class="app-footer">© NHN Cloud Corp.</div>
   </aside>

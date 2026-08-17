@@ -2,43 +2,43 @@
 #info( $data.getMessage() )
 #end
 
-<a href="$link.setPage('Calendario.vm')"> Calendario </a>
+<a href="$link.setPage('Calendario.vm')"> Calendario completo </a>
 
 
 <script>
 
-window.addEventListener('DOMContentLoaded', function () {
-  const container = document.getElementById('calendar');
-  const options = {
-    defaultView: 'week',
-    timezone: {
-      zones: [
+  window.addEventListener('DOMContentLoaded', function () {
+    const container = document.getElementById('calendar');
+    const options = {
+      defaultView: 'week',
+      timezone: {
+        zones: [
+          {
+            timezoneName: 'Asia/Seoul',
+            displayLabel: 'Seoul',
+          },
+          {
+            timezoneName: 'Europe/London',
+            displayLabel: 'London',
+          },
+        ],
+      },
+      calendars: [
         {
-          timezoneName: 'Asia/Seoul',
-          displayLabel: 'Seoul',
+          id: 'cal1',
+          name: 'Personal',
+          backgroundColor: '#03bd9e',
         },
         {
-          timezoneName: 'Europe/London',
-          displayLabel: 'London',
+          id: 'cal2',
+          name: 'Work',
+          backgroundColor: '#00a9ff',
         },
       ],
-    },
-    calendars: [
-      {
-        id: 'cal1',
-        name: 'Personal',
-        backgroundColor: '#03bd9e',
-      },
-      {
-        id: 'cal2',
-        name: 'Work',
-        backgroundColor: '#00a9ff',
-      },
-    ],
-  };
+    };
 
-  const calendar = new tui.Calendar(container, options);
-});
+    const calendar = new tui.Calendar(container, options);
+  });
 
 </script>
 

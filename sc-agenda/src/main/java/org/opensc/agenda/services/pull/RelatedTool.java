@@ -11,6 +11,7 @@ import org.apache.fulcrum.security.entity.Role;
 import org.apache.fulcrum.security.model.turbine.TurbineAccessControlList;
 import org.apache.fulcrum.security.util.RoleSet;
 import org.apache.torque.criteria.Criteria;
+import org.apache.torque.criteria.SqlEnum;
 import org.apache.torque.om.ColumnAccessByName;
 import org.apache.turbine.om.security.User;
 import org.apache.turbine.services.TurbineServices;
@@ -146,8 +147,11 @@ public class RelatedTool implements RunDataApplicationTool
          "", ""
       );
 
-      List<Risorse> lsRes = RisorsePeer.doSelect(new Criteria());
-      JSONArray rv = new JSONArray(lsRes.size());
+      Criteria c = new Criteria();
+      c.where(RisorsePeer.RISORSE_ID, 0, SqlEnum.GREATER_THAN);
+      c.addAscendingOrderByColumn(RisorsePeer.RISORSE_ID);
+      List<Risorse> lsRes = RisorsePeer.doSelect(c);
+      JSONArray rv = new JSONArray();
 
       for(Risorse r : lsRes)
       {
@@ -187,8 +191,11 @@ public class RelatedTool implements RunDataApplicationTool
          "", ""
       );
 
-      List<Eventi> lsRes = EventiPeer.doSelect(new Criteria());
-      JSONArray rv = new JSONArray(lsRes.size());
+      Criteria c = new Criteria();
+      c.where(EventiPeer.EVENTI_ID, 0, SqlEnum.GREATER_THAN);
+      c.addAscendingOrderByColumn(EventiPeer.EVENTI_ID);
+      List<Eventi> lsRes = EventiPeer.doSelect(c);
+      JSONArray rv = new JSONArray();
 
       for(Eventi r : lsRes)
       {
@@ -208,8 +215,8 @@ public class RelatedTool implements RunDataApplicationTool
   {
     for(Map.Entry<String, String> entry : obj2json.entrySet())
     {
-      String objName = entry.getKey();
-      String jsonName = entry.getValue();
+      String jsonName = entry.getKey();
+      String objName = entry.getValue();
 
       if(!objName.isEmpty())
       {
