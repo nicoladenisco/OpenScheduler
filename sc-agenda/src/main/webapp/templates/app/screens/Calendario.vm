@@ -1,4 +1,3 @@
-
 <header class="header">
   <a href="https://github.com/nhn/tui.calendar">
     <img alt="TOAST UI Calendar Brand Image" src="$ui.image('img-bi.png')">
@@ -74,4 +73,21 @@
   </section>
 </article>
 
+#if($randomDemo)
+<script src="$content.getURI('scripts/mock-data.js')"></script>
+#else
+<script>
 
+  var MOCK_CALENDARS = $related.getRisorseJson();
+  var EVENT_CATEGORIES = ['milestone', 'task'];
+  var EVENT_ARRAY = $related.getEventiJson();
+
+  function generateRandomEvents(viewName, renderStart, renderEnd) {
+    return EVENT_ARRAY;
+  }
+
+</script>
+#end 
+
+<script src="$content.getURI('scripts/utils.js')"></script>
+<script src="$content.getURI('scripts/app.js')"></script>

@@ -2,6 +2,7 @@ package org.opensc.agenda.services.pull;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -10,11 +11,17 @@ import org.apache.fulcrum.security.entity.Role;
 import org.apache.fulcrum.security.model.turbine.TurbineAccessControlList;
 import org.apache.fulcrum.security.util.RoleSet;
 import org.apache.torque.criteria.Criteria;
+import org.apache.torque.om.ColumnAccessByName;
 import org.apache.turbine.om.security.User;
 import org.apache.turbine.services.TurbineServices;
 import org.apache.turbine.services.pull.RunDataApplicationTool;
 import org.apache.turbine.services.security.SecurityService;
 import org.apache.turbine.util.RunData;
+import org.commonlib5.utils.ArrayOper;
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.opensc.agenda.om.Eventi;
+import org.opensc.agenda.om.EventiPeer;
 import org.opensc.agenda.om.Risorse;
 import org.opensc.agenda.om.RisorsePeer;
 
@@ -125,20 +132,26 @@ public class RelatedTool implements RunDataApplicationTool
     return result;
   }
 
-  public String getRisorse()
+  public String getRisorseJson()
   {
     try
     {
-      JsonService jsonService = (JsonService) TurbineServices
-         .getInstance().getService(JsonService.ROLE);
+      Map<String, String> obj2json = ArrayOper.asMapFromPairStrings(
+         "id", "RisorseId",
+         "name", "Descrizione",
+         "color", "Color",
+         "borderColor", "Bordercolor",
+         "backgroundColor", "Backgroundcolor",
+         "dragBackgroundColor", "Dragbackgroundcolor",
+         "", ""
+      );
 
-      StringBuilder rv = new StringBuilder(512);
       List<Risorse> lsRes = RisorsePeer.doSelect(new Criteria());
+      JSONArray rv = new JSONArray(lsRes.size());
+
       for(Risorse r : lsRes)
       {
-        rv.append("{");
-        rv.append(jsonService.serializeOnlyFilter(r, Risorse.class, true, toArray(Risorse.getFieldNames())));
-        rv.append("},\n");
+        rv.put(toJson(new JSONObject(), r, obj2json));
       }
 
       return rv.toString();
@@ -150,8 +163,61 @@ public class RelatedTool implements RunDataApplicationTool
     }
   }
 
-  private String[] toArray(List<String> l)
+  public String getEventiJson()
   {
-    return l.toArray(String[]::new);
+    try
+    {
+      Map<String, String> obj2json = ArrayOper.asMapFromPairStrings(
+         "id", "EventiId",
+         "calendarId", "IdCalendar",
+         "title", "Title",
+         "body", "Body",
+         "isReadOnly", "Isreadonly",
+         "isPrivate", "Isprivate",
+         "location", "Elocation",
+         "attendees", "Attendees",
+         "recurrenceRule", "Recurrencerule",
+         "state", "Estate",
+         "goingDuration", "Goingduration",
+         "comingDuration", "Comingduration",
+         "raw", "Eraw",
+         "category", "Category",
+         "start", "Startdate",
+         "end", "Enddate",
+         "", ""
+      );
+
+      List<Eventi> lsRes = EventiPeer.doSelect(new Criteria());
+      JSONArray rv = new JSONArray(lsRes.size());
+
+      for(Eventi r : lsRes)
+      {
+        rv.put(toJson(new JSONObject(), r, obj2json));
+      }
+
+      return rv.toString();
+    }
+    catch(Exception e)
+    {
+      log.error(e.getMessage(), e);
+      return e.getMessage();
+    }
+  }
+
+  private JSONObject toJson(JSONObject toPopulate, ColumnAccessByName obj, Map<String, String> obj2json)
+  {
+    for(Map.Entry<String, String> entry : obj2json.entrySet())
+    {
+      String objName = entry.getKey();
+      String jsonName = entry.getValue();
+
+      if(!objName.isEmpty())
+      {
+        Object value = obj.getByName(objName);
+        if(value != null)
+          toPopulate.put(jsonName, value);
+      }
+    }
+    return toPopulate;
   }
 }

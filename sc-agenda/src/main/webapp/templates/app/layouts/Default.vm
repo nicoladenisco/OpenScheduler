@@ -24,6 +24,11 @@
     <link rel="stylesheet" href="$content.getURI('styles/reset.css')" />
     <link rel="stylesheet" href="$content.getURI('styles/app.css')" />
     <link rel="stylesheet" href="$content.getURI('styles/icons.css')" />
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.3/moment.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chance/1.1.8/chance.min.js"></script>
+    <script src="https://uicdn.toast.com/tui.time-picker/latest/tui-time-picker.min.js"></script>
+    <script src="https://uicdn.toast.com/tui.date-picker/latest/tui-date-picker.min.js"></script>    
   </head>
   <body>
     <div class="app-container code-html">
@@ -31,13 +36,5 @@
       $screen_placeholder
 
     </div>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.3/moment.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/chance/1.1.8/chance.min.js"></script>
-    <script src="https://uicdn.toast.com/tui.time-picker/latest/tui-time-picker.min.js"></script>
-    <script src="https://uicdn.toast.com/tui.date-picker/latest/tui-date-picker.min.js"></script>
-    <script src="$content.getURI('scripts/mock-data.js')"></script>
-    <script src="$content.getURI('scripts/utils.js')"></script>
-    <script src="$content.getURI('scripts/app.js')"></script>
   </body>
 </html>

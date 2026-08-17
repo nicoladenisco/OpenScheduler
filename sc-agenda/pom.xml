@@ -380,6 +380,11 @@
       <artifactId>jakarta.xml.bind-api</artifactId>
       <version>4.0.1</version>
     </dependency>
+    <dependency>
+      <groupId>io.github.nicoladenisco</groupId>
+      <artifactId>commonlib5</artifactId>
+      <version>1.0</version>
+    </dependency>
   </dependencies>
 
   <properties>
