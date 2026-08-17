@@ -87,10 +87,29 @@ done
 echo "fatto!"
 
 echo "Popolamento con dati essenziali ..."
-cat ${SQL_SCRIPT}/populate-list.txt | while read f
+while read -r f
 do
+  # salta righe vuote e commenti
+  if [ -z "$f" ] || [ "${f:0:1}" = "#" ]; then
+    continue
+  fi
+
   echo "  eseguo file ${SQL_SCRIPT}/$f"
   echo "  eseguo file ${SQL_SCRIPT}/$f" >> $LOGFILE 2>&1
-  $PSQL -f ${SQL_SCRIPT}/$f -U $USER $DBNAME >> $LOGFILE 2>&1
-done
+
+  case "$f" in
+    *.sql)
+      $PSQL -f "${SQL_SCRIPT}/$f" -U $USER $DBNAME >> $LOGFILE 2>&1
+      ;;
+    *.csv)
+      # la tabella ha lo stesso nome del file csv senza estensione
+      TABLE=$(basename "$f" .csv)
+      python3 "${SQL_SCRIPT}/csv2insert.py" "${SQL_SCRIPT}/$f" --table "$TABLE" --batch 100 \
+        | $PSQL -U $USER $DBNAME >> $LOGFILE 2>&1
+      ;;
+    *)
+      echo "  estensione non gestita: $f" | tee -a $LOGFILE
+      ;;
+  esac
+done < ${SQL_SCRIPT}/populate-list.txt
 echo "fatto!"

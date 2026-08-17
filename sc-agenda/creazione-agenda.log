@@ -38,6 +38,8 @@ ERROR:  relation "risorse_link" does not exist
 ERROR:  table "prestazioni" does not exist
 ERROR:  table "risorse" does not exist
 ERROR:  table "risorse_link" does not exist
+ERROR:  table "eventi" does not exist
+CREATE TABLE
 CREATE TABLE
 CREATE TABLE
 CREATE TABLE
@@ -77,3 +79,9 @@ INSERT 0 1
 INSERT 0 1
 INSERT 0 1
 INSERT 0 1
+  eseguo file docs/sample-postgresql-data/prestazioni.csv
+INSERT 0 6
+  eseguo file docs/sample-postgresql-data/risorse.csv
+INSERT 0 9
+  eseguo file docs/sample-postgresql-data/risorse_link.csv
+INSERT 0 8

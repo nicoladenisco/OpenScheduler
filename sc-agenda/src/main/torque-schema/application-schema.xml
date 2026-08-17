@@ -44,18 +44,22 @@
   </table>
 
   <table name="EVENTI" idMethod="idbroker">
-    <column name="id"                 required="true" primaryKey="true" type="INTEGER" />
-    <column name="calendarId"         required="true" primaryKey="true" type="INTEGER" />
+    <column name="eventi_id"          required="true" primaryKey="true" type="INTEGER" />
+    <column name="id_calendar"        required="true" type="INTEGER" />
     <column name="title"              required="true" size="64" type="VARCHAR" />
     <column name="body"               required="true" size="255" type="VARCHAR" />
-    <column name="isReadOnly"         type="BOOLCHAR" />
-    <column name="isPrivate"          type="BOOLCHAR" />
-    <column name="location"           size="64" type="VARCHAR" />
-    <column name="attendees"          size="64" type="VARCHAR" />
-    <column name="recurrenceRule"     size="64" type="VARCHAR" />
-    <column name="state"              size="64" type="VARCHAR" />
-    <column name="goingDuration"      size="64" type="VARCHAR" />
-    <column name="comingDuration"     size="64" type="VARCHAR" />
+    <column name="category"           size="255" type="VARCHAR" />
+    <column name="isReadOnly"         type="BOOLEANCHAR" />
+    <column name="isPrivate"          type="BOOLEANCHAR" />
+    <column name="elocation"          size="255" type="VARCHAR" />
+    <column name="attendees"          size="255" type="VARCHAR" />
+    <column name="recurrenceRule"     size="255" type="VARCHAR" />
+    <column name="estate"             size="255" type="VARCHAR" />
+    <column name="goingDuration"      size="255" type="VARCHAR" />
+    <column name="comingDuration"     size="255" type="VARCHAR" />
+    <column name="startdate"          type="TIMESTAMP" />
+    <column name="enddate"            type="TIMESTAMP" />
+    <column name="eraw"               type="CLOB" />
   </table>
 
 </database>

@@ -1,1 +1,4 @@
 _turbine-security-data.sql
+prestazioni.csv
+risorse.csv
+risorse_link.csv
