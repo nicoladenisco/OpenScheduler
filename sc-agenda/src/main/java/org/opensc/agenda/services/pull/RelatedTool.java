@@ -12,7 +12,6 @@ import org.apache.fulcrum.security.model.turbine.TurbineAccessControlList;
 import org.apache.fulcrum.security.util.RoleSet;
 import org.apache.torque.criteria.Criteria;
 import org.apache.torque.criteria.SqlEnum;
-import org.apache.torque.om.ColumnAccessByName;
 import org.apache.turbine.om.security.User;
 import org.apache.turbine.services.TurbineServices;
 import org.apache.turbine.services.pull.RunDataApplicationTool;
@@ -25,6 +24,7 @@ import org.opensc.agenda.om.Eventi;
 import org.opensc.agenda.om.EventiPeer;
 import org.opensc.agenda.om.Risorse;
 import org.opensc.agenda.om.RisorsePeer;
+import org.opensc.agenda.services.json.ExtendedJsonServiceImpl;
 
 public class RelatedTool implements RunDataApplicationTool
 {
@@ -89,7 +89,7 @@ public class RelatedTool implements RunDataApplicationTool
   public <T> Object getJson(Object src, String className, String mixinCN, Boolean refresh, String... props)
   {
     String result = null;
-    JsonService jsonService = (JsonService) TurbineServices
+    ExtendedJsonServiceImpl jsonService = (ExtendedJsonServiceImpl) TurbineServices
        .getInstance().getService(JsonService.ROLE);
 
     try
@@ -137,6 +137,9 @@ public class RelatedTool implements RunDataApplicationTool
   {
     try
     {
+      ExtendedJsonServiceImpl jsonService = (ExtendedJsonServiceImpl) TurbineServices
+         .getInstance().getService(JsonService.ROLE);
+
       Map<String, String> obj2json = ArrayOper.asMapFromPairStrings(
          "id", "RisorseId",
          "name", "Descrizione",
@@ -155,7 +158,7 @@ public class RelatedTool implements RunDataApplicationTool
 
       for(Risorse r : lsRes)
       {
-        rv.put(toJson(new JSONObject(), r, obj2json));
+        rv.put(jsonService.toJson(new JSONObject(), r, obj2json));
       }
 
       return rv.toString();
@@ -171,6 +174,9 @@ public class RelatedTool implements RunDataApplicationTool
   {
     try
     {
+      ExtendedJsonServiceImpl jsonService = (ExtendedJsonServiceImpl) TurbineServices
+         .getInstance().getService(JsonService.ROLE);
+
       Map<String, String> obj2json = ArrayOper.asMapFromPairStrings(
          "id", "EventiId",
          "calendarId", "IdCalendar",
@@ -199,7 +205,7 @@ public class RelatedTool implements RunDataApplicationTool
 
       for(Eventi r : lsRes)
       {
-        rv.put(toJson(new JSONObject(), r, obj2json));
+        rv.put(jsonService.toJson(new JSONObject(), r, obj2json));
       }
 
       return rv.toString();
@@ -209,22 +215,5 @@ public class RelatedTool implements RunDataApplicationTool
       log.error(e.getMessage(), e);
       return e.getMessage();
     }
-  }
-
-  private JSONObject toJson(JSONObject toPopulate, ColumnAccessByName obj, Map<String, String> obj2json)
-  {
-    for(Map.Entry<String, String> entry : obj2json.entrySet())
-    {
-      String jsonName = entry.getKey();
-      String objName = entry.getValue();
-
-      if(!objName.isEmpty())
-      {
-        Object value = obj.getByName(objName);
-        if(value != null)
-          toPopulate.put(jsonName, value);
-      }
-    }
-    return toPopulate;
   }
 }

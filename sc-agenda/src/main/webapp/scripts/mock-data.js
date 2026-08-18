@@ -176,3 +176,13 @@ function generateRandomEvents(viewName, renderStart, renderEnd) {
 
   return events;
 }
+
+function calbeforeCreateEvent(eventObject) {
+}
+
+function calbeforeUpdateEvent(event_id, event_calendarId, changes) {
+}
+
+function calbeforeDeleteEvent(eventInfo_id, eventInfo_calendarId) {
+}
+

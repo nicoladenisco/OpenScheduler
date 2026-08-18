@@ -10,7 +10,7 @@
       <label class="checkbox checkbox-all" for="all">View all</label>
     </div>
     <hr>
-#if($randomDemo)
+    #if($randomDemo)
     <div class="sidebar-item">
       <input type="checkbox" id="1" value="1" checked="">
       <label class="checkbox checkbox-calendar checkbox-1" for="1">My Calendar</label>
@@ -31,16 +31,16 @@
       <input type="checkbox" id="5" value="5" checked="">
       <label class="checkbox checkbox-calendar checkbox-5" for="5">Travel</label>
     </div>
-#else
-#set($count = 0)
-#foreach($c in $calendari)
-#set($count = $count + 1)
+    #else
+    #set($count = 0)
+    #foreach($c in $calendari)
+    #set($count = $count + 1)
     <div class="sidebar-item">
       <input type="checkbox" id="$count" value="$count" checked="">
       <label class="checkbox checkbox-calendar checkbox-$count" for="$count">$c.descrizione</label>
     </div>
-#end
-#end
+    #end
+    #end
     <hr>
     <div class="app-footer">© NHN Cloud Corp.</div>
   </aside>
@@ -89,12 +89,88 @@
 #else
 <script>
 
-  var MOCK_CALENDARS = $related.getRisorseJson();
+          var MOCK_CALENDARS = $related.getRisorseJson();
   var EVENT_CATEGORIES = ['milestone', 'task'];
-  var EVENT_ARRAY = $related.getEventiJson();
+  var EVENT_ARRAY = [];
 
   function generateRandomEvents(viewName, renderStart, renderEnd) {
+
+    EVENT_ARRAY = [];
+    var inizio = moment(renderStart.toDate()).format('YYYY-MM-DD');
+    var fine = moment(renderEnd.toDate()).format('YYYY-MM-DD');
+
+    var url = "$data.contextPath/json/eventi";
+    var dati = {
+      viewName: viewName,
+      renderStart: inizio,
+      renderEnd: fine
+    };
+
+    chiamaAjax("GET", url, dati, function (result) {
+      EVENT_ARRAY = result.eventi;
+    });
+
     return EVENT_ARRAY;
+  }
+
+  function calbeforeCreateEvent(evento) {
+
+    var url = "$data.contextPath/json/eventi";
+    var strJson = JSON.stringify(evento);
+    var dati = {
+      jsondata: strJson
+    };
+
+    chiamaAjax("POST", url, dati, function (result) {
+      console.log("Creato nuovo evento");
+      evento.id = result.eid;
+    });
+  }
+
+  function calbeforeUpdateEvent(event_id, event_calendarId, changes) {
+
+    var url = "$data.contextPath/json/eventi";
+    var strJson = JSON.stringify(changes);
+    var dati = {
+      eid: event_id,
+      cid: event_calendarId,
+      jsondata: strJson
+    };
+
+    chiamaAjax("POST", url, dati, function (result) {
+      console.log("Creato nuovo evento");
+    });
+  }
+
+  function calbeforeDeleteEvent(eventInfo_id, eventInfo_calendarId) {
+
+    var url = "$data.contextPath/json/eventi"
+            + "?eid=" + encodeURIComponent(eventInfo_id)
+            + "&cid=" + encodeURIComponent(eventInfo_calendarId);
+    
+    var dati = {
+      eid: eventInfo_id,
+      cid: eventInfo_calendarId,
+    };
+
+    chiamaAjax("DELETE", url, dati, function (result) {
+      console.log("Creato nuovo evento");
+    });
+  }
+
+  function chiamaAjax(metodo, url, dati, funsuccess) {
+    jQuery.ajax({
+      url: url,
+      method: metodo,
+      dataType: "json",
+      async: false,
+      data: dati,
+      success: funsuccess,
+      error: function (jqxhr, textStatus, error) {
+        var err = textStatus + ", " + error + "\n" + jqxhr.responseText;
+        console.log("Request Failed in chiamaAjax: " + err);
+      }
+    });
   }
 
 </script>

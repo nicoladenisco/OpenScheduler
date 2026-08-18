@@ -1,9 +1,10 @@
 /* eslint-disable no-var,prefer-template,no-undef */
-var $ = function (selector) {
+
+var sel = function (selector) {
   return document.querySelector(selector);
 };
 
-var $$ = function (selector) {
+var sela = function (selector) {
   return Array.prototype.slice.call(document.querySelectorAll(selector));
 };
 

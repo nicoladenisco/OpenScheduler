@@ -9,16 +9,16 @@
   };
 
   // Elements
-  var navbarRange = $('.navbar--range');
-  var prevButton = $('.prev');
-  var nextButton = $('.next');
-  var todayButton = $('.today');
-  var dropdown = $('.dropdown');
-  var dropdownTrigger = $('.dropdown-trigger');
-  var dropdownTriggerIcon = $('.dropdown-icon');
-  var dropdownContent = $('.dropdown-content');
-  var checkboxCollapse = $('.checkbox-collapse');
-  var sidebar = $('.sidebar');
+  var navbarRange = sel('.navbar--range');
+  var prevButton = sel('.prev');
+  var nextButton = sel('.next');
+  var todayButton = sel('.today');
+  var dropdown = sel('.dropdown');
+  var dropdownTrigger = sel('.dropdown-trigger');
+  var dropdownTriggerIcon = sel('.dropdown-icon');
+  var dropdownContent = sel('.dropdown-content');
+  var checkboxCollapse = sel('.checkbox-collapse');
+  var sidebar = sel('.sidebar');
 
   // App State
   var appState = {
@@ -64,7 +64,7 @@
 
   function setDropdownTriggerText() {
     var viewName = cal.getViewName();
-    var buttonText = $('.dropdown .button-text');
+    var buttonText = sel('.dropdown .button-text');
     buttonText.textContent = getReadableViewName(viewName);
   }
 
@@ -75,7 +75,7 @@
   }
 
   function setAllCheckboxes(checked) {
-    var checkboxes = $$('.sidebar-item > input[type="checkbox"]');
+    var checkboxes = sela('.sidebar-item > input[type="checkbox"]');
 
     checkboxes.forEach(function (checkbox) {
       checkbox.checked = checked;
@@ -197,6 +197,8 @@
         console.log('beforeCreateEvent', event);
         event.id = chance.guid();
 
+        calbeforeCreateEvent(event);
+
         cal.createEvents([event]);
         cal.clearGridSelections();
       },
@@ -207,11 +209,14 @@
 
         event = eventInfo.event;
         changes = eventInfo.changes;
+        calbeforeUpdateEvent(event.id, event.calendarId, changes);
 
         cal.updateEvent(event.id, event.calendarId, changes);
       },
       beforeDeleteEvent: function (eventInfo) {
         console.log('beforeDeleteEvent', eventInfo);
+
+        calbeforeDeleteEvent(eventInfo.id, eventInfo.calendarId);
 
         cal.deleteEvent(eventInfo.id, eventInfo.calendarId);
       },
@@ -219,7 +224,7 @@
   }
 
   function initCheckbox() {
-    var checkboxes = $$('input[type="checkbox"]');
+    var checkboxes = sela('input[type="checkbox"]');
 
     checkboxes.forEach(function (checkbox) {
       setCheckboxBackgroundColor(checkbox);
