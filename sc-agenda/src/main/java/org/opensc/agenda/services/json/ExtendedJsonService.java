@@ -17,6 +17,7 @@
  */
 package org.opensc.agenda.services.json;
 
+import com.workingdogs.village.Record;
 import java.util.Map;
 import org.apache.fulcrum.json.JsonService;
 import org.apache.torque.om.ColumnAccessByName;
@@ -46,6 +47,24 @@ public interface ExtendedJsonService extends JsonService
    * @return
    */
   public ColumnAccessByName fromJson(JSONObject dati, ColumnAccessByName toPopulate, Map<String, String> json2obj);
+
+  /**
+   * Serializza un oggetto di torque in formato json.
+   * @param toPopulate oggetto json da popolare
+   * @param obj oggetto torque da cui estrarre i dati
+   * @param obj2json mappa nomejson/nometorque dei valori da esportare
+   * @return oggetto json popolato
+   */
+  public JSONObject toJson(JSONObject toPopulate, Record obj, Map<String, String> obj2json);
+
+  /**
+   * Legge un json e aggiorna oggetto di torque;
+   * @param dati oggetto json con i dati
+   * @param toPopulate oggetto torque da aggiornare
+   * @param json2obj mappa nometorque/nomejson dei valori da importare
+   * @return
+   */
+  public Record fromJson(JSONObject dati, Record toPopulate, Map<String, String> json2obj);
 
   /**
    * Processa richiesta proveniente dalla servlet.

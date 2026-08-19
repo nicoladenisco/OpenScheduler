@@ -17,16 +17,14 @@
  */
 package org.opensc.agenda.services.json.plugin;
 
-import java.util.List;
+import com.workingdogs.village.QueryDataSetMacro;
+import com.workingdogs.village.Record;
+import java.sql.Connection;
 import java.util.Map;
-import org.apache.torque.criteria.Criteria;
+import org.apache.torque.Torque;
 import org.commonlib5.utils.ArrayOper;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.opensc.agenda.om.PrestazioniPeer;
-import org.opensc.agenda.om.Risorse;
-import org.opensc.agenda.om.RisorseLinkPeer;
-import org.opensc.agenda.om.RisorsePeer;
 import org.opensc.agenda.services.json.ExtendedJsonService;
 
 /**
@@ -34,18 +32,18 @@ import org.opensc.agenda.services.json.ExtendedJsonService;
  *
  * @author Nicola De Nisco
  */
-@JsonPluginAnnotation(nome = "risorseview")
+@JsonPluginAnnotation(nome = "risorseview|slotview")
 public class RisorseViewPlugin implements JsonPlugin
 {
   public static final Map<String, String> obj2json = ArrayOper.asMapFromPairStrings(
-     "id", "RisorseId",
-     "name", "Descrizione",
-     "color", "Color",
-     "borderColor", "Bordercolor",
-     "backgroundColor", "Backgroundcolor",
-     "dragBackgroundColor", "Dragbackgroundcolor",
-     "code", "Codice",
-     "", ""
+     "id", "risorse_id",
+     "code", "codice",
+     "name", "descrizione",
+     "color", "color",
+     "bordercolor", "bordercolor",
+     "backgroundcolor", "backgroundcolor",
+     "dragbackgroundcolor", "dragbackgroundcolor",
+     "group", "gruppo"
   );
 
   @Override
@@ -81,23 +79,29 @@ public class RisorseViewPlugin implements JsonPlugin
      JSONObject toPopulate)
      throws Exception
   {
-    String codPrest = params.getOrDefault("codPrest", "2010-01-01").toString();
+//    String codPrest = params.getOrDefault("codPrest", "2010-01-01").toString();
 //    String inizio = params.getOrDefault("renderStart", "2010-01-01").toString();
 //    String fine = params.getOrDefault("renderEnd", "2100-12-31").toString();
 //
 //    Date di = DateTime.inizioGiorno(dfIso.parse(inizio));
 //    Date df = DateTime.fineGiorno(dfIso.parse(fine));
 
-    Criteria c = new Criteria();
-    c.where(PrestazioniPeer.CODICE, codPrest);
-    c.addJoin(PrestazioniPeer.PRESTAZIONI_ID, RisorseLinkPeer.ID_PRESTAZIONI);
-    c.addJoin(RisorseLinkPeer.ID_RISORSE, RisorsePeer.RISORSE_ID);
-    List<Risorse> lsRes = RisorsePeer.doSelect(c);
-    JSONArray rv = new JSONArray();
+    String sSQL
+       = "SELECT R.*,RL.gruppo\n"
+       + "FROM prestazioni P \n"
+       + "  INNER JOIN risorse_link RL ON P.prestazioni_id=RL.id_prestazioni\n"
+       + "  INNER JOIN risorse R ON RL.id_risorse=R.risorse_id\n"
+       + "  WHERE P.codice=${codPrest}\n"
+       + "";
 
-    for(Risorse r : lsRes)
+    JSONArray rv = new JSONArray();
+    try(Connection conn = Torque.getConnection();
+       QueryDataSetMacro qds = new QueryDataSetMacro(conn, sSQL, params))
     {
-      rv.put(service.toJson(new JSONObject(), r, obj2json));
+      for(Record r : qds)
+      {
+        rv.put(service.toJson(new JSONObject(), r, obj2json));
+      }
     }
 
     toPopulate.put("risorse", rv);

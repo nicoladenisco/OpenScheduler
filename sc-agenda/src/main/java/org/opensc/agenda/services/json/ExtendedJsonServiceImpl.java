@@ -17,6 +17,7 @@
  */
 package org.opensc.agenda.services.json;
 
+import com.workingdogs.village.Record;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -84,7 +85,10 @@ public class ExtendedJsonServiceImpl extends Jackson2MapperService
         continue;
       }
 
-      annotati.put(nome, clazz);
+      // il plugin può essere referenziato con nomi diversi
+      String[] ss = nome.split("\\|");
+      for(int i = 0; i < ss.length; i++)
+        annotati.put(ss[i], clazz);
     }
   }
 
@@ -125,6 +129,56 @@ public class ExtendedJsonServiceImpl extends Jackson2MapperService
         catch(Exception ex)
         {
           log.error("setByName error: " + ex.getMessage());
+        }
+      }
+    }
+    return toPopulate;
+  }
+
+  @Override
+  public JSONObject toJson(JSONObject toPopulate, Record obj, Map<String, String> obj2json)
+  {
+    for(Map.Entry<String, String> entry : obj2json.entrySet())
+    {
+      String jsonName = entry.getKey();
+      String objName = entry.getValue();
+
+      if(!objName.isEmpty())
+      {
+        try
+        {
+          Object value = obj.getValue(objName).getValue();
+          if(value != null)
+            toPopulate.put(jsonName, value);
+        }
+        catch(Exception ex)
+        {
+          log.error("getValue error: " + ex.getMessage());
+        }
+      }
+    }
+    return toPopulate;
+  }
+
+  @Override
+  public Record fromJson(JSONObject dati, Record toPopulate, Map<String, String> json2obj)
+  {
+    for(Map.Entry<String, String> entry : json2obj.entrySet())
+    {
+      String objName = entry.getKey();
+      String jsonName = entry.getValue();
+
+      if(!objName.isEmpty())
+      {
+        try
+        {
+          Object value = dati.opt(jsonName);
+          if(value != null)
+            toPopulate.getValue(objName).setValue(value);;
+        }
+        catch(Exception ex)
+        {
+          log.error("setValue error: " + ex.getMessage());
         }
       }
     }
