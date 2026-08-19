@@ -15,28 +15,29 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
-package org.opensc.agenda;
+package org.opensc.agenda.modules.screens;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import org.apache.torque.Torque;
+import org.apache.turbine.modules.screens.VelocitySecureScreen;
+import org.apache.turbine.pipeline.PipelineData;
+import org.apache.velocity.context.Context;
 
 /**
- * Utilita per il db.
+ * Controllore per Schedula.vm.
  *
  * @author Nicola De Nisco
  */
-public class DbUtils
+public class Schedula extends VelocitySecureScreen
 {
-  public static int executeStatement(String sSQL)
+  @Override
+  protected void doBuildTemplate(PipelineData pd, Context cntxt)
      throws Exception
   {
-    try(Connection conn = Torque.getConnection())
-    {
-      try(PreparedStatement stmt = conn.prepareStatement(sSQL))
-      {
-        return stmt.executeUpdate();
-      }
-    }
+  }
+
+  @Override
+  protected boolean isAuthorized(PipelineData pipelineData)
+     throws Exception
+  {
+    return true;
   }
 }

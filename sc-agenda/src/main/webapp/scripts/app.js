@@ -30,15 +30,13 @@
 
   // functions to handle calendar behaviors
   function reloadEvents() {
-    var randomEvents;
-
     cal.clear();
-    randomEvents = generateRandomEvents(
+    var arEvents = generateEvents(
             cal.getViewName(),
             cal.getDateRangeStart(),
             cal.getDateRangeEnd()
             );
-    cal.createEvents(randomEvents);
+    cal.createEvents(arEvents);
   }
 
   function getReadableViewName(viewType) {
@@ -151,7 +149,13 @@
 
     sidebar.addEventListener('click', function (e) {
       if ('value' in e.target) {
+
+        var calendarInfo = MOCK_CALENDARS.find(function (calendar) {
+          return calendar.id == e.target.value;
+        });
+
         if (e.target.value === 'all') {
+          // gestione tutti/nessuno
           if (appState.activeCalendarIds.length > 0) {
             cal.setCalendarVisibility(appState.activeCalendarIds, false);
             appState.activeCalendarIds = [];
@@ -165,14 +169,14 @@
             setAllCheckboxes(true);
           }
         }
-        else if (appState.activeCalendarIds.indexOf(e.target.value) > -1) {
-          appState.activeCalendarIds.splice(appState.activeCalendarIds.indexOf(e.target.value), 1);
-          cal.setCalendarVisibility(e.target.value, false);
+        else if (appState.activeCalendarIds.indexOf(calendarInfo.id) > -1) {
+          appState.activeCalendarIds.splice(appState.activeCalendarIds.indexOf(calendarInfo.id), 1);
+          cal.setCalendarVisibility(calendarInfo.id, false);
           setCheckboxBackgroundColor(e.target);
         }
         else {
-          appState.activeCalendarIds.push(e.target.value);
-          cal.setCalendarVisibility(e.target.value, true);
+          appState.activeCalendarIds.push(calendarInfo.id);
+          cal.setCalendarVisibility(calendarInfo.id, true);
           setCheckboxBackgroundColor(e.target);
         }
       }

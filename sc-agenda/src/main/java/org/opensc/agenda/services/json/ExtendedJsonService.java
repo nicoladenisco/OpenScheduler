@@ -49,11 +49,11 @@ public interface ExtendedJsonService extends JsonService
 
   /**
    * Processa richiesta proveniente dalla servlet.
-   * @param metod metodo HTTP
+   * @param method metodo HTTP
    * @param toPopulate oggetto json da popolare
    * @param sRequest nome della richiesta
    * @param params parametri della richiesta
    * @return oggetto json popolato
    */
-  public JSONObject processRequest(String metod, String sRequest, Map<String, Object> params, JSONObject toPopulate);
+  public JSONObject processRequest(String method, String sRequest, Map<String, Object> params, JSONObject toPopulate);
 }

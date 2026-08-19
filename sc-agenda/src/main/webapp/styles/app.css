@@ -68,6 +68,26 @@
   margin-left: 0.5rem;
 }
 
+.prestazione-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.prestazione-label,
+.prestazione-field {
+  flex: 1;
+}
+
+.prestazione-field select {
+  width: 100%;
+}
+
+.risorse-box {
+  flex: 0 0 70%;
+  min-height: 2.5rem;
+}
+
 .button.prev, .button.next {
   padding: 0.8rem;
 }

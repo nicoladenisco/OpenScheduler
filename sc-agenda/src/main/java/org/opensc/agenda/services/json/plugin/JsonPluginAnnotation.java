@@ -45,7 +45,7 @@ public @interface JsonPluginAnnotation
   String descrizione() default "";
 
   /**
-   * Le action marcate con obsoleto=true vengono ignorati.
+   * I plugin marcati con obsoleto=true vengono ignorati.
    * Il valore di default è false
    * @return
    */

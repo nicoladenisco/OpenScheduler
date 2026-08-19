@@ -30,13 +30,13 @@ import org.commonlib5.utils.StringOper;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.opensc.agenda.DbUtils;
+import org.opensc.agenda.Utils;
 import org.opensc.agenda.om.Eventi;
 import org.opensc.agenda.om.EventiPeer;
 import org.opensc.agenda.services.json.ExtendedJsonService;
 
 /**
- * plugin per generazione eventi.
+ * plugin per gestione eventi.
  *
  * @author Nicola De Nisco
  */
@@ -102,8 +102,8 @@ public class EventiCalendarioPlugin implements JsonPlugin
     String inizio = params.getOrDefault("renderStart", "2010-01-01").toString();
     String fine = params.getOrDefault("renderEnd", "2100-12-31").toString();
 
-    Date di = dfIso.parse(inizio);
-    Date df = dfIso.parse(fine);
+    Date di = DateTime.inizioGiorno(dfIso.parse(inizio));
+    Date df = DateTime.fineGiorno(dfIso.parse(fine));
 
     Criteria c = new Criteria();
     c.where(EventiPeer.EVENTI_ID, 0, SqlEnum.GREATER_THAN);
@@ -207,7 +207,7 @@ public class EventiCalendarioPlugin implements JsonPlugin
     if(!eid.isEmpty())
     {
       String sSQL = "DELETE FROM eventi WHERE eventi_id=" + eid;
-      DbUtils.executeStatement(sSQL);
+      Utils.executeStatement(sSQL);
     }
 
     return toPopulate;

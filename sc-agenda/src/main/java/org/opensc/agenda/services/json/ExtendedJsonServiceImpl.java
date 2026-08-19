@@ -26,6 +26,7 @@ import org.apache.fulcrum.json.jackson.Jackson2MapperService;
 import org.apache.torque.om.ColumnAccessByName;
 import org.commonlib5.utils.ClassOper;
 import org.json.JSONObject;
+import org.opensc.agenda.Utils;
 import org.opensc.agenda.services.json.plugin.JsonPlugin;
 import org.opensc.agenda.services.json.plugin.JsonPluginAnnotation;
 import org.reflections.Reflections;
@@ -51,6 +52,9 @@ public class ExtendedJsonServiceImpl extends Jackson2MapperService
   {
     super.initialize();
     cercaClassiAnnotate();
+
+    // questo sta qua giusto per essere eseguito all'avvio
+    Utils.initIDtable();
   }
 
   protected void cercaClassiAnnotate()
@@ -58,7 +62,7 @@ public class ExtendedJsonServiceImpl extends Jackson2MapperService
     annotati.clear();
     obsoleti.clear();
 
-    // Trova tutte le classi annotate con @CaledioDebugAction
+    // Trova tutte le classi annotate con @JsonPluginAnnotation
     Set<Class<?>> annotatedClasses = reflections.getTypesAnnotatedWith(JsonPluginAnnotation.class);
 
     for(Class<?> clazz : annotatedClasses)

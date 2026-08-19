@@ -22,6 +22,8 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.opensc.agenda.om.Eventi;
 import org.opensc.agenda.om.EventiPeer;
+import org.opensc.agenda.om.Prestazioni;
+import org.opensc.agenda.om.PrestazioniPeer;
 import org.opensc.agenda.om.Risorse;
 import org.opensc.agenda.om.RisorsePeer;
 import org.opensc.agenda.services.json.ExtendedJsonServiceImpl;
@@ -208,6 +210,27 @@ public class RelatedTool implements RunDataApplicationTool
         rv.put(jsonService.toJson(new JSONObject(), r, obj2json));
       }
 
+      return rv.toString();
+    }
+    catch(Exception e)
+    {
+      log.error(e.getMessage(), e);
+      return e.getMessage();
+    }
+  }
+
+  public String prestazioniCombo()
+  {
+    try
+    {
+      Criteria c = new Criteria();
+      c.where(PrestazioniPeer.PRESTAZIONI_ID, 0, SqlEnum.GREATER_THAN);
+      c.addAscendingOrderByColumn(PrestazioniPeer.PRESTAZIONI_ID);
+      List<Prestazioni> lsRes = PrestazioniPeer.doSelect(c);
+
+      StringBuilder rv = new StringBuilder();
+      for(Prestazioni p : lsRes)
+        rv.append("<option value='").append(p.getCodice()).append("'>").append(p.getDescrizione()).append("</option>\n");
       return rv.toString();
     }
     catch(Exception e)

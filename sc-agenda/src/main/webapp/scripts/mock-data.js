@@ -149,7 +149,7 @@ function generateRandomEvent(calendar, renderStart, renderEnd) {
   return event;
 }
 
-function generateRandomEvents(viewName, renderStart, renderEnd) {
+function generateEvents(viewName, renderStart, renderEnd) {
   var i, j;
   var event, duplicateEvent;
   var events = [];

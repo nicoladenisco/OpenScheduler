@@ -1,0 +1,34 @@
+<script>
+
+  function cambiaPrestazione(event) {
+    const select = event.target;
+    const valore = select.value;
+    const testo = select.options[select.selectedIndex].text;
+
+    console.log(valore, testo);
+    if (valore === "") {
+      $("#risorse-box").text("");
+      return;
+    }
+
+    $("#risorse-box").text(valore + " - " + testo);
+    caricaRisorseBox(valore);
+  }
+
+</script>
+
+<div class="prestazione-row">
+  <div class="prestazione-label">
+    <label for="prestazione">Prestazione</label>
+  </div>
+  <div class="prestazione-field">
+    <select id="prestazione" name="prestazione" onchange="cambiaPrestazione(event);">
+      <option value="" selected>Seleziona...</option>
+      $related.prestazioniCombo()
+    </select>
+  </div>
+  <div class="risorse-box" id="risorse-box">
+  </div>
+</div>
+
+<script src="$content.getURI('scripts/schedula.js')"></script>

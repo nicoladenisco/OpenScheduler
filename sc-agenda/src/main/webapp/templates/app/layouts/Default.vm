@@ -34,6 +34,10 @@
     <link rel="stylesheet" href="$content.getURI('styles/reset.css')" />
     <link rel="stylesheet" href="$content.getURI('styles/app.css')" />
     <link rel="stylesheet" href="$content.getURI('styles/icons.css')" />
+    
+    <script>
+      var jsContextPath = "$data.contextPath";
+    </script>
   </head>
   <body>
     <div class="app-container code-html">
