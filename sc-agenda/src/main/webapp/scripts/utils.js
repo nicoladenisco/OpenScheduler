@@ -25,3 +25,34 @@ function getNavbarRange(tzStart, tzEnd, viewType) {
   }
   throw new Error('no view type');
 }
+
+function chiamaAjaxSync(metodo, url, dati, funsuccess) {
+  jQuery.ajax({
+    url: url,
+    method: metodo,
+    dataType: "json",
+    async: false,
+    data: dati,
+    success: funsuccess,
+    error: function (jqxhr, textStatus, error) {
+      var err = textStatus + ", " + error + "\n" + jqxhr.responseText;
+      console.log("Request Failed in chiamaAjax: " + err);
+    }
+  });
+}
+
+function chiamaAjaxAsync(metodo, url, dati, funsuccess) {
+  jQuery.ajax({
+    url: url,
+    method: metodo,
+    dataType: "json",
+    async: true,
+    data: dati,
+    success: funsuccess,
+    error: function (jqxhr, textStatus, error) {
+      var err = textStatus + ", " + error + "\n" + jqxhr.responseText;
+      console.log("Request Failed in chiamaAjax: " + err);
+    }
+  });
+}
+

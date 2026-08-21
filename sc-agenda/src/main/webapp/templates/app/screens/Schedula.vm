@@ -5,13 +5,12 @@
     const valore = select.value;
     const testo = select.options[select.selectedIndex].text;
 
-    console.log(valore, testo);
     if (valore === "") {
       $("#risorse-box").text("");
       return;
     }
 
-    $("#risorse-box").text(valore + " - " + testo);
+    $("#risorse-box").text("Loading " + valore + " - " + testo);
     caricaRisorseBox(valore);
   }
 
@@ -32,4 +31,5 @@
   </div>
 </div>
 
+<script src="$content.getURI('scripts/utils.js')"></script>
 <script src="$content.getURI('scripts/schedula.js')"></script>

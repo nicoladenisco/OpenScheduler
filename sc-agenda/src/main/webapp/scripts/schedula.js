@@ -8,7 +8,7 @@ function caricaRisorseBox(codPrest) {
     renderEnd: ""
   };
 
-  chiamaAjax("GET", url, dati, function (result) {
+  chiamaAjaxAsync("GET", url, dati, function (result) {
     var html
             = "<table width='100%'>"
             + "<thead>"
@@ -27,19 +27,4 @@ function caricaRisorseBox(codPrest) {
 
 function formatGruppo(gruppo) {
   return gruppo ? gruppo : "NESSUNO";
-}
-
-function chiamaAjax(metodo, url, dati, funsuccess) {
-  jQuery.ajax({
-    url: url,
-    method: metodo,
-    dataType: "json",
-    async: true,
-    data: dati,
-    success: funsuccess,
-    error: function (jqxhr, textStatus, error) {
-      var err = textStatus + ", " + error + "\n" + jqxhr.responseText;
-      console.log("Request Failed in chiamaAjax: " + err);
-    }
-  });
 }

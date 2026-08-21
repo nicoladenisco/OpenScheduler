@@ -107,7 +107,7 @@
           renderEnd: fine
         };
 
-        chiamaAjax("GET", url, dati, function (result) {
+        chiamaAjaxSync("GET", url, dati, function (result) {
           EVENT_ARRAY = result.eventi;
         });
 
@@ -122,7 +122,7 @@
           jsondata: strJson
         };
 
-        chiamaAjax("POST", url, dati, function (result) {
+        chiamaAjaxSync("POST", url, dati, function (result) {
           console.log("Creato nuovo evento");
           evento.id = result.eid;
         });
@@ -138,8 +138,8 @@
           jsondata: strJson
         };
 
-        chiamaAjax("POST", url, dati, function (result) {
-          console.log("Creato nuovo evento");
+        chiamaAjaxSync("POST", url, dati, function (result) {
+          console.log("Aggiornato evento");
         });
       }
 
@@ -154,23 +154,8 @@
           cid: eventInfo_calendarId,
         };
 
-        chiamaAjax("DELETE", url, dati, function (result) {
-          console.log("Creato nuovo evento");
-        });
-      }
-
-      function chiamaAjax(metodo, url, dati, funsuccess) {
-        jQuery.ajax({
-          url: url,
-          method: metodo,
-          dataType: "json",
-          async: false,
-          data: dati,
-          success: funsuccess,
-          error: function (jqxhr, textStatus, error) {
-            var err = textStatus + ", " + error + "\n" + jqxhr.responseText;
-            console.log("Request Failed in chiamaAjax: " + err);
-          }
+        chiamaAjaxSync("DELETE", url, dati, function (result) {
+          console.log("Cancellato evento");
         });
       }
 

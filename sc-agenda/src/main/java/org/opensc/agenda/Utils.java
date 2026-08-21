@@ -42,6 +42,7 @@ public class Utils
   public static final String SESSION_ID = "sessionId";
   public static final String QUERY_STRING = "queryString";
   public static final String PATH_INFO = "pathInfo";
+  public static final String REQUEST_PURE = "pathInfo";
 
   public static int executeStatementQuiet(String sSQL)
   {
@@ -76,6 +77,13 @@ public class Utils
     //  name="RISORSE_LINK" no
     //  name="EVENTI"
 
+    loadIDtable("PRESTAZIONI", "PRESTAZIONI_ID");
+    loadIDtable("RISORSE", "RISORSE_ID");
+    loadIDtable("EVENTI", "EVENTI_ID");
+  }
+
+  public static void loadIDtable(String tabella, String primary)
+  {
     String sSQL1
        = "INSERT INTO id_table(\n"
        + "	id_table_id, table_name, next_id, quantity)\n"
@@ -88,18 +96,31 @@ public class Utils
        + "	SET next_id=(SELECT MAX(PRIMARY)+1 FROM TABELLA), quantity=1\n"
        + "	WHERE table_name='TABELLA'";
 
-    executeStatementQuiet(StringOper.strReplace(sSQL1, "TABELLA", "PRESTAZIONI", "PRIMARY", "PRESTAZIONI_ID"));
-    executeStatementQuiet(StringOper.strReplace(sSQL1, "TABELLA", "RISORSE", "PRIMARY", "RISORSE_ID"));
-    executeStatementQuiet(StringOper.strReplace(sSQL1, "TABELLA", "EVENTI", "PRIMARY", "EVENTI_ID"));
+    String sIns = StringOper.strReplace(sSQL1, "TABELLA", tabella, "PRIMARY", primary);
+    String sUpd = StringOper.strReplace(sSQL2, "TABELLA", tabella, "PRIMARY", primary);
 
-    executeStatementQuiet(StringOper.strReplace(sSQL2, "TABELLA", "PRESTAZIONI", "PRIMARY", "PRESTAZIONI_ID"));
-    executeStatementQuiet(StringOper.strReplace(sSQL2, "TABELLA", "RISORSE", "PRIMARY", "RISORSE_ID"));
-    executeStatementQuiet(StringOper.strReplace(sSQL2, "TABELLA", "EVENTI", "PRIMARY", "EVENTI_ID"));
+    if(executeStatementQuiet(sUpd) == 0)
+    {
+      executeStatementQuiet(sIns);
+      executeStatementQuiet(sUpd);
+    }
   }
 
   public static Map<String, Object> getParMap(HttpServletRequest request)
   {
     HashMap<String, Object> htParam = new HashMap<>();
+
+    String[] sarreq = request.getPathInfo().split("/");
+    if((sarreq.length & 1) == 0)
+    {
+      // il primo elemento è la richista gli altri sono parametri
+      htParam.put(REQUEST_PURE, sarreq[1]);
+      for(int i = 2; i < sarreq.length; i += 2)
+      {
+        // i paramtri sono coppie chiave/valore
+        htParam.put(sarreq[i], sarreq[i + 1]);
+      }
+    }
 
     // estrae i parametri della richiesta (anche i campi di input con nome della form)
     Map<String, String[]> parameterMap = request.getParameterMap();
