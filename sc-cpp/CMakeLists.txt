@@ -6,7 +6,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # --- 1. Trova le dipendenze (tutte insieme all'inizio) ---
-find_package(Boost REQUIRED CONFIG COMPONENTS thread date_time system regex program_options chrono)
+# Boost.System e' header-only: da Boost 1.90 la libreria compilata non esiste piu'
+find_package(Boost REQUIRED CONFIG COMPONENTS thread date_time regex program_options chrono)
 find_package(Threads REQUIRED)
 find_package(LibXml2 REQUIRED)
 find_package(JNI REQUIRED) # <--- AGGIUNTO QUESTO
@@ -57,7 +58,7 @@ set_target_properties(oskcore PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 # --- 4. Configurazione Eseguibile (oskcli) ---
 target_link_libraries(oskcli PRIVATE
-    Boost::headers Boost::thread Boost::date_time Boost::system
+    Boost::headers Boost::thread Boost::date_time
     Boost::regex Boost::program_options Boost::chrono
     Threads::Threads
     LibXml2::LibXml2
@@ -75,7 +76,7 @@ target_include_directories(oskcore PRIVATE
 )
 
 target_link_libraries(oskcore PRIVATE
-    Boost::headers Boost::thread Boost::date_time Boost::system
+    Boost::headers Boost::thread Boost::date_time
     Boost::regex Boost::program_options Boost::chrono
     Threads::Threads
     LibXml2::LibXml2
