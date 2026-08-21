@@ -18,25 +18,29 @@
 package org.opensc.agenda.modules.screens;
 
 import java.util.Date;
+import org.apache.fulcrum.parser.ParameterParser;
 import org.apache.turbine.modules.screens.VelocitySecureScreen;
 import org.apache.turbine.pipeline.PipelineData;
 import org.apache.velocity.context.Context;
 import org.commonlib5.utils.DateTime;
 
 /**
- * Controllore per Schedula.vm.
+ * Controllore per Slots.vm.
  *
  * @author Nicola De Nisco
  */
-public class Schedula extends VelocitySecureScreen
+public class Slots extends VelocitySecureScreen
 {
   @Override
   protected void doBuildTemplate(PipelineData pd, Context ctx)
      throws Exception
   {
-    Date di = new Date();
-    Date df = DateTime.dataSpiazzata(di, 30);
+    ParameterParser pp = pd.getRunData().getParameters();
+    String codPrest = pp.getString("prestazione");
+    Date di = pp.getDate("di", DateTime.ISOformat);
+    Date df = pp.getDate("df", DateTime.ISOformat);
 
+    ctx.put("codPrest", codPrest);
     ctx.put("di", DateTime.formatIso(di));
     ctx.put("df", DateTime.formatIso(df));
   }

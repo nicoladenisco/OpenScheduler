@@ -15,36 +15,19 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
-package org.opensc.agenda.modules.screens;
+package org.opensc.agenda.services.slots;
 
-import java.util.Date;
-import org.apache.turbine.modules.screens.VelocitySecureScreen;
-import org.apache.turbine.pipeline.PipelineData;
-import org.apache.velocity.context.Context;
-import org.commonlib5.utils.DateTime;
+import java.io.File;
+import org.apache.turbine.services.Service;
 
 /**
- * Controllore per Schedula.vm.
+ * Servizio gestione slots.
  *
  * @author Nicola De Nisco
  */
-public class Schedula extends VelocitySecureScreen
+public interface SlotService extends Service
 {
-  @Override
-  protected void doBuildTemplate(PipelineData pd, Context ctx)
-     throws Exception
-  {
-    Date di = new Date();
-    Date df = DateTime.dataSpiazzata(di, 30);
+  public static final String SERVICE_NAME = "SlotService";
 
-    ctx.put("di", DateTime.formatIso(di));
-    ctx.put("df", DateTime.formatIso(df));
-  }
-
-  @Override
-  protected boolean isAuthorized(PipelineData pipelineData)
-     throws Exception
-  {
-    return true;
-  }
+  public File getFileRisorse(String codice);
 }

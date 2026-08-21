@@ -486,6 +486,11 @@
       <artifactId>commons-lang3</artifactId>
       <version>3.17.0</version>
     </dependency>
+    <dependency>
+      <groupId>io.github.nicoladenisco</groupId>
+      <artifactId>sc-java</artifactId>
+      <version>1.0</version>
+    </dependency>
   </dependencies>
 
   <properties>

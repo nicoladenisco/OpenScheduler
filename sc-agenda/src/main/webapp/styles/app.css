@@ -171,3 +171,23 @@ input:disabled + label {
 .checkbox.checkbox-10::before {
   background-color: var(--checkbox-10);
 }
+
+.slot-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.slot-box {
+  flex: 1;
+}
+
+.slot-box-fixed {
+  flex: 1 1 auto;
+  width: max-content;
+  max-width: 100%;
+  font-family: monospace;
+  white-space: pre;
+  overflow-x: auto;
+}
+

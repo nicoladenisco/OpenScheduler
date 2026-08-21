@@ -32,7 +32,7 @@ import org.opensc.agenda.services.json.ExtendedJsonService;
  *
  * @author Nicola De Nisco
  */
-@JsonPluginAnnotation(nome = "risorseview|slotview")
+@JsonPluginAnnotation(nome = "risorseview")
 public class RisorseViewPlugin implements JsonPlugin
 {
   public static final Map<String, String> obj2json = ArrayOper.asMapFromPairStrings(
@@ -88,10 +88,10 @@ public class RisorseViewPlugin implements JsonPlugin
 
     String sSQL
        = "SELECT R.*,RL.gruppo\n"
-       + "FROM prestazioni P \n"
+       + " FROM prestazioni P \n"
        + "  INNER JOIN risorse_link RL ON P.prestazioni_id=RL.id_prestazioni\n"
        + "  INNER JOIN risorse R ON RL.id_risorse=R.risorse_id\n"
-       + "  WHERE P.codice=${codPrest}\n"
+       + " WHERE P.codice=${codPrest}\n"
        + "";
 
     JSONArray rv = new JSONArray();

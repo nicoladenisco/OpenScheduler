@@ -1,0 +1,20 @@
+<script>
+
+  $(document).ready(function () {
+    caricaSlotBox("$codPrest", "$di", "$df");
+  });
+
+</script>
+
+Disponibilita dal $di al $df
+
+<h2>Slot delle singole risorse</h2>
+<div class="slot-row" id='slot-risorse-row'>  
+</div>
+
+<h2>Slot degli incroci di risorse</h2>
+<div class="slot-row" id='slot-incroci-row'>  
+</div>
+
+<script src="$content.getURI('scripts/utils.js')"></script>
+<script src="$content.getURI('scripts/slots.js')"></script>

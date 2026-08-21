@@ -14,22 +14,37 @@
     caricaRisorseBox(valore);
   }
 
+  function caricaSlots() {
+    // TODO: verifica date
+    document.fo.submit();
+  }
+
 </script>
 
-<div class="prestazione-row">
-  <div class="prestazione-label">
-    <label for="prestazione">Prestazione</label>
+<form id="fo" name="fo" method="post" action="$link.setPage('Slots.vm')">
+  <div class="prestazione-row">
+    <div class="prestazione-label">
+      <label for="prestazione">Prestazione</label>
+    </div>
+    <div class="prestazione-field">
+      <select id="prestazione" name="prestazione" onchange="cambiaPrestazione(event);">
+        <option value="" selected>Seleziona...</option>
+        $related.prestazioniCombo()
+      </select>
+    </div>
+    <div class="risorse-box" id="risorse-box">
+      Selezionare una prestazione.
+    </div>
   </div>
-  <div class="prestazione-field">
-    <select id="prestazione" name="prestazione" onchange="cambiaPrestazione(event);">
-      <option value="" selected>Seleziona...</option>
-      $related.prestazioniCombo()
-    </select>
+
+  <div>
+    <table>
+      <tr><td>Data iniziale:</td><td><input type="text" name="di" value="$di" size="40"></td></tr>
+      <tr><td>Data finale:</td><td><input type="text" name="df" value="$df" size="40"></td></tr>    
+    </table>
+    <button onclick="caricaSlots();">Carica slots</button>
   </div>
-  <div class="risorse-box" id="risorse-box">
-    Selezionare una prestazione.
-  </div>
-</div>
+</form>
 
 <script src="$content.getURI('scripts/utils.js')"></script>
 <script src="$content.getURI('scripts/schedula.js')"></script>
