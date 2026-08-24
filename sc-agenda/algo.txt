@@ -4,8 +4,8 @@ in una map con delle risorse Map<String, List<Risorsa>>
 
 dovo produrre un incorcio fra queste secondo la regola:
 chiave 'NG' risorse non raggruppate
-chiave 'A' sono raggruppate risorse equivalente
-chiave 'B' sono raggruppate risorse equivalente
+chiave 'A' sono raggruppate risorse equivalenti
+chiave 'B' sono raggruppate risorse equivalenti
 ...
 se la map contiene
 {
@@ -17,16 +17,14 @@ se la map contiene
 }
 
 l'algoritmo mi deve produrre gli incroci secondo questa regola
-1: [R1 + RA1 + RB1 + ...]
-2: [R1 + RA2 + RB1 + ...]
-3: [R1 + RA1 + RB2 + ...]
-4: [R2 + RA1 + RB1 + ...]
-5: [R2 + RA2 + RB1 + ...]
-6: [R2 + RA1 + RB2 + ...]
+1: [R1 + R2 + RA1 + RB1 + ...]
+2: [R1 + R2 + RA1 + RB2 + ...]
+3: [R1 + R2 + RA2 + RB1 + ...]
+3: [R1 + R2 + RA2 + RB2 + ...]
 ...
-n: [R1 + RA1 + ... + RZ1]
-n: [R1 + RA2 + ... + RZ2]
-n: [R2 + RA1 + ... + RZ1]
-n: [R2 + RA2 + ... + RZ2]
+n: [R1 + R2 + RA1 + ... + RZ1]
+n: [R1 + R2 + RA2 + ... + RZ2]
+n: [R2 + R2 + RA1 + ... + RZ1]
+n: [R2 + R2 + RA2 + ... + RZ2]
 
-cioè per ogni risorsa in NG gli incroci con una di quelle negli altri gruppi
+cioè per tutte le risorse in NG gli incroci con una di quelle negli altri gruppi

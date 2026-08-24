@@ -91,6 +91,7 @@ public class SlotPlugin implements JsonPlugin
        + "  INNER JOIN risorse_link RL ON P.prestazioni_id=RL.id_prestazioni\n"
        + "  INNER JOIN risorse R ON RL.id_risorse=R.risorse_id\n"
        + " WHERE P.codice=${codPrest}\n"
+       + " ORDER BY R.codice\n"
        + "";
 
     JSONArray rvRisorse = new JSONArray();
