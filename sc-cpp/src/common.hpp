@@ -33,6 +33,7 @@ using AnyStringMap = std::unordered_map<String, Any>;
 
 using IntVector = std::vector<int>;
 using IntPair = std::pair<int, int>;
+using IntPairVector = std::vector<IntPair>;
 
 String format(String format, ...);
 bool strStartWith(const String &a, const String &b);

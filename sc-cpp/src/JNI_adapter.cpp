@@ -402,3 +402,29 @@ Java_org_opensc_SchedMerger_getInfoHeaderNative(JNIEnv *env, jobject othis) {
   retVal = prop.toString();
   EPILOG_STR(env, othis)
 }
+
+/*
+ * Class:     org_opensc_SchedMerger
+ * Method:    findFreeSlot
+ * Signature: (Ljava/lang/String;)Ljava/lang/String;
+ */
+JNIEXPORT jstring JNICALL Java_org_opensc_SchedMerger_findFreeSlot(
+    JNIEnv *env, jobject othis, jstring jproperties) {
+  PROLOG_STR(env, othis)
+  SchedMerger *merger = getHandle<SchedMerger>(env, othis);
+  const char *ptrMapPipe = env->GetStringUTFChars(jproperties, NULL);
+  Properties prop(ptrMapPipe);
+
+  long timeout = prop.get("lockDelayMillis", 5000);
+  SchedResourceMultiLock multilock("find", false, true, timeout);
+  IntPairVector risultati;
+  merger->findFreeSlot(multilock, prop, risultati);
+
+  if (risultati.empty()) {
+    retVal.reserve(64 * risultati.size());
+    for (auto p : risultati)
+      retVal += itoa(p.first) + "," + itoa(p.second) + "\n";
+  }
+
+  EPILOG_STR(env, othis)
+}

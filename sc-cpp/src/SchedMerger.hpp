@@ -19,6 +19,8 @@ public:
   virtual void reserveSlot(SchedResourceMultiLock &multilock, int giorno,
                            int slotgiorno, u_int64_t uniqueid,
                            Properties &properties);
+  virtual void findFreeSlot(SchedResourceMultiLock &multilock,
+                           Properties &properties, IntPairVector& risultati);
 
   virtual void clear();
   virtual void getAlgoNames(StringVector &names) const;
