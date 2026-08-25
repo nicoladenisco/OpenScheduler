@@ -52,6 +52,15 @@ public class ScJava
         case "MERGER":
           mergerTest();
           break;
+
+        case "BOOK":
+        case "BOOKING":
+          bookingTest();
+          break;
+
+        default:
+          System.out.println("Aggiungere uno di RESOURCE, MERGE, BOOK");
+          break;
       }
     }
     catch(Exception e)
@@ -251,5 +260,63 @@ public class ScJava
       sb.append(i);
     }
     return sb.toString();
+  }
+
+  private static void bookingTest()
+     throws Exception
+  {
+    System.out.println("TEST getMergerAlgos !!!");
+    List<String> result = SchedMerger.getMergerAlgos();
+    System.out.println("Algos: " + result + "\n");
+
+    buildMergerResultTest("R001");
+    buildMergerResultTest("R002");
+    buildMergerResultTest("R003");
+    buildMergerResultTest("R004");
+
+    System.out.println("TEST merge !!!");
+    try(SchedMerger merger = new SchedMerger())
+    {
+      Properties propMerge = new Properties();
+      mergeResource(merger, "R001", propMerge);
+      mergeResource(merger, "R002", propMerge);
+      mergeResource(merger, "R003", propMerge);
+      mergeResource(merger, "R004", propMerge);
+
+      // prenota uno o piu slot
+      Properties propBooking = new Properties();
+      propBooking.put("numSlots", "2");
+      merger.reserveSlot(0, 13, 999999, propBooking);
+
+      System.out.println("RISULTATO (X):");
+      Properties pdump = new Properties();
+      pdump.setProperty("daystart", "0");
+      pdump.setProperty("daystop", "10");
+      System.out.println("== MERGER ==");
+      System.out.println(merger.dumpSlots(pdump));
+    }
+
+    Properties pdump = new Properties();
+    pdump.setProperty("daystart", "0");
+    pdump.setProperty("daystop", "10");
+    dumpResource("R001", pdump);
+    dumpResource("R002", pdump);
+    dumpResource("R003", pdump);
+    dumpResource("R004", pdump);
+  }
+
+  private static void dumpResource(String codice, Properties pdump)
+     throws Exception
+  {
+    File fres = new File("/tmp/oskjava/" + codice + "_2026.slot");
+    Properties properties = new Properties();
+    properties.setProperty("codice", codice);
+    properties.setProperty("nomefile", fres.getAbsolutePath());
+
+    try(SchedResource instance = new SchedResource(fres))
+    {
+      System.out.println("== RISORSA " + codice + " ==");
+      System.out.println(instance.dumpSlots(pdump));
+    }
   }
 }

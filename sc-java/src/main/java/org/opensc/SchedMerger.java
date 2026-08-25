@@ -17,6 +17,7 @@
 package org.opensc;
 
 import java.lang.ref.Cleaner;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 
@@ -167,5 +168,19 @@ public class SchedMerger implements AutoCloseable
   {
     String pipeMap = getInfoHeaderNative();
     return Utils.String2Properties(pipeMap);
+  }
+
+  private native String findFreeSlot(String pipeProps);
+
+  public void findFreeSlot(Properties properties, List<String> risultati)
+     throws OscNativeException
+  {
+    String prop = Utils.Properties2String(properties);
+    String results = findFreeSlot(prop);
+    if("ERROR".equals(results))
+      throw new OscNativeException(nativeError);
+
+    String[] res = results.split("\n");
+    risultati.addAll(Arrays.asList(res));
   }
 }
