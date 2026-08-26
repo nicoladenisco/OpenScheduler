@@ -16,5 +16,14 @@ Disponibilita dal $di al $df
 <div class="slot-row" id='slot-incroci-row'>  
 </div>
 
+<h2>Prenota prestazione</h2>
+<div class="slot-form" id='slot-form'>  
+  <select name="comboIncrocio" id="comboIncrocio" onchange="caricaDisponibilita('$codPrest', '$di', '$df')">
+    <option value="">Seleziona una combinazione di risorse ...</option>
+  </select>
+  <div id="tabella-dispo">    
+  </div>
+</div>
+
 <script src="$content.getURI('scripts/utils.js')"></script>
 <script src="$content.getURI('scripts/slots.js')"></script>

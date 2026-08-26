@@ -18,14 +18,19 @@
 package org.opensc.agenda.services.slots;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Properties;
+import java.util.function.Function;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.torque.criteria.Criteria;
 import org.apache.torque.criteria.SqlEnum;
 import org.apache.turbine.services.BaseService;
 import org.apache.turbine.services.InitializationException;
+import org.commonlib5.utils.StringJoin;
 import org.opensc.SchedResource;
 import org.opensc.agenda.om.Risorse;
 import org.opensc.agenda.om.RisorsePeer;
@@ -78,7 +83,10 @@ public class SlotServiceImpl extends BaseService
   public void initSlos()
      throws Exception
   {
-    List<Risorse> lsRisorse = RisorsePeer.doSelect(new Criteria().where(RisorsePeer.RISORSE_ID, 0, SqlEnum.GREATER_THAN));
+    Criteria c = new Criteria();
+    c.where(RisorsePeer.RISORSE_ID, 0, SqlEnum.GREATER_THAN);
+    c.addAscendingOrderByColumn(RisorsePeer.CODICE);
+    List<Risorse> lsRisorse = RisorsePeer.doSelect(c);
 
     for(Risorse r : lsRisorse)
     {
@@ -86,19 +94,7 @@ public class SlotServiceImpl extends BaseService
       File fres = getFileRisorse(codice);
 
       if(!fres.exists())
-      {
-        Properties properties = new Properties();
-        properties.setProperty("codice", codice);
-        properties.setProperty("nomefile", fres.getAbsolutePath());
-
-        try(SchedResource instance = SchedResource.build(properties))
-        {
-          log.info("creato file slots:\n" + instance.dumpHeader(properties));
-
-          instance.clearAllSlots(SchedResource.SLOT_UNAVAILABLE);
-          instance.stampResources("daily", properties);
-        }
-      }
+        generaRisorse(codice, fres);
     }
   }
 
@@ -106,5 +102,91 @@ public class SlotServiceImpl extends BaseService
   public File getFileRisorse(String codice)
   {
     return new File(dirSlots, codice + "_2026.slot");
+  }
+
+  protected void generaRisorse(String codice, File fres)
+     throws Exception
+  {
+    Properties properties = new Properties();
+    properties.setProperty("codice", codice);
+    properties.setProperty("nomefile", fres.getAbsolutePath());
+
+    log.info("TEST build " + codice + " !!!");
+    try(SchedResource instance = SchedResource.build(properties))
+    {
+      log.info(instance.dumpHeader(properties));
+      //log.info(result.dumpSlots(properties));
+
+      switch(codice)
+      {
+        default:
+          instance.stampResources("daily", properties);
+          break;
+        case "d1":
+        case "i1":
+          properties.setProperty("hourmap", "9,10,11,12,13,14,15,16");
+          properties.setProperty("daymap", StringJoin.build(",").addObjects(giorniValidiAnno(null)).join());
+          instance.stampResources("free", properties);
+          break;
+        case "d2":
+        case "i2":
+          properties.setProperty("hourmap", "10,11,12,13,14,15,16");
+          properties.setProperty("daymap", StringJoin.build(",").addObjects(giorniDispari()).join());
+          instance.stampResources("free", properties);
+          break;
+        case "d3":
+        case "i3":
+          properties.setProperty("hourmap", "9,10,11,12,13,14,15,16");
+          properties.setProperty("daymap", StringJoin.build(",").addObjects(giorniPari()).join());
+          instance.stampResources("free", properties);
+          break;
+      }
+    }
+  }
+
+  private List<Integer> giorniValidiAnno(Function<Integer, Boolean> funTest)
+  {
+    List<Integer> rv = new ArrayList<>(365);
+    Calendar cal = new GregorianCalendar();
+    cal.set(Calendar.DAY_OF_YEAR, 1);
+
+    for(int i = 0; i < 365; i++)
+    {
+      // imposta giorno e ricalcola calendario
+      cal.set(Calendar.DAY_OF_YEAR, i + 1);
+      cal.getTime();
+
+      int giorno = cal.get(Calendar.DAY_OF_YEAR);
+      int gs = cal.get(Calendar.DAY_OF_WEEK);
+
+      // esclude sabati e domeniche
+      if(gs == 1 || gs == 7)
+        continue;
+
+      int mese = cal.get(Calendar.MONTH) + 1;
+      int gmese = cal.get(Calendar.DAY_OF_MONTH);
+      // scarta festivita note
+      if(mese == 1 && (gmese == 1 || gmese == 2 || gmese == 6))
+        continue;
+      if(mese == 12 && (gmese == 24 || gmese == 25 || gmese == 31))
+        continue;
+
+      // applica funzione custom di accettazione se richiesto
+      if(funTest != null && !funTest.apply(giorno))
+        continue;
+
+      rv.add(giorno);
+    }
+    return rv;
+  }
+
+  private List<Integer> giorniPari()
+  {
+    return giorniValidiAnno((g) -> (g % 2) == 0);
+  }
+
+  private List<Integer> giorniDispari()
+  {
+    return giorniValidiAnno((g) -> (g % 2) == 1);
   }
 }
