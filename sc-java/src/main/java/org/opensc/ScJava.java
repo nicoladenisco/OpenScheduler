@@ -58,6 +58,11 @@ public class ScJava
           bookingTest();
           break;
 
+        case "FIND":
+        case "SEARCH":
+          findTest();
+          break;
+
         default:
           System.out.println("Aggiungere uno di RESOURCE, MERGE, BOOK");
           break;
@@ -274,7 +279,7 @@ public class ScJava
     buildMergerResultTest("R003");
     buildMergerResultTest("R004");
 
-    System.out.println("TEST merge !!!");
+    System.out.println("TEST booking !!!");
     try(SchedMerger merger = new SchedMerger())
     {
       Properties propMerge = new Properties();
@@ -318,5 +323,44 @@ public class ScJava
       System.out.println("== RISORSA " + codice + " ==");
       System.out.println(instance.dumpSlots(pdump));
     }
+  }
+
+  private static void findTest()
+     throws Exception
+  {
+    System.out.println("TEST getMergerAlgos !!!");
+    List<String> result = SchedMerger.getMergerAlgos();
+    System.out.println("Algos: " + result + "\n");
+
+    buildMergerResultTest("R001");
+    buildMergerResultTest("R002");
+    buildMergerResultTest("R003");
+    buildMergerResultTest("R004");
+
+    System.out.println("TEST booking !!!");
+    try(SchedMerger merger = new SchedMerger())
+    {
+      Properties propMerge = new Properties();
+      mergeResource(merger, "R001", propMerge);
+      mergeResource(merger, "R002", propMerge);
+      mergeResource(merger, "R003", propMerge);
+      mergeResource(merger, "R004", propMerge);
+
+      // cerca uno o piu slot
+      Properties propFind = new Properties();
+      propFind.put("numSlots", "2");
+      List<String> risultato = merger.findFreeSlot(propFind);
+
+      System.out.println("RISULTATO RICERCA:");
+      System.out.println(risultato);
+    }
+
+//    Properties pdump = new Properties();
+//    pdump.setProperty("daystart", "0");
+//    pdump.setProperty("daystop", "10");
+//    dumpResource("R001", pdump);
+//    dumpResource("R002", pdump);
+//    dumpResource("R003", pdump);
+//    dumpResource("R004", pdump);
   }
 }
