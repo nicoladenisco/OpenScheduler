@@ -177,22 +177,21 @@ void SchedMerger::findFreeSlot(SchedResourceMultiLock &multilock,
     throw StructureException(format("il valore di numSlots non è compatibile "
                                     "con i limiti di questo merger"));
 
-  IntPair slotgiorno = std::make_pair(
+  IntPair slotgiorno(
       properties.get("slotgiornoInizio", 0),
       properties.get("slotgiornoFine", merged->numSlotsGiorno - num));
 
-  if (slotgiorno.first < 0 ||
-      (slotgiorno.first + num) >= merged->numSlotsGiorno)
+  if (slotgiorno.first < 0 || (slotgiorno.first + num) > merged->numSlotsGiorno)
     throw StructureException(
         format("il valore slotgiornoInizio %d non è compatibile: "
                "il massimo ammesso è %d",
                slotgiorno, (int)merged->numSlotsGiorno - num));
   if (slotgiorno.second < 0 ||
-      (slotgiorno.second + num) >= merged->numSlotsGiorno - num)
+      (slotgiorno.second + num) > merged->numSlotsGiorno)
     throw StructureException(
         format("il valore slotgiornoFine %d non è compatibile: "
                "il massimo ammesso è %d",
-               slotgiorno, (int)merged->numSlotsGiorno - num));
+               slotgiorno.second, (int)merged->numSlotsGiorno - num));
 
   if (num + slotgiorno.first > slotgiorno.second)
     throw StructureException(format("il valore di numSlots non è compatibile "
