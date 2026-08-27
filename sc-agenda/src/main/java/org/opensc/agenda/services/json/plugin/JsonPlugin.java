@@ -18,6 +18,7 @@
 package org.opensc.agenda.services.json.plugin;
 
 import java.util.Map;
+import org.commonlib5.xmlrpc.MapParser;
 import org.json.JSONObject;
 import org.opensc.agenda.services.json.ExtendedJsonService;
 
@@ -38,6 +39,6 @@ public interface JsonPlugin
    * @return oggetto json popolato
    * @throws java.lang.Exception
    */
-  public JSONObject processRequest(String method, String sRequest, Map<String, Object> params, ExtendedJsonService service, JSONObject toPopulate)
+  public JSONObject processRequest(String method, String sRequest, MapParser params, ExtendedJsonService service, JSONObject toPopulate)
      throws Exception;
 }

@@ -1,4 +1,4 @@
-
+var datiSlots;
 
 function caricaSlotBox(codPrest, start, end) {
   var url = jsContextPath + "/json/slot";
@@ -8,7 +8,11 @@ function caricaSlotBox(codPrest, start, end) {
     renderEnd: end
   };
 
+  // pulisce dati
+  datiSlots = null;
+
   chiamaAjaxAsync("GET", url, dati, function (result) {
+    datiSlots = result;
     var html = "";
     result.risorse.forEach(function (r) {
       html += `<div class='slot-box-fixed'>Slots ${r.code} (${r.name})\n${r.sldump}</div>`;
@@ -58,7 +62,7 @@ function caricaSelectDinamica(selectSelector, url, dati, valueField, textField, 
   });
 }
 
-function caricaDisponibilita(codPrest, start, end) {
+function caricaDisponibilitaJson(codPrest, start, end) {
   var url = jsContextPath + "/json/slot-dispo";
   var incrocio = $("#comboIncrocio").val();
   if (incrocio == "") {
@@ -74,18 +78,63 @@ function caricaDisponibilita(codPrest, start, end) {
   };
 
   chiamaAjaxAsync("GET", url, dati, function (result) {
-    if (result.dispo.lenght == 0) {
+    if (result.dispo.length === 0) {
       $("#tabella-dispo").html("Nessuna disponibilità trovata per la combinazione richiesta.");
       return;
     }
 
     var html = "<table width='100%'>";
     result.dispo.forEach(function (d) {
-      html += `<tr><td>${d.gsn}</td><td>${d.date}</td><td>${d.orario}</td><td>${d.giorno}</td><td>${d.slot}</td><td>${d.gs}</td><td></td><td></td></tr>`;
+      html += `<tr>
+<td>${d.gsn}</td><td>${d.date}</td><td>${d.orario}</td><td>${d.giorno}</td><td>${d.slot}</td><td>${d.gs}</td>
+<td></td>
+<td><button onclick=\"salvaPrenotazione('${codPrest}','${start}','${end}','${incrocio}','${d.giorno}','${d.slot}')\">Prenota</button></td>
+</tr>`;
     });
     html += "</table>";
     $("#tabella-dispo").html(html);
+  });
+}
 
+function caricaDisponibilita(codPrest, start, end) {
+  var incrocio = $("#comboIncrocio").val();
+  if (incrocio == "") {
+    $("#tabella-dispo").html("");
+    return;
+  }
 
+  $("#tabella-dispo").html("Nessuna disponibilità per la combinazione richiesta.");
+
+  datiSlots.incroci.forEach(function (r) {
+    if (r.name == incrocio) {
+      if (r.dispo.length > 0) {
+        var html = "<table width='100%'>";
+        r.dispo.forEach(function (d) {
+          html += `<tr>
+<td>${d.gsn}</td><td>${d.date}</td><td>${d.orario}</td><td>${d.giorno}</td><td>${d.slot}</td><td>${d.gs}</td>
+<td></td>
+<td><button onclick=\"salvaPrenotazione('${codPrest}','${start}','${end}','${incrocio}','${d.giorno}','${d.slot}')\">Prenota</button></td>
+</tr>`;
+        });
+        html += "</table>";
+        $("#tabella-dispo").html(html);
+      }
+    }
+  });
+}
+
+function salvaPrenotazione(codPrest, start, end, incrocio, giorno, slot) {
+  var url = jsContextPath + "/json/slot-dispo";
+
+  var dati = {
+    codPrest: codPrest,
+    incrocio: incrocio,
+    renderStart: start,
+    renderEnd: end,
+    giorno: giorno,
+    slot: slot
+  };
+
+  chiamaAjaxAsync("POST", url, dati, function (result) {
   });
 }

@@ -27,6 +27,7 @@ import org.commonlib5.utils.ArrayMap;
 import org.commonlib5.utils.ArrayOper;
 import org.commonlib5.utils.DateTime;
 import org.commonlib5.utils.StringOper;
+import org.commonlib5.xmlrpc.MapParser;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -67,8 +68,7 @@ public class EventiCalendarioPlugin implements JsonPlugin
   public static final Map<String, String> json2obj = StringOper.reverseMap(obj2json, new ArrayMap<>());
 
   @Override
-  public JSONObject processRequest(String method, String sRequest, Map<String, Object> params,
-     ExtendedJsonService service, JSONObject toPopulate)
+  public JSONObject processRequest(String method, String sRequest, MapParser params, ExtendedJsonService service, JSONObject toPopulate)
      throws Exception
   {
     switch(method)
@@ -95,12 +95,12 @@ public class EventiCalendarioPlugin implements JsonPlugin
    * @return
    * @throws Exception
    */
-  protected JSONObject processRequestGET(String sRequest, Map<String, Object> params, ExtendedJsonService service,
+  protected JSONObject processRequestGET(String sRequest, MapParser params, ExtendedJsonService service,
      JSONObject toPopulate)
      throws Exception
   {
-    String inizio = params.getOrDefault("renderStart", "2010-01-01").toString();
-    String fine = params.getOrDefault("renderEnd", "2100-12-31").toString();
+    String inizio = params.getAsString("renderStart", "2010-01-01");
+    String fine = params.getAsString("renderEnd", "2100-12-31");
 
     Date di = DateTime.inizioGiorno(dfIso.parse(inizio));
     Date df = DateTime.fineGiorno(dfIso.parse(fine));
@@ -132,13 +132,13 @@ public class EventiCalendarioPlugin implements JsonPlugin
    * @return
    * @throws Exception
    */
-  protected JSONObject processRequestPOST(String sRequest, Map<String, Object> params, ExtendedJsonService service,
+  protected JSONObject processRequestPOST(String sRequest, MapParser params, ExtendedJsonService service,
      JSONObject toPopulate)
      throws Exception
   {
-    String eid = params.getOrDefault("eid", "").toString().trim();
-    String cid = params.getOrDefault("cid", "").toString().trim();
-    String jsondata = params.getOrDefault("jsondata", "").toString().trim();
+    String eid = params.getAsString("eid", "");
+    String cid = params.getAsString("cid", "");
+    String jsondata = params.getAsString("jsondata", "");
     JSONObject dati = new JSONObject(jsondata);
 
     Eventi e;
@@ -199,11 +199,11 @@ public class EventiCalendarioPlugin implements JsonPlugin
    * @return
    * @throws Exception
    */
-  protected JSONObject processRequestDELETE(String sRequest, Map<String, Object> params, ExtendedJsonService service,
+  protected JSONObject processRequestDELETE(String sRequest, MapParser params, ExtendedJsonService service,
      JSONObject toPopulate)
      throws Exception
   {
-    String eid = params.getOrDefault("eid", "").toString().trim();
+    String eid = params.getAsString("eid", "");
     if(!eid.isEmpty())
     {
       String sSQL = "DELETE FROM eventi WHERE eventi_id=" + eid;

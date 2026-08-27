@@ -18,6 +18,7 @@
     <column name="PRESTAZIONI_ID" required="true" primaryKey="true" type="INTEGER" />
     <column name="CODICE"         required="true" size="64" type="VARCHAR" />
     <column name="DESCRIZIONE"    required="true" size="255" type="VARCHAR" />
+    <column name="NUM_SLOTS"      required="true" type="INTEGER" default="1"/>
   </table>
 
   <table name="RISORSE" idMethod="idbroker">
@@ -60,6 +61,23 @@
     <column name="startdate"          type="TIMESTAMP" />
     <column name="enddate"            type="TIMESTAMP" />
     <column name="eraw"               type="CLOB" />
+  </table>
+
+  <table name="PRENOTAZIONI" idMethod="idbroker">
+    <column name="PRENOTAZIONI_ID"    required="true" primaryKey="true" type="INTEGER" />
+    <column name="DATA_PREN"          type="TIMESTAMP" />
+    <column name="OPERATORE"          type="CLOB" />
+  </table>
+
+  <table name="PRENOTAZIONI_LINK" idMethod="none">
+    <column name="ID_PRENOTAZIONI"    required="true" primaryKey="true" type="INTEGER" />
+    <column name="ID_EVENTI"          required="true" primaryKey="true" type="INTEGER" />
+    <foreign-key foreignTable="PRENOTAZIONI">
+      <reference local="ID_PRENOTAZIONI" foreign="PRENOTAZIONI_ID"></reference>
+    </foreign-key>
+    <foreign-key foreignTable="EVENTI">
+      <reference local="ID_EVENTI" foreign="eventi_id"></reference>
+    </foreign-key>
   </table>
 
 </database>

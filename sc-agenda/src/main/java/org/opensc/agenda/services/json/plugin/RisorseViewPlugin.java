@@ -23,6 +23,7 @@ import java.sql.Connection;
 import java.util.Map;
 import org.apache.torque.Torque;
 import org.commonlib5.utils.ArrayOper;
+import org.commonlib5.xmlrpc.MapParser;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.opensc.agenda.services.json.ExtendedJsonService;
@@ -47,8 +48,7 @@ public class RisorseViewPlugin implements JsonPlugin
   );
 
   @Override
-  public JSONObject processRequest(String method, String sRequest, Map<String, Object> params,
-     ExtendedJsonService service, JSONObject toPopulate)
+  public JSONObject processRequest(String method, String sRequest, MapParser params, ExtendedJsonService service, JSONObject toPopulate)
      throws Exception
   {
     switch(method)
@@ -56,6 +56,9 @@ public class RisorseViewPlugin implements JsonPlugin
       case "GET":
         return processRequestGET(sRequest, params, service, toPopulate);
 //      case "POST":
+//        return processRequestPOST(sRequest, params, service, toPopulate);
+//      case "DELETE":
+//        return processRequestDELETE(sRequest, params, service, toPopulate);//      case "POST":
 //        return processRequestPOST(sRequest, params, service, toPopulate);
 //      case "DELETE":
 //        return processRequestDELETE(sRequest, params, service, toPopulate);
@@ -75,17 +78,10 @@ public class RisorseViewPlugin implements JsonPlugin
    * @return
    * @throws Exception
    */
-  protected JSONObject processRequestGET(String sRequest, Map<String, Object> params, ExtendedJsonService service,
+  protected JSONObject processRequestGET(String sRequest, MapParser params, ExtendedJsonService service,
      JSONObject toPopulate)
      throws Exception
   {
-//    String codPrest = params.getOrDefault("codPrest", "2010-01-01").toString();
-//    String inizio = params.getOrDefault("renderStart", "2010-01-01").toString();
-//    String fine = params.getOrDefault("renderEnd", "2100-12-31").toString();
-//
-//    Date di = DateTime.inizioGiorno(dfIso.parse(inizio));
-//    Date df = DateTime.fineGiorno(dfIso.parse(fine));
-
     String sSQL
        = "SELECT R.*,RL.gruppo\n"
        + " FROM prestazioni P \n"
@@ -97,7 +93,7 @@ public class RisorseViewPlugin implements JsonPlugin
 
     JSONArray rv = new JSONArray();
     try(Connection conn = Torque.getConnection();
-       QueryDataSetMacro qds = new QueryDataSetMacro(conn, sSQL, params))
+       QueryDataSetMacro qds = new QueryDataSetMacro(conn, sSQL, params.toMapPure()))
     {
       for(Record r : qds)
       {

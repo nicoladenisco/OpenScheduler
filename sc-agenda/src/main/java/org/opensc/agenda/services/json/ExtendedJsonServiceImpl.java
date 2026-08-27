@@ -26,6 +26,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.fulcrum.json.jackson.Jackson2MapperService;
 import org.apache.torque.om.ColumnAccessByName;
 import org.commonlib5.utils.ClassOper;
+import org.commonlib5.xmlrpc.MapParser;
 import org.json.JSONObject;
 import org.opensc.agenda.Utils;
 import org.opensc.agenda.services.json.plugin.JsonPlugin;
@@ -195,7 +196,7 @@ public class ExtendedJsonServiceImpl extends Jackson2MapperService
     try
     {
       JsonPlugin plugin = (JsonPlugin) clazz.getConstructor().newInstance();
-      return plugin.processRequest(metod, sRequest, params, this, toPopulate);
+      return plugin.processRequest(metod, sRequest, new MapParser(params), this, toPopulate);
     }
     catch(Exception ex)
     {
