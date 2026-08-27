@@ -337,7 +337,7 @@ public class ScJava
     buildMergerResultTest("R003");
     buildMergerResultTest("R004");
 
-    System.out.println("TEST booking !!!");
+    System.out.println("TEST find !!!");
     try(SchedMerger merger = new SchedMerger())
     {
       Properties propMerge = new Properties();
