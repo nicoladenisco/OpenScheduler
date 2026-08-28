@@ -108,7 +108,7 @@ function caricaDisponibilita(codPrest, start, end) {
   datiSlots.incroci.forEach(function (r) {
     if (r.name == incrocio) {
       if (r.dispo.length > 0) {
-        var html = "<table width='100%'>";
+        var html = "<table class='tabella-dispo' width='100%'>";
         r.dispo.forEach(function (d) {
           html += `<tr>
 <td>${d.gsn}</td><td>${d.date}</td><td>${d.orario}</td><td>${d.giorno}</td><td>${d.slot}</td><td>${d.gs}</td>
@@ -131,10 +131,14 @@ function salvaPrenotazione(codPrest, start, end, incrocio, giorno, slot) {
     incrocio: incrocio,
     renderStart: start,
     renderEnd: end,
+    soggetto: "",
+    operatore: "",
     giorno: giorno,
     slot: slot
   };
 
   chiamaAjaxAsync("POST", url, dati, function (result) {
+    alert("Prenotazione salvata con successo!");
+    window.location.href = jsContextPath + "/app/template/Calendario.vm";
   });
 }

@@ -193,3 +193,7 @@ input:disabled + label {
 
 .slot-form {
 }
+
+.tabella-dispo tr:hover {
+  background-color: aqua;
+}

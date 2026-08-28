@@ -19,12 +19,16 @@
     <column name="CODICE"         required="true" size="64" type="VARCHAR" />
     <column name="DESCRIZIONE"    required="true" size="255" type="VARCHAR" />
     <column name="NUM_SLOTS"      required="true" type="INTEGER" default="1"/>
+    <unique name="IDX_PRESTAZIONI_1">
+      <unique-column name="CODICE" />
+    </unique>
   </table>
 
   <table name="RISORSE" idMethod="idbroker">
     <column name="RISORSE_ID"    required="true" primaryKey="true" type="INTEGER" />
     <column name="CODICE"        required="true" size="64" type="VARCHAR" />
     <column name="DESCRIZIONE"   required="true" size="255" type="VARCHAR" />
+    <column name="TIPO"          size="1" type="VARCHAR" description="M=medico I=infermiere S=sala visite" />
 
     <column name="color"               size="64" type="VARCHAR" />
     <column name="borderColor"         size="64" type="VARCHAR" />
@@ -65,8 +69,13 @@
 
   <table name="PRENOTAZIONI" idMethod="idbroker">
     <column name="PRENOTAZIONI_ID"    required="true" primaryKey="true" type="INTEGER" />
+    <column name="ID_PRESTAZIONI"     required="true" type="INTEGER" />
     <column name="DATA_PREN"          type="TIMESTAMP" />
+    <column name="SOGGETTO"           type="CLOB" />
     <column name="OPERATORE"          type="CLOB" />
+    <foreign-key foreignTable="PRESTAZIONI">
+      <reference local="ID_PRESTAZIONI" foreign="PRESTAZIONI_ID"></reference>
+    </foreign-key>
   </table>
 
   <table name="PRENOTAZIONI_LINK" idMethod="none">

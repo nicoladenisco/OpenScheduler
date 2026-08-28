@@ -35,6 +35,7 @@ CREATE TABLE
   eseguo file target/generated-sql/torque/postgresql/application-schema.sql
 ERROR:  relation "risorse_link" does not exist
 ERROR:  relation "risorse_link" does not exist
+ERROR:  relation "prenotazioni" does not exist
 ERROR:  relation "prenotazioni_link" does not exist
 ERROR:  relation "prenotazioni_link" does not exist
 ERROR:  table "prestazioni" does not exist
@@ -49,6 +50,7 @@ CREATE TABLE
 CREATE TABLE
 CREATE TABLE
 CREATE TABLE
+ALTER TABLE
 ALTER TABLE
 ALTER TABLE
 ALTER TABLE

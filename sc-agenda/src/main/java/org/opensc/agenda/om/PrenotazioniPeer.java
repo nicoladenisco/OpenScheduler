@@ -9,9 +9,8 @@ package org.opensc.agenda.om;
  * This class will only be generated as long as it does not already exist
  * in the output directory.
  */
-
 public class PrenotazioniPeer
-    extends org.opensc.agenda.om.BasePrenotazioniPeer
+   extends org.opensc.agenda.om.BasePrenotazioniPeer
 {
 
 }

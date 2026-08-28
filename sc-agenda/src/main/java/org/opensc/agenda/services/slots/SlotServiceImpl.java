@@ -32,6 +32,7 @@ import org.apache.turbine.services.BaseService;
 import org.apache.turbine.services.InitializationException;
 import org.commonlib5.utils.StringJoin;
 import org.opensc.SchedResource;
+import org.opensc.agenda.Utils;
 import org.opensc.agenda.om.Risorse;
 import org.opensc.agenda.om.RisorsePeer;
 
@@ -57,6 +58,10 @@ public class SlotServiceImpl extends BaseService
 
     try
     {
+      // questo sta qua giusto per essere eseguito all'avvio
+      Utils.initIDtable();
+
+      // carica libreria nativa per OpenScheduler
       loadNativeLibrary();
 
       dirSlots = new File("/tmp/osk-agenda");

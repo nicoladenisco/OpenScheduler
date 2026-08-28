@@ -76,10 +76,19 @@ public class Utils
     //  name="RISORSE"
     //  name="RISORSE_LINK" no
     //  name="EVENTI"
+    //  name="PRENOTAZIONI"
+    //  name="PRENOTAZIONI_LINK" no
+
+    String sSQL1
+       = "INSERT INTO id_table(\n"
+       + "	id_table_id, table_name, next_id, quantity)\n"
+       + "	VALUES (0, '', 0, 0)";
+    executeStatementQuiet(sSQL1);
 
     loadIDtable("PRESTAZIONI", "PRESTAZIONI_ID");
     loadIDtable("RISORSE", "RISORSE_ID");
     loadIDtable("EVENTI", "EVENTI_ID");
+    loadIDtable("PRENOTAZIONI", "PRENOTAZIONI_ID");
   }
 
   public static void loadIDtable(String tabella, String primary)

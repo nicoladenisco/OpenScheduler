@@ -21,6 +21,7 @@ import com.workingdogs.village.QueryDataSetMacro;
 import com.workingdogs.village.Record;
 import java.io.File;
 import java.sql.Connection;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -374,6 +375,8 @@ public class SlotPlugin implements JsonPlugin
 
     String codPrest = params.getAsString("codPrest", "");
     String incrocio = params.getAsString("incrocio", "");
+    String soggetto = params.getAsString("soggetto", "paziente generico");
+    String operatore = params.getAsString("operatore", "operatore generico");
     String inizio = params.getAsString("renderStart", "2010-01-01");
     String fine = params.getAsString("renderEnd", "2100-12-31");
 
@@ -387,10 +390,10 @@ public class SlotPlugin implements JsonPlugin
     if(incrocio.isEmpty() || codRisorse.length == 0)
       return new JSONObject();
 
-    int giorno = params.getAsInt("giorno", 0);
-    int slot = params.getAsInt("slot", 0);
+    int giorno = params.getAsInt("giorno", -1);
+    int slot = params.getAsInt("slot", -1);
 
-    if(giorno == 0)
+    if(giorno == -1 || slot == -1 || giorno == 0)
       return new JSONObject();
 
     String sSQL
@@ -404,32 +407,21 @@ public class SlotPlugin implements JsonPlugin
        + "";
 
     JSONArray rvRisorse = new JSONArray();
-    JSONArray rvDisponibilita = new JSONArray();
 
     try(TorqueConnection conn = Transaction.begin();
        QueryDataSetMacro qds = new QueryDataSetMacro(conn, sSQL, params.toMapPure());
        SchedMerger merger = new SchedMerger())
     {
-      Prenotazioni p = new Prenotazioni();
+      List<Record> lsRecs = qds.fetchAllRecords();
+      Prestazioni pr = PrestazioniPeer.retrieveByCodice(codPrest, conn);
 
-      for(Record r : qds)
+      // == carica nel merger tutte le risorse ==
+      for(Record r : lsRecs)
       {
         String codice = r.getValue("codice").asOkString();
         JSONObject jsonRisorsa = service.toJson(new JSONObject(), r, RisorseViewPlugin.obj2json);
 
         File fres = slsrv.getFileRisorse(codice);
-        // Properties properties = new Properties();
-        // properties.setProperty("codice", codice);
-        // properties.setProperty("nomefile", fres.getAbsolutePath());
-        // try(SchedResource sr = new SchedResource(fres))
-        // {
-        // jsonRisorsa.put("slheader", sr.getInfoHeader());
-        // Properties pdump = new Properties(properties);
-        // pdump.setProperty("daystart", dys);
-        // pdump.setProperty("daystop", dyf);
-        // jsonRisorsa.put("sldump", sr.dumpSlots(pdump));
-        // }
-
         Properties pmerge = new Properties();
         pmerge.setProperty("codice", codice);
         pmerge.setProperty("nomefile", fres.getAbsolutePath());
@@ -438,26 +430,65 @@ public class SlotPlugin implements JsonPlugin
         merger.mergeResources("default", pmerge);
 
         rvRisorse.put(jsonRisorsa);
+      }
 
+      // == crea eventi e prenotazione ==
+      Properties mergerHeader = merger.getInfoHeader();
+      Prenotazioni p = new Prenotazioni();
+      p.setPrestazioni(pr);
+
+      List<String> attendees = new ArrayList<>();
+      String elocation = "";
+      for(Record r : lsRecs)
+      {
+        attendees.add(r.getValue("DESCRIZIONE").asOkString());
+
+        switch(r.getValue("TIPO").asOkString())
+        {
+          case "S":
+            elocation = r.getValue("DESCRIZIONE").asOkString();
+            break;
+        }
+      }
+
+      Date appuntamentoInizio = calcolaData(mergerHeader, giorno, slot, 0);
+      Date appuntamentoFine = calcolaData(mergerHeader, giorno, slot, 1);
+
+      for(Record r : lsRecs)
+      {
         int idRisorsa = r.getValue("RISORSE_ID").asInt();
-        int idPrestazione = r.getValue("ID_PRESTAZIONI").asInt();
-        Risorse ri = RisorsePeer.retrieveByPK(idRisorsa);
-        Prestazioni pr = PrestazioniPeer.retrieveByPK(idPrestazione);
+        //int idPrestazione = r.getValue("ID_PRESTAZIONI").asInt();
+        Risorse ri = RisorsePeer.retrieveByPK(idRisorsa, conn);
+        String titolo = StringJoin.build(" ").add(soggetto, pr.getDescrizione()).join();
+        String body = StringJoin.build(" ").add(soggetto, pr.getDescrizione(), ri.getDescrizione()).join();
 
         Eventi e = new Eventi();
         e.setIdCalendar(idRisorsa);
-        e.setTitle(pr.getDescrizione() + " " + ri.getDescrizione());
+        e.setTitle(titolo);
+        e.setBody(body);
+        e.setAttendees(StringJoin.build().add(attendees).join());
+        e.setElocation(elocation);
+        e.setStartdate(appuntamentoInizio);
+        e.setEnddate(appuntamentoFine);
+        e.save(conn);
+        p.aggiungiLink(e.getEventiId(), conn);
       }
 
-      // prenota uno o piu slot
+      // salva prenotazione su db
+      p.setDataPren(new Date());
+      p.setSoggetto(soggetto);
+      p.setOperatore(operatore);
+      p.save(conn);
+
+      // == impegna uno o piu slot usando il merger ==
       int idBooking = p.getPrenotazioniId();
       Properties propBooking = new Properties();
-      propBooking.put("numSlots", "2");
-      merger.reserveSlot(giorno, slot, idBooking, propBooking);
+      propBooking.put("numSlots", pr.getNumSlots());
+      // attenzione giorno e slot sono 0 based; per l'interfaccia primo gennaio = 1 (ovvero 1 based)
+      merger.reserveSlot(giorno - 1, slot, idBooking, propBooking);
     }
 
     toPopulate.put("risorse", rvRisorse);
-    toPopulate.put("dispo", rvDisponibilita);
     return toPopulate;
   }
 
@@ -472,5 +503,28 @@ public class SlotPlugin implements JsonPlugin
      throws Exception
   {
     return service.toJson(new JSONObject(), p, prest2json);
+  }
+
+  private Date calcolaData(Properties mergerHeader, int giorno, int slot, int inizioFine)
+  {
+    int oraIniziale = StringOper.parse(mergerHeader.get("oraIniziale"), 0);
+    int slotOra = StringOper.parse(mergerHeader.get("slotOra"), 0);
+
+    Calendar cal = new GregorianCalendar();
+    cal.set(Calendar.DAY_OF_YEAR, giorno);
+
+    // se ora finale incrementiamo lo slot per puntare alla sua fine
+    if(inizioFine == 1)
+      slot++;
+
+    // calcolo orario
+    int minuto = (oraIniziale * 60) + ((60 * slot) / slotOra);
+    int ora = minuto / 60;
+    int min = minuto % 60;
+    cal.set(Calendar.HOUR_OF_DAY, ora);
+    cal.set(Calendar.MINUTE, min);
+    cal.set(Calendar.SECOND, 0);
+    cal.set(Calendar.MILLISECOND, 0);
+    return cal.getTime();
   }
 }

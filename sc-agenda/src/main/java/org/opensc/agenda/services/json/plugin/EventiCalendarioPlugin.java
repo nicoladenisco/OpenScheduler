@@ -115,7 +115,9 @@ public class EventiCalendarioPlugin implements JsonPlugin
 
     for(Eventi r : lsRes)
     {
-      rv.put(service.toJson(new JSONObject(), r, obj2json));
+      JSONObject jsonEvento = service.toJson(new JSONObject(), r, obj2json);
+      jsonEvento.put("attendees", r.getAttendeesArray());
+      rv.put(jsonEvento);
     }
 
     toPopulate.put("eventi", rv);

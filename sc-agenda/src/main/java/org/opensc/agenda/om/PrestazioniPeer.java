@@ -23,6 +23,7 @@ public class PrestazioniPeer
   {
     Criteria c = new Criteria();
     c.where(PRESTAZIONI_ID, 0, SqlEnum.GREATER_THAN);
+    c.and(CODICE, codPrest);
     c.addAscendingOrderByColumn(PRESTAZIONI_ID);
     List<Prestazioni> ls = doSelect(c, con);
     return ls.isEmpty() ? null : ls.get(0);

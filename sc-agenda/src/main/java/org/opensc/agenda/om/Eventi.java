@@ -3,6 +3,7 @@ package org.opensc.agenda.om;
 import java.util.Date;
 import org.apache.torque.TorqueException;
 import org.commonlib5.utils.DateTime;
+import org.commonlib5.utils.StringJoin;
 import org.commonlib5.utils.StringOper;
 
 /**
@@ -169,5 +170,15 @@ public class Eventi
       return defVal;
 
     return new Date(tempo);
+  }
+
+  public String[] getAttendeesArray()
+  {
+    return StringOper.string2Array(getAttendees(), ",");
+  }
+
+  public void setAttendeesArray(String[] valori)
+  {
+    setAttendees(StringJoin.build().add(valori).join());
   }
 }

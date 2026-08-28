@@ -9,9 +9,14 @@ package org.opensc.agenda.om;
  * This class will only be generated as long as it does not already exist
  * in the output directory.
  */
-
 public class PrenotazioniLinkPeer
-    extends org.opensc.agenda.om.BasePrenotazioniLinkPeer
+   extends org.opensc.agenda.om.BasePrenotazioniLinkPeer
 {
-
+  public static PrenotazioniLink creaLink(int idPrenotazioni, int idEventi)
+  {
+    PrenotazioniLink rv = new PrenotazioniLink();
+    rv.setIdEventi(idEventi);
+    rv.setIdPrenotazioni(idPrenotazioni);
+    return rv;
+  }
 }

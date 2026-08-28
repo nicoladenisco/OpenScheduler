@@ -28,7 +28,6 @@ import org.apache.torque.om.ColumnAccessByName;
 import org.commonlib5.utils.ClassOper;
 import org.commonlib5.xmlrpc.MapParser;
 import org.json.JSONObject;
-import org.opensc.agenda.Utils;
 import org.opensc.agenda.services.json.plugin.JsonPlugin;
 import org.opensc.agenda.services.json.plugin.JsonPluginAnnotation;
 import org.reflections.Reflections;
@@ -54,9 +53,6 @@ public class ExtendedJsonServiceImpl extends Jackson2MapperService
   {
     super.initialize();
     cercaClassiAnnotate();
-
-    // questo sta qua giusto per essere eseguito all'avvio
-    Utils.initIDtable();
   }
 
   protected void cercaClassiAnnotate()
