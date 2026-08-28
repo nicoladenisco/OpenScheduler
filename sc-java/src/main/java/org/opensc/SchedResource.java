@@ -165,6 +165,35 @@ public class SchedResource implements AutoCloseable
     return rv;
   }
 
+  private native int reserveSlotNative(int giorno, int slotgiorno, long uniqueID, String pipeProps);
+
+  /**
+   * Riserva uno slot fra quelli liberi del merger.
+   * Effettua l'impegno definitivo dello slot per le risorse contenute.
+   * <br>
+   * Parametri per la ricerca:
+   * <ul>
+   * <li>numSlots - numero di slot consecutivi (default 1)</li>
+   * <li>force - ignora stato precedente dello slot (default false)</li>
+   * <li>lockDelayMillis - attesa per lock delle risorse (default 5000)</li>
+   * </ul>
+   * Per orario si intende l'indice dello slot all'interno del giorno.
+   * Sia i giorni che gli orari sono 0 based.
+   *
+   * @param giorno indice del giorno (0 based)
+   * @param slotgiorno numero dello slot all'interno del giorno (0 based)
+   * @param uniqueID identificatore univoco per lo slot
+   * @param properties opzioni di prenotazione
+   * @throws OscNativeException
+   */
+  public void reserveSlot(int giorno, int slotgiorno, long uniqueID, Properties properties)
+     throws OscNativeException
+  {
+    String prop = Utils.Properties2String(properties);
+    if(reserveSlotNative(giorno, slotgiorno, uniqueID, prop) != 0)
+      throw new OscNativeException(nativeError);
+  }
+
   private native String getInfoHeaderNative();
 
   /**
@@ -175,5 +204,89 @@ public class SchedResource implements AutoCloseable
   {
     String pipeMap = getInfoHeaderNative();
     return Utils.String2Properties(pipeMap);
+  }
+
+  private native String findFreeSlotNative(String pipeProps);
+
+  /**
+   * Cerca slot liberi.
+   * <br>
+   * Parametri per la ricerca:
+   * <ul>
+   * <li>daystart - giorno iniziale (default 0)</li>
+   * <li>daystop - giorno finale (default 365)</li>
+   * <li>numSlots - numero di slot consecutivi (default 1)</li>
+   * <li>slotgiornoInizio - orario iniziale (default 0)</li>
+   * <li>slotgiornoFine - orario finale (default ultimo)</li>
+   * <li>lockDelayMillis - attesa per lock delle risorse (default 5000)</li>
+   * </ul>
+   * Per orario si intende l'indice dello slot all'interno del giorno.<br>
+   * Sia i giorni che gli orari sono 0 based.
+   *
+   * @param properties parametri ricerca slots
+   * @return lista di coppie giorno,orario possibili
+   * @throws OscNativeException
+   */
+  public List<String> findFreeSlot(Properties properties)
+     throws OscNativeException
+  {
+    String prop = Utils.Properties2String(properties);
+    String results = findFreeSlotNative(prop);
+    if("ERROR".equals(results))
+      throw new OscNativeException(nativeError);
+    return Utils.String2List(results);
+  }
+
+  private native int clearSlotNative(int giorno, int slotgiorno, long uniqueID, String pipeProps);
+
+  /**
+   * Libera uno slot precedentemente occupato.
+   * Rende liberi gli slot per tutte le risorse contenute.
+   * <br>
+   * Parametri:
+   * <ul>
+   * <li>numSlots - numero di slot consecutivi (default 1)</li>
+   * <li>force - ignora stato precedente dello slot (default false)</li>
+   * <li>lockDelayMillis - attesa per lock delle risorse (default 5000)</li>
+   * </ul>
+   * Per orario si intende l'indice dello slot all'interno del giorno.
+   * Sia i giorni che gli orari sono 0 based.
+   *
+   * @param giorno indice del giorno (0 based)
+   * @param slotgiorno numero dello slot all'interno del giorno (0 based)
+   * @param uniqueID identificatore univoco per lo slot
+   * @param properties opzioni di prenotazione
+   * @throws OscNativeException
+   */
+  public void clearSlots(int giorno, int slotgiorno, long uniqueID, Properties properties)
+     throws OscNativeException
+  {
+    String prop = Utils.Properties2String(properties);
+    if(clearSlotNative(giorno, slotgiorno, uniqueID, prop) != 0)
+      throw new OscNativeException(nativeError);
+  }
+
+  /**
+   * Libera uno slot precedentemente occupato.
+   * Rende liberi gli slot per tutte le risorse contenute.
+   * <br>
+   * Parametri:
+   * <ul>
+   * <li>force - ignora stato precedente dello slot (default false)</li>
+   * <li>lockDelayMillis - attesa per lock delle risorse (default 5000)</li>
+   * </ul>
+   * Per orario si intende l'indice dello slot all'interno del giorno.
+   * Sia i giorni che gli orari sono 0 based.
+   *
+   * @param uniqueID identificatore univoco per lo slot
+   * @param properties opzioni di prenotazione
+   * @throws OscNativeException
+   */
+  public void clearSlots(long uniqueID, Properties properties)
+     throws OscNativeException
+  {
+    String prop = Utils.Properties2String(properties);
+    if(clearSlotNative(-1, -1, uniqueID, prop) != 0)
+      throw new OscNativeException(nativeError);
   }
 }
