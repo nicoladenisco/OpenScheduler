@@ -175,7 +175,7 @@ public class SchedResource implements AutoCloseable
    * <ul>
    * <li>numSlots - numero di slot consecutivi (default 1)</li>
    * <li>force - ignora stato precedente dello slot (default false)</li>
-   * <li>lockDelayMillis - attesa per lock delle risorse (default 5000)</li>
+   * <li>lockDelayMillis - attesa per lock delle risorse (default 3000)</li>
    * </ul>
    * Per orario si intende l'indice dello slot all'interno del giorno.
    * Sia i giorni che gli orari sono 0 based.
@@ -218,7 +218,7 @@ public class SchedResource implements AutoCloseable
    * <li>numSlots - numero di slot consecutivi (default 1)</li>
    * <li>slotgiornoInizio - orario iniziale (default 0)</li>
    * <li>slotgiornoFine - orario finale (default ultimo)</li>
-   * <li>lockDelayMillis - attesa per lock delle risorse (default 5000)</li>
+   * <li>lockDelayMillis - attesa per lock delle risorse (default 3000)</li>
    * </ul>
    * Per orario si intende l'indice dello slot all'interno del giorno.<br>
    * Sia i giorni che gli orari sono 0 based.
@@ -240,21 +240,20 @@ public class SchedResource implements AutoCloseable
   private native int clearSlotNative(int giorno, int slotgiorno, long uniqueID, String pipeProps);
 
   /**
-   * Libera uno slot precedentemente occupato.
-   * Rende liberi gli slot per tutte le risorse contenute.
+   * Libera uno o piu slot precedentemente occupato.
    * <br>
    * Parametri:
    * <ul>
    * <li>numSlots - numero di slot consecutivi (default 1)</li>
    * <li>force - ignora stato precedente dello slot (default false)</li>
-   * <li>lockDelayMillis - attesa per lock delle risorse (default 5000)</li>
+   * <li>lockDelayMillis - attesa per lock delle risorse (default 3000)</li>
    * </ul>
    * Per orario si intende l'indice dello slot all'interno del giorno.
    * Sia i giorni che gli orari sono 0 based.
    *
    * @param giorno indice del giorno (0 based)
    * @param slotgiorno numero dello slot all'interno del giorno (0 based)
-   * @param uniqueID identificatore univoco per lo slot
+   * @param uniqueID identificatore univoco per lo slot (0=ignorato)
    * @param properties opzioni di prenotazione
    * @throws OscNativeException
    */
@@ -267,16 +266,13 @@ public class SchedResource implements AutoCloseable
   }
 
   /**
-   * Libera uno slot precedentemente occupato.
-   * Rende liberi gli slot per tutte le risorse contenute.
+   * Libera uno o piu slot precedentemente occupato.
    * <br>
    * Parametri:
    * <ul>
    * <li>force - ignora stato precedente dello slot (default false)</li>
-   * <li>lockDelayMillis - attesa per lock delle risorse (default 5000)</li>
+   * <li>lockDelayMillis - attesa per lock delle risorse (default 3000)</li>
    * </ul>
-   * Per orario si intende l'indice dello slot all'interno del giorno.
-   * Sia i giorni che gli orari sono 0 based.
    *
    * @param uniqueID identificatore univoco per lo slot
    * @param properties opzioni di prenotazione

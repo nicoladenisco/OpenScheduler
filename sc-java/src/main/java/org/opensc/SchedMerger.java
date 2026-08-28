@@ -213,7 +213,7 @@ public class SchedMerger implements AutoCloseable
   private native int clearSlotNative(int giorno, int slotgiorno, long uniqueID, String pipeProps);
 
   /**
-   * Libera uno slot precedentemente occupato.
+   * Libera uno o piu slot precedentemente occupato.
    * Rende liberi gli slot per tutte le risorse contenute.
    * <br>
    * Parametri:
@@ -227,7 +227,7 @@ public class SchedMerger implements AutoCloseable
    *
    * @param giorno indice del giorno (0 based)
    * @param slotgiorno numero dello slot all'interno del giorno (0 based)
-   * @param uniqueID identificatore univoco per lo slot
+   * @param uniqueID identificatore univoco per lo slot (0=ignorato)
    * @param properties opzioni di prenotazione
    * @throws OscNativeException
    */
@@ -240,7 +240,7 @@ public class SchedMerger implements AutoCloseable
   }
 
   /**
-   * Libera uno slot precedentemente occupato.
+   * Libera uno o piu slot precedentemente occupato.
    * Rende liberi gli slot per tutte le risorse contenute.
    * <br>
    * Parametri:
@@ -248,8 +248,6 @@ public class SchedMerger implements AutoCloseable
    * <li>force - ignora stato precedente dello slot (default false)</li>
    * <li>lockDelayMillis - attesa per lock delle risorse (default 5000)</li>
    * </ul>
-   * Per orario si intende l'indice dello slot all'interno del giorno.
-   * Sia i giorni che gli orari sono 0 based.
    *
    * @param uniqueID identificatore univoco per lo slot
    * @param properties opzioni di prenotazione
