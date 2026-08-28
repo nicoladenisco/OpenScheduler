@@ -123,7 +123,7 @@ void SchedSlotBase::clearSlotWorker(SlotFile *sf, int giorno, int slotgiorno,
               format("lo slot non è prenotato (stato %d)", (int)slot->status));
       }
 
-      // marca lo slot come prenotato; imposta id prenotazione
+      // marca lo slot come non prenotato; azzera id prenotazione
       slot->status = statusClear;
       slot->info = 0;
     }
@@ -151,7 +151,7 @@ void SchedSlotBase::clearSlotWorker(SlotFile *sf, u_int64_t uniqueid,
               format("lo slot non è prenotato (stato %d)", (int)slot->status));
       }
 
-      // marca lo slot come prenotato; imposta id prenotazione
+      // marca lo slot come non prenotato; azzera id prenotazione
       slot->status = statusClear;
       slot->info = 0;
     }

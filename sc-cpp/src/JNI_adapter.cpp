@@ -284,6 +284,13 @@ JNIEXPORT jint JNICALL Java_org_opensc_SchedResource_clearSlotNative(
   const char *ptrMapPipe = env->GetStringUTFChars(jproperties, NULL);
   Properties prop(ptrMapPipe);
 
+  // lock della risorsa
+  long timeout = prop.get("lockDelayMillis", 3000);
+  SchedResourceLock reslock(*res, "reserve", false, true, timeout);
+  if (!reslock.isLocked())
+    throw NativeException(
+        "Non riesco a bloccare la risorsa; operazione abortita.");
+
   if (giorno == -1 && slotgiorno == -1)
     res->clearSlot(uniqueid, prop);
   else

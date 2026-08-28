@@ -23,7 +23,9 @@ public:
   inline SlotFile *getSlotFile() { return slotFile; }
   virtual slotType *getSlot(int day);
 
-  inline bool isInitialized() const { return slotFile->initalized != 0; }
+  inline bool isInitialized() const {
+    return slotFile != nullptr && slotFile->initalized != 0;
+  }
 
   inline bool isValidLenght() const {
     return slotFile != nullptr && lengthSlotFile == slotFile->dimensioneFile;

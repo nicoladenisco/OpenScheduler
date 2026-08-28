@@ -159,13 +159,16 @@ void SchedResource::reserveSlot(int giorno, int slotgiorno, u_int64_t uniqueid,
 
 void SchedResource::findFreeSlot(Properties &properties,
                                  IntPairVector &risultati) {
+  if (!isInitialized())
+    throw StructureException("risorsa non inizializzata");
+
   findFreeSlotWorker(slotFile, properties, risultati);
 }
 
 void SchedResource::clearSlot(int giorno, int slotgiorno, u_int64_t uniqueid,
                               Properties &properties) {
-  if (slotFile == nullptr)
-    throw StructureException("Merger vuoto.");
+  if (!isInitialized())
+    throw StructureException("risorsa non inizializzata");
 
   if (giorno < 0 || giorno >= 365)
     throw StructureException(
@@ -182,8 +185,8 @@ void SchedResource::clearSlot(int giorno, int slotgiorno, u_int64_t uniqueid,
 }
 
 void SchedResource::clearSlot(u_int64_t uniqueid, Properties &properties) {
-  if (slotFile == nullptr)
-    throw StructureException("Merger vuoto.");
+  if (!isInitialized())
+    throw StructureException("risorsa non inizializzata");
 
   clearSlotWorker(slotFile, uniqueid, SLOT_SCHEDULABLE, properties);
 }
