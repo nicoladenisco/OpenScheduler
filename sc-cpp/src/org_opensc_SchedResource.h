@@ -89,11 +89,35 @@ JNIEXPORT jstring JNICALL Java_org_opensc_SchedResource_dumpSlotsNative
 
 /*
  * Class:     org_opensc_SchedResource
+ * Method:    reserveSlotNative
+ * Signature: (IIJLjava/lang/String;)I
+ */
+JNIEXPORT jint JNICALL Java_org_opensc_SchedResource_reserveSlotNative
+  (JNIEnv *, jobject, jint, jint, jlong, jstring);
+
+/*
+ * Class:     org_opensc_SchedResource
  * Method:    getInfoHeaderNative
  * Signature: ()Ljava/lang/String;
  */
 JNIEXPORT jstring JNICALL Java_org_opensc_SchedResource_getInfoHeaderNative
   (JNIEnv *, jobject);
+
+/*
+ * Class:     org_opensc_SchedResource
+ * Method:    findFreeSlotNative
+ * Signature: (Ljava/lang/String;)Ljava/lang/String;
+ */
+JNIEXPORT jstring JNICALL Java_org_opensc_SchedResource_findFreeSlotNative
+  (JNIEnv *, jobject, jstring);
+
+/*
+ * Class:     org_opensc_SchedResource
+ * Method:    clearSlotNative
+ * Signature: (IIJLjava/lang/String;)I
+ */
+JNIEXPORT jint JNICALL Java_org_opensc_SchedResource_clearSlotNative
+  (JNIEnv *, jobject, jint, jint, jlong, jstring);
 
 #ifdef __cplusplus
 }

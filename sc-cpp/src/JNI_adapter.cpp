@@ -223,6 +223,75 @@ Java_org_opensc_SchedResource_getInfoHeaderNative(JNIEnv *env, jobject othis) {
   EPILOG_STR(env, othis)
 }
 
+/*
+ * Class:     org_opensc_SchedResource
+ * Method:    reserveSlotNative
+ * Signature: (IIJLjava/lang/String;)I
+ */
+JNIEXPORT jint JNICALL Java_org_opensc_SchedResource_reserveSlotNative(
+    JNIEnv *env, jobject othis, jint giorno, jint slotgiorno, jlong uniqueid,
+    jstring jproperties) {
+  PROLOG(env, othis)
+  SchedResource *res = getHandle<SchedResource>(env, othis);
+  const char *ptrMapPipe = env->GetStringUTFChars(jproperties, NULL);
+  Properties prop(ptrMapPipe);
+
+  // lock della risorsa
+  long timeout = prop.get("lockDelayMillis", 3000);
+  SchedResourceLock reslock(*res, "reserve", false, true, timeout);
+  if (!reslock.isLocked())
+    throw NativeException(
+        "Non riesco a bloccare la risorsa; operazione abortita.");
+
+  res->reserveSlot(giorno, slotgiorno, uniqueid, prop);
+  EPILOG(env, othis)
+}
+
+/*
+ * Class:     org_opensc_SchedResource
+ * Method:    findFreeSlotNative
+ * Signature: (Ljava/lang/String;)Ljava/lang/String;
+ */
+JNIEXPORT jstring JNICALL Java_org_opensc_SchedResource_findFreeSlotNative(
+    JNIEnv *env, jobject othis, jstring jproperties) {
+  PROLOG_STR(env, othis)
+  SchedResource *res = getHandle<SchedResource>(env, othis);
+  const char *ptrMapPipe = env->GetStringUTFChars(jproperties, NULL);
+  Properties prop(ptrMapPipe);
+
+  IntPairVector risultati;
+  res->findFreeSlot(prop, risultati);
+
+  if (!risultati.empty()) {
+    retVal.reserve(64 * risultati.size());
+    for (auto p : risultati)
+      retVal += itoa(p.first) + "," + itoa(p.second) + "|";
+  }
+
+  EPILOG_STR(env, othis)
+}
+
+/*
+ * Class:     org_opensc_SchedResource
+ * Method:    clearSlotNative
+ * Signature: (IIJLjava/lang/String;)I
+ */
+JNIEXPORT jint JNICALL Java_org_opensc_SchedResource_clearSlotNative(
+    JNIEnv *env, jobject othis, jint giorno, jint slotgiorno, jlong uniqueid,
+    jstring jproperties) {
+  PROLOG(env, othis)
+  SchedResource *res = getHandle<SchedResource>(env, othis);
+  const char *ptrMapPipe = env->GetStringUTFChars(jproperties, NULL);
+  Properties prop(ptrMapPipe);
+
+  if (giorno == -1 && slotgiorno == -1)
+    res->clearSlot(uniqueid, prop);
+  else
+    res->clearSlot(giorno, slotgiorno, uniqueid, prop);
+
+  EPILOG(env, othis)
+}
+
 ////////////////////////////////////////////////////////////////////////////////////
 
 /*
@@ -427,4 +496,28 @@ JNIEXPORT jstring JNICALL Java_org_opensc_SchedMerger_findFreeSlotNative(
   }
 
   EPILOG_STR(env, othis)
+}
+
+/*
+ * Class:     org_opensc_SchedMerger
+ * Method:    clearSlotNative
+ * Signature: (IIJLjava/lang/String;)I
+ */
+JNIEXPORT jint JNICALL Java_org_opensc_SchedMerger_clearSlotNative(
+    JNIEnv *env, jobject othis, jint giorno, jint slotgiorno, jlong uniqueid,
+    jstring jproperties) {
+  PROLOG(env, othis)
+  SchedMerger *merger = getHandle<SchedMerger>(env, othis);
+  const char *ptrMapPipe = env->GetStringUTFChars(jproperties, NULL);
+  Properties prop(ptrMapPipe);
+
+  long timeout = prop.get("lockDelayMillis", 5000);
+  SchedResourceMultiLock multilock("merge", false, true, timeout);
+
+  if (giorno == -1 && slotgiorno == -1)
+    merger->clearSlot(multilock, uniqueid, prop);
+  else
+    merger->clearSlot(multilock, giorno, slotgiorno, uniqueid, prop);
+
+  EPILOG(env, othis)
 }

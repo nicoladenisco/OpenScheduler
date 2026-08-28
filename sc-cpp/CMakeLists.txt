@@ -23,6 +23,7 @@ set(CLI_SRCS
   src/XmlHelper.cpp
   src/File.cpp
   src/dataStructure.cpp
+  src/SchedSlotBase.cpp
   src/SchedResource.cpp
   src/SchedStamper.cpp
   src/SchedStamperAlgo.cpp
@@ -37,6 +38,7 @@ set(LIB_SRCS
   src/XmlHelper.cpp
   src/File.cpp
   src/dataStructure.cpp
+  src/SchedSlotBase.cpp
   src/SchedResource.cpp
   src/SchedStamper.cpp
   src/SchedStamperAlgo.cpp

@@ -2,13 +2,14 @@
 #define __SCHEDRESOURCE_HPP
 
 #include "File.hpp"
+#include "SchedSlotBase.hpp"
 #include "common.hpp"
 #include "dataStructure.hpp"
 #include "properties.h"
 #include <cstddef>
 #include <memory>
 
-class SchedResource {
+class SchedResource : public SchedSlotBase {
   friend class SchedResourceLock;
 
 public:
@@ -38,6 +39,13 @@ public:
   virtual void initializeSlotFile();
   virtual void clearAllSlots(int stato);
   virtual void populateHeaderProp(Properties &properties);
+
+  virtual void reserveSlot(int giorno, int slotgiorno, u_int64_t uniqueid,
+                           Properties &properties);
+  virtual void findFreeSlot(Properties &properties, IntPairVector &risultati);
+  virtual void clearSlot(int giorno, int slotgiorno, u_int64_t uniqueid,
+                         Properties &properties);
+  virtual void clearSlot(u_int64_t uniqueid, Properties &properties);
 
   // Impediamo la copia della classe per evitare double-free della memoria
   SchedResource(const SchedResource &) = delete;

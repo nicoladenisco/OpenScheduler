@@ -138,6 +138,56 @@ void SchedResource::populateHeaderProp(Properties &properties) {
     toProperties(*slotFile, properties);
 }
 
+void SchedResource::reserveSlot(int giorno, int slotgiorno, u_int64_t uniqueid,
+                                Properties &properties) {
+  if (!isInitialized())
+    throw StructureException("risorsa non inizializzata");
+
+  if (giorno < 0 || giorno >= 365)
+    throw StructureException(
+        "Il valore giorno non è ammesso: deve essere compreso fra 0 e 364.");
+
+  if (slotgiorno < 0 || slotgiorno >= slotFile->numSlotsGiorno)
+    throw StructureException(
+        format("il valore slotgiorno %d non è compatibile: "
+               "il massimo ammesso è %d",
+               slotgiorno, (int)slotFile->numSlotsGiorno - 1));
+
+  // modifica la fusione
+  reserveSlotWorker(slotFile, giorno, slotgiorno, uniqueid, properties);
+}
+
+void SchedResource::findFreeSlot(Properties &properties,
+                                 IntPairVector &risultati) {
+  findFreeSlotWorker(slotFile, properties, risultati);
+}
+
+void SchedResource::clearSlot(int giorno, int slotgiorno, u_int64_t uniqueid,
+                              Properties &properties) {
+  if (slotFile == nullptr)
+    throw StructureException("Merger vuoto.");
+
+  if (giorno < 0 || giorno >= 365)
+    throw StructureException(
+        "Il valore giorno non è ammesso: deve essere compreso fra 0 e 364.");
+
+  if (slotgiorno < 0 || slotgiorno >= slotFile->numSlotsGiorno)
+    throw StructureException(
+        format("il valore slotgiorno %d non è compatibile: "
+               "il massimo ammesso è %d",
+               slotgiorno, (int)slotFile->numSlotsGiorno - 1));
+
+  clearSlotWorker(slotFile, giorno, slotgiorno, uniqueid, SLOT_SCHEDULABLE,
+                  properties);
+}
+
+void SchedResource::clearSlot(u_int64_t uniqueid, Properties &properties) {
+  if (slotFile == nullptr)
+    throw StructureException("Merger vuoto.");
+
+  clearSlotWorker(slotFile, uniqueid, SLOT_SCHEDULABLE, properties);
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 SchedResourceLock::SchedResourceLock(SchedResource &__tolock,

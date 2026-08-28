@@ -6,7 +6,7 @@
 #include "SchedResource.hpp"
 #include "dataStructure.hpp"
 
-class SchedMerger {
+class SchedMerger : public SchedSlotBase {
 public:
   SchedMerger(u_int64_t __idUniqueLoock);
   virtual ~SchedMerger();
@@ -20,7 +20,12 @@ public:
                            int slotgiorno, u_int64_t uniqueid,
                            Properties &properties);
   virtual void findFreeSlot(SchedResourceMultiLock &multilock,
-                           Properties &properties, IntPairVector& risultati);
+                            Properties &properties, IntPairVector &risultati);
+  virtual void clearSlot(SchedResourceMultiLock &multilock, int giorno,
+                         int slotgiorno, u_int64_t uniqueid,
+                         Properties &properties);
+  virtual void clearSlot(SchedResourceMultiLock &multilock, u_int64_t uniqueid,
+                         Properties &properties);
 
   virtual void clear();
   virtual void getAlgoNames(StringVector &names) const;
@@ -31,8 +36,6 @@ public:
 
 private:
   void __buildMergersTable();
-  void reserveSlotWorker(SlotFile *sf, int giorno, int slotgiorno,
-                         u_int64_t uniqueid, Properties &properties);
 
 protected:
   SchedResourcePtrVector resources;
