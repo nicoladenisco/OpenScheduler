@@ -165,6 +165,24 @@ public class SchedResource implements AutoCloseable
     return rv;
   }
 
+  private native String dumpToXmlNative(String pipeProps);
+
+  /**
+   * Dump in formato XML della risorsa.
+   * @param properties opzioni
+   * @return XML con header e slots
+   * @throws OscNativeException
+   */
+  public String dumpToXml(Properties properties)
+     throws OscNativeException
+  {
+    String prop = Utils.Properties2String(properties);
+    String rv = dumpToXmlNative(prop);
+    if("ERROR".equals(rv))
+      throw new OscNativeException(nativeError);
+    return rv;
+  }
+
   private native int reserveSlotNative(int giorno, int slotgiorno, long uniqueID, String pipeProps);
 
   /**
