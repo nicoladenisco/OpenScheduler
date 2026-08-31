@@ -52,6 +52,10 @@ COMMAND_ITEM2(dump, 2, "dump <codice> [dayStart] [dayStop]",
               "dump della risorsa con il codice indicato")
 COMMAND_ITEM2(dumpfile, 2, "dumpfile <nomefile> [dayStart] [dayStop]",
               "come dump ma con indicazione esplicita del nome file")
+COMMAND_ITEM2(dumpxml, 2, "dumpxml <codice> [dayStart] [dayStop]",
+              "dump della risorsa con il codice indicato in formato XML")
+COMMAND_ITEM2(dumpfilexml, 2, "dumpfilexml <nomefile> [dayStart] [dayStop]",
+              "come dumpxml ma con indicazione esplicita del nome file")
 COMMAND_ITEM2(merge, 3, "merge <codice> <algo> [parameters algo]",
               "merge della risorsa")
 COMMAND_ITEM(dumpmerge, 1, "dumpmerge [dayStart] [dayStop]",
@@ -665,6 +669,20 @@ int ProxyApp::complete_dumpfile(const StringVector &args,
   return 1;
 }
 
+int ProxyApp::complete_dumpxml(const StringVector &args, StringVector &complete,
+                               int np) {
+  if (np == 1)
+    resourcesFromArea(complete);
+  return 1;
+}
+
+int ProxyApp::complete_dumpfilexml(const StringVector &args,
+                                   StringVector &complete, int np) {
+  if (np == 1)
+    filesFromArea(complete);
+  return 1;
+}
+
 void ProxyApp::resourcesFromArea(StringVector &rv) {
   for (auto it : cacheRisorse) {
     rv.push_back(it.first);
@@ -782,5 +800,59 @@ int ProxyApp::cmd_infomerge(const StringVector &args) {
 int ProxyApp::cmd_clearmerge(const StringVector &args) {
   merger.clear();
   cout << "Accorpamento risorse svuotato.\n";
+  return 0;
+}
+
+int ProxyApp::cmd_dumpxml(const StringVector &args) {
+  String codice = args[1];
+  String nomeFile = nomeFileDaCodice(codice);
+  File genfile(slotDir, nomeFile);
+  if (!genfile.isFile()) {
+    cout << "La risorsa con codice " << codice
+         << " non ha un corrispondente file in " << slotDir.getAbsolutePath()
+         << "\n";
+    return -1;
+  }
+
+  return dumpFileXML(genfile, args);
+}
+
+int ProxyApp::cmd_dumpfilexml(const StringVector &args) {
+  String nomeFile = args[1];
+  File genfile(slotDir, nomeFile);
+  if (!genfile.isFile()) {
+    cout << "Il file indicato non esiste in " << slotDir.getAbsolutePath()
+         << "\n";
+    return -1;
+  }
+
+  return dumpFileXML(genfile, args);
+}
+
+int ProxyApp::dumpFileXML(const File &toDump, const StringVector &args) {
+  cout << "File: " << toDump.getAbsolutePath() << "\n";
+
+  IntPair days = parseDays(args, 2);
+
+  // carica risorsa e applica stamper
+  SchedResource res(toDump);
+  cout << toString(*res.getSlotFile()) << "\n";
+
+  // lock della risorsa
+  SchedResourceLock reslock(res, "dump", true, true, 3000);
+  if (!reslock.isLocked()) {
+    cout << "Non riesco a bloccare la risorsa; operazione abortita.\n";
+    return 0;
+  }
+
+  if (res.isInitialized()) {
+    Properties prop;
+    prop["daystart"] = days.first;
+    prop["daystop"] = days.second;
+    cout << res.dumpXml(prop) << "\n";
+  } else
+    cout << "La risorsa non è stata inizializzata; usare uno stamper per "
+            "poterla usare.\n";
+
   return 0;
 }

@@ -193,3 +193,18 @@ void SchedMerger::clearSlot(SchedResourceMultiLock &multilock,
   // modifica la fusione
   clearSlotWorker(merged, uniqueid, SLOT_LOOKED, properties);
 }
+
+String SchedMerger::dumpXml(Properties &properties) {
+  String separator = properties.get("separator", "\n");
+
+  String rv;
+  rv.reserve(1024 + (4 * merged->dimensioneByte * (resources.size() + 1)));
+  rv.append("<merger>").append(separator);
+
+  rv.append(dumpXmlWorker(merged, "merge", properties));
+  for (auto r : resources)
+    rv.append(dumpXmlWorker(r->getSlotFile(), "resource", properties));
+
+  rv.append("</merger>").append(separator);
+  return rv;
+}

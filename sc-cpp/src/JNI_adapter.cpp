@@ -299,6 +299,21 @@ JNIEXPORT jint JNICALL Java_org_opensc_SchedResource_clearSlotNative(
   EPILOG(env, othis)
 }
 
+/*
+ * Class:     org_opensc_SchedResource
+ * Method:    dumpToXmlNative
+ * Signature: (Ljava/lang/String;)Ljava/lang/String;
+ */
+JNIEXPORT jstring JNICALL Java_org_opensc_SchedResource_dumpToXmlNative(
+    JNIEnv *env, jobject othis, jstring jproperties) {
+  PROLOG_STR(env, othis)
+  SchedResource *res = getHandle<SchedResource>(env, othis);
+  const char *ptrMapPipe = env->GetStringUTFChars(jproperties, NULL);
+  Properties prop(ptrMapPipe);
+  retVal = res->dumpXml(prop);
+  EPILOG_STR(env, othis)
+}
+
 ////////////////////////////////////////////////////////////////////////////////////
 
 /*
@@ -527,4 +542,19 @@ JNIEXPORT jint JNICALL Java_org_opensc_SchedMerger_clearSlotNative(
     merger->clearSlot(multilock, giorno, slotgiorno, uniqueid, prop);
 
   EPILOG(env, othis)
+}
+
+/*
+ * Class:     org_opensc_SchedMerger
+ * Method:    dumpToXmlNative
+ * Signature: (Ljava/lang/String;)Ljava/lang/String;
+ */
+JNIEXPORT jstring JNICALL Java_org_opensc_SchedMerger_dumpToXmlNative(
+    JNIEnv *env, jobject othis, jstring jproperties) {
+  PROLOG_STR(env, othis)
+  SchedMerger *merger = getHandle<SchedMerger>(env, othis);
+  const char *ptrMapPipe = env->GetStringUTFChars(jproperties, NULL);
+  Properties prop(ptrMapPipe);
+  retVal = merger->dumpXml(prop);
+  EPILOG_STR(env, othis)
 }

@@ -27,6 +27,8 @@ public:
   virtual void clearSlot(SchedResourceMultiLock &multilock, u_int64_t uniqueid,
                          Properties &properties);
 
+  virtual String dumpXml(Properties &properties);
+
   virtual void clear();
   virtual void getAlgoNames(StringVector &names) const;
   virtual void getResourcesCode(StringVector &names) const;

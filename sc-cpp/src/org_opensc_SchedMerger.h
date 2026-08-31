@@ -33,6 +33,14 @@ JNIEXPORT jstring JNICALL Java_org_opensc_SchedMerger_dumpSlotsNative
 
 /*
  * Class:     org_opensc_SchedMerger
+ * Method:    dumpToXmlNative
+ * Signature: (Ljava/lang/String;)Ljava/lang/String;
+ */
+JNIEXPORT jstring JNICALL Java_org_opensc_SchedMerger_dumpToXmlNative
+  (JNIEnv *, jobject, jstring);
+
+/*
+ * Class:     org_opensc_SchedMerger
  * Method:    getMergerAlgosNative
  * Signature: ()Ljava/lang/String;
  */

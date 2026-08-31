@@ -53,6 +53,8 @@ private:
   int cmd_stampfile(const StringVector &args);
   int cmd_dump(const StringVector &args);
   int cmd_dumpfile(const StringVector &args);
+  int cmd_dumpxml(const StringVector &args);
+  int cmd_dumpfilexml(const StringVector &args);
   int cmd_merge(const StringVector &args);
   int cmd_dumpmerge(const StringVector &args);
   int cmd_infomerge(const StringVector &args);
@@ -64,9 +66,14 @@ private:
   int complete_dump(const StringVector &args, StringVector &complete, int np);
   int complete_dumpfile(const StringVector &args, StringVector &complete,
                         int np);
+  int complete_dumpxml(const StringVector &args, StringVector &complete,
+                       int np);
+  int complete_dumpfilexml(const StringVector &args, StringVector &complete,
+                           int np);
   int complete_merge(const StringVector &args, StringVector &complete, int np);
 
   int dumpFile(const File &toStamp, const StringVector &args);
+  int dumpFileXML(const File &toStamp, const StringVector &args);
   int stampFile(const File &toStamp, const StringVector &args);
 
   void resourcesFromArea(StringVector &rv);

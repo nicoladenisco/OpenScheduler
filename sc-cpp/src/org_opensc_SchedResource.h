@@ -89,6 +89,14 @@ JNIEXPORT jstring JNICALL Java_org_opensc_SchedResource_dumpSlotsNative
 
 /*
  * Class:     org_opensc_SchedResource
+ * Method:    dumpToXmlNative
+ * Signature: (Ljava/lang/String;)Ljava/lang/String;
+ */
+JNIEXPORT jstring JNICALL Java_org_opensc_SchedResource_dumpToXmlNative
+  (JNIEnv *, jobject, jstring);
+
+/*
+ * Class:     org_opensc_SchedResource
  * Method:    reserveSlotNative
  * Signature: (IIJLjava/lang/String;)I
  */

@@ -49,6 +49,8 @@ public:
                          Properties &properties);
   virtual void clearSlot(u_int64_t uniqueid, Properties &properties);
 
+  virtual String dumpXml(Properties &properties);
+
   // Impediamo la copia della classe per evitare double-free della memoria
   SchedResource(const SchedResource &) = delete;
   SchedResource &operator=(const SchedResource &) = delete;

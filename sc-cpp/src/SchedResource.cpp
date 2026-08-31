@@ -270,3 +270,7 @@ bool SchedResourceMultiLock::unlook() {
   }
   return true;
 }
+
+String SchedResource::dumpXml(Properties &properties) {
+  return dumpXmlWorker(slotFile, "resource", properties);
+}

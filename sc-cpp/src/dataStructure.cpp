@@ -99,7 +99,7 @@ String toString(const SlotFile &sf, String separator /*= "\n"*/) {
 String dump(const SlotFile &sf, int dayStart /*= 0*/, int dayStop /*= 365*/,
             String separator /*= "\n"*/) {
   String rv, bo;
-  rv.reserve(sf.numSlotsTotali + 1000);
+  rv.reserve((sf.numSlotsTotali * sizeof(slotType)) + 1000);
   std::map<int, String> display;
   display[0] = "_";
   display[1] = ".";
@@ -165,4 +165,52 @@ void toProperties(const SlotFile &sf, Properties &prop) {
   TOPROP(dimensionePagine);
   TOPROP(pageSize);
   TOPROP(dimensioneFile);
+}
+
+#define TOXML(x)                                                               \
+  rv.append("<header name=\"#x\">" + strfield(sf.x) + "</header>")
+
+String toXML(const SlotFile &sf, int dayStart /*= 0*/, int dayStop /*= 365*/,
+             String rootName /*= "resource"*/, String separator /*= "\n"*/) {
+  String rv;
+  rv.reserve(1024 + (sf.dimensioneByte * 4));
+
+  rv.append("<" + rootName + ">").append(separator);
+
+  rv.append("<headers>");
+  rv.append(separator);
+  TOXML(magic);
+  TOXML(codiceRisorsa);
+  TOXML(anno);
+  TOXML(slotOra);
+  TOXML(oraIniziale);
+  TOXML(oraFinale);
+  TOXML(numSlotsGiorno);
+  TOXML(numSlotsTotali);
+  TOXML(dimensioneByte);
+  TOXML(dimensionePagine);
+  TOXML(pageSize);
+  TOXML(dimensioneFile);
+  rv.append("</headers>").append(separator);
+
+  rv.append("<slots>").append(separator);
+
+  // determina indirizzo del primo slot da visualizzare
+  int offset = dayStart * sf.numSlotsGiorno;
+  const slotType *ptSlot = sf.arrySlot + offset;
+
+  for (int g = dayStart; g < dayStop; g++) {
+    for (int i = 0; i < sf.numSlotsGiorno; i++) {
+      rv.append(
+            format("<slot day=\"%d\" pos=\"%d\" state=\"%d\" unique=\"%d\" />",
+                   g, i, (int)ptSlot->status, (int)ptSlot->info))
+          .append(separator);
+      ptSlot++;
+    }
+  }
+
+  rv.append("</slots>").append(separator);
+  rv.append("</" + rootName + ">").append(separator);
+
+  return rv;
 }

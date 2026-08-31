@@ -1,5 +1,6 @@
 #include "SchedSlotBase.hpp"
 #include "common.hpp"
+#include "dataStructure.hpp"
 
 SchedSlotBase::SchedSlotBase() {}
 SchedSlotBase::~SchedSlotBase() {}
@@ -158,4 +159,11 @@ void SchedSlotBase::clearSlotWorker(SlotFile *sf, u_int64_t uniqueid,
 
     slot++;
   }
+}
+
+String SchedSlotBase::dumpXmlWorker(SlotFile *sf, String rootName,
+                                    Properties &properties) {
+  IntPair days = properties.parseDays();
+  String separator = properties.get("separator", "\n");
+  return toXML(*sf, days.first, days.second, rootName, separator);
 }

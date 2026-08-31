@@ -22,6 +22,9 @@ protected:
 
   virtual void clearSlotWorker(SlotFile *sf, u_int64_t uniqueid,
                                u_char statusClear, Properties &properties);
+
+  virtual String dumpXmlWorker(SlotFile *sf, String rootName,
+                               Properties &properties);
 };
 
 #endif // __SCHEDSLOTBASE_HPP
