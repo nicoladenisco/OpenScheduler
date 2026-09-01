@@ -33,14 +33,20 @@ public class ScJava
   public static void main(String[] args)
   {
     System.out.println("OpenScheduler Java Interface - ver 0.0.1");
-    loadNativeLibrary();
-    SchedResource.setDebugMode(1);
 
     try
     {
+      // per debug disabilitare il caricamento da risorsa e attivare
+      // il caricamento della versione debug della libreria nativa
+      //loadNativeLibraryForDebug();
+      ScUtils.loadNativeLibraryFromResources();
+      SchedResource.setDebugMode(1);
+
       String test = "";
       if(args.length > 0)
         test = args[0].trim().toUpperCase();
+
+      long ts = System.currentTimeMillis();
 
       switch(test)
       {
@@ -64,9 +70,12 @@ public class ScJava
           break;
 
         default:
-          System.out.println("Aggiungere uno di RESOURCE, MERGE, BOOK");
-          break;
+          System.out.println("Aggiungere uno di RESOURCE, MERGE, BOOK, FIND");
+          return;
       }
+
+      long elapsed = System.currentTimeMillis() - ts;
+      System.out.println("Test eseguito in " + elapsed + " millisecondi.");
     }
     catch(Exception e)
     {
@@ -74,7 +83,7 @@ public class ScJava
     }
   }
 
-  protected static void loadNativeLibrary()
+  protected static void loadNativeLibraryForDebug()
   {
     Path currentRelativePath = Paths.get("");
     String s = currentRelativePath.toAbsolutePath().toString();
@@ -177,6 +186,9 @@ public class ScJava
       mergeResource(merger, "R003", properties);
       mergeResource(merger, "R004", properties);
       mergeResource(merger, "R005", properties);
+
+      File xml = new File("/tmp/oskjava/merge.xml");
+      merger.saveXml(xml, properties);
     }
   }
 

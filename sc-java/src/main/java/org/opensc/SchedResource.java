@@ -16,8 +16,12 @@
  */
 package org.opensc;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.IOException;
 import java.lang.ref.Cleaner;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.List;
 import java.util.Properties;
 
@@ -90,7 +94,7 @@ public class SchedResource implements AutoCloseable
   public static SchedResource build(Properties properties)
      throws OscNativeException
   {
-    String prop = Utils.Properties2String(properties);
+    String prop = ScUtils.Properties2String(properties);
     SchedResource rv = new SchedResource();
     if(rv.buildNative(prop) != 0)
       throw new OscNativeException(rv.nativeError);
@@ -118,7 +122,7 @@ public class SchedResource implements AutoCloseable
   public void stampResources(String algoName, Properties properties)
      throws OscNativeException
   {
-    String prop = Utils.Properties2String(properties);
+    String prop = ScUtils.Properties2String(properties);
     stampResourcesNative(algoName, prop);
   }
 
@@ -137,7 +141,7 @@ public class SchedResource implements AutoCloseable
       String pipeList = rv.getStamperAlgosNative();
       if("ERROR".equals(pipeList))
         throw new OscNativeException(rv.nativeError);
-      return Utils.String2List(pipeList);
+      return ScUtils.String2List(pipeList);
     }
   }
 
@@ -146,7 +150,7 @@ public class SchedResource implements AutoCloseable
   public String dumpHeader(Properties properties)
      throws OscNativeException
   {
-    String prop = Utils.Properties2String(properties);
+    String prop = ScUtils.Properties2String(properties);
     String rv = dumpHeaderNative(prop);
     if("ERROR".equals(rv))
       throw new OscNativeException(nativeError);
@@ -158,7 +162,7 @@ public class SchedResource implements AutoCloseable
   public String dumpSlots(Properties properties)
      throws OscNativeException
   {
-    String prop = Utils.Properties2String(properties);
+    String prop = ScUtils.Properties2String(properties);
     String rv = dumpSlotsNative(prop);
     if("ERROR".equals(rv))
       throw new OscNativeException(nativeError);
@@ -176,11 +180,22 @@ public class SchedResource implements AutoCloseable
   public String dumpToXml(Properties properties)
      throws OscNativeException
   {
-    String prop = Utils.Properties2String(properties);
+    String prop = ScUtils.Properties2String(properties);
     String rv = dumpToXmlNative(prop);
     if("ERROR".equals(rv))
       throw new OscNativeException(nativeError);
     return rv;
+  }
+
+  public void saveXml(File toSave, Properties properties)
+     throws OscNativeException, IOException
+  {
+    try(BufferedWriter wr = Files.newBufferedWriter(toSave.toPath(), StandardCharsets.UTF_8))
+    {
+      String xml = dumpToXml(properties);
+      wr.write("<?xml version=\"1.0\"?>\n");
+      wr.write(xml);
+    }
   }
 
   private native int reserveSlotNative(int giorno, int slotgiorno, long uniqueID, String pipeProps);
@@ -207,7 +222,7 @@ public class SchedResource implements AutoCloseable
   public void reserveSlot(int giorno, int slotgiorno, long uniqueID, Properties properties)
      throws OscNativeException
   {
-    String prop = Utils.Properties2String(properties);
+    String prop = ScUtils.Properties2String(properties);
     if(reserveSlotNative(giorno, slotgiorno, uniqueID, prop) != 0)
       throw new OscNativeException(nativeError);
   }
@@ -221,7 +236,7 @@ public class SchedResource implements AutoCloseable
   public Properties getInfoHeader()
   {
     String pipeMap = getInfoHeaderNative();
-    return Utils.String2Properties(pipeMap);
+    return ScUtils.String2Properties(pipeMap);
   }
 
   private native String findFreeSlotNative(String pipeProps);
@@ -248,11 +263,11 @@ public class SchedResource implements AutoCloseable
   public List<String> findFreeSlot(Properties properties)
      throws OscNativeException
   {
-    String prop = Utils.Properties2String(properties);
+    String prop = ScUtils.Properties2String(properties);
     String results = findFreeSlotNative(prop);
     if("ERROR".equals(results))
       throw new OscNativeException(nativeError);
-    return Utils.String2List(results);
+    return ScUtils.String2List(results);
   }
 
   private native int clearSlotNative(int giorno, int slotgiorno, long uniqueID, String pipeProps);
@@ -278,7 +293,7 @@ public class SchedResource implements AutoCloseable
   public void clearSlots(int giorno, int slotgiorno, long uniqueID, Properties properties)
      throws OscNativeException
   {
-    String prop = Utils.Properties2String(properties);
+    String prop = ScUtils.Properties2String(properties);
     if(clearSlotNative(giorno, slotgiorno, uniqueID, prop) != 0)
       throw new OscNativeException(nativeError);
   }
@@ -299,7 +314,7 @@ public class SchedResource implements AutoCloseable
   public void clearSlots(long uniqueID, Properties properties)
      throws OscNativeException
   {
-    String prop = Utils.Properties2String(properties);
+    String prop = ScUtils.Properties2String(properties);
     if(clearSlotNative(-1, -1, uniqueID, prop) != 0)
       throw new OscNativeException(nativeError);
   }

@@ -11,6 +11,15 @@
   <packaging>jar</packaging>
 
   <build>
+    <resources>
+      <resource>
+        <directory>../sc-cpp/release</directory>
+        <includes>
+          <include>liboskcore.so</include>
+        </includes>
+      </resource>
+    </resources>
+
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
