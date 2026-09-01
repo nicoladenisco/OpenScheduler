@@ -7,11 +7,13 @@
 #include <unistd.h>   // close
 
 SchedResource::SchedResource() : slotFile(nullptr) {}
-SchedResource::SchedResource(const File &fileSlot) : slotFile(nullptr) {
+SchedResource::SchedResource(const File &fileSlot) : slotFile(nullptr)
+{
   attachSlotFile(fileSlot);
 }
 
-void SchedResource::attachSlotFile(const File &fileSlot) {
+void SchedResource::attachSlotFile(const File &fileSlot)
+{
   if (slotFile != nullptr)
     detachSlotFile();
 
@@ -20,20 +22,23 @@ void SchedResource::attachSlotFile(const File &fileSlot) {
   lockFile = File(originFile.getAbsolutePath() + ".lock");
 
   // apre file su disco in lettura/scrittura
-  if ((fdSlotFile = open(fileSlot.c_str(), O_RDWR)) == -1) {
+  if ((fdSlotFile = open(fileSlot.c_str(), O_RDWR)) == -1)
+  {
     throw StructureException(
         format("Errore nell'apertura del file %s", fileSlot.c_str()));
   }
 
   // ottieni la dimensione del file
   struct stat sb;
-  if (fstat(fdSlotFile, &sb) == -1) {
+  if (fstat(fdSlotFile, &sb) == -1)
+  {
     close(fdSlotFile);
     throw StructureException("Errore nell'ottenere la dimensione del file");
   }
   lengthSlotFile = sb.st_size;
 
-  if (lengthSlotFile == 0) {
+  if (lengthSlotFile == 0)
+  {
     close(fdSlotFile);
     throw StructureException("File slot vuoto.");
   }
@@ -42,7 +47,8 @@ void SchedResource::attachSlotFile(const File &fileSlot) {
   slotFile = (SlotFile *)::mmap(NULL, lengthSlotFile, PROT_READ | PROT_WRITE,
                                 MAP_SHARED, fdSlotFile, 0);
 
-  if (slotFile == MAP_FAILED) {
+  if (slotFile == MAP_FAILED)
+  {
     close(fdSlotFile);
     slotFile = nullptr;
     throw StructureException("Errore durante mmap");
@@ -51,10 +57,13 @@ void SchedResource::attachSlotFile(const File &fileSlot) {
 
 SchedResource::~SchedResource() { detachSlotFile(); }
 
-void SchedResource::detachSlotFile() {
-  if (slotFile != nullptr) {
+void SchedResource::detachSlotFile()
+{
+  if (slotFile != nullptr)
+  {
     // Pulizia (l'ordine è importante)
-    if (::munmap(slotFile, lengthSlotFile) == -1) {
+    if (::munmap(slotFile, lengthSlotFile) == -1)
+    {
       perror("Errore durante munmap");
     }
 
@@ -67,21 +76,26 @@ void SchedResource::detachSlotFile() {
     removeLockFile();
 }
 
-bool SchedResource::isValidVersion(String *error /* = nullptr*/) const {
-  if (slotFile == nullptr) {
+bool SchedResource::isValidVersion(String *error /* = nullptr*/) const
+{
+  if (slotFile == nullptr)
+  {
     if (error != nullptr)
       (*error) = "Nessun riferimento; oggetto non inizializzato.";
     return false;
   }
 
-  if (strncmp(MAGIC, slotFile->magic, 2) != 0) {
+  if (strncmp(MAGIC, slotFile->magic, 2) != 0)
+  {
     if (error != nullptr)
       (*error) = "Il file indicato non è un file slot.";
     return false;
   }
 
-  if (strncmp(FIRMA, slotFile->firma, 16) != 0) {
-    if (error != nullptr) {
+  if (strncmp(FIRMA, slotFile->firma, 16) != 0)
+  {
+    if (error != nullptr)
+    {
       String ss(slotFile->firma);
       (*error) = format("Formato incompatibile: atteso '%s' letto '%s'; "
                         "versione non compatibile.",
@@ -93,8 +107,10 @@ bool SchedResource::isValidVersion(String *error /* = nullptr*/) const {
   return true;
 }
 
-bool SchedResource::flush() {
-  if (::msync(slotFile, lengthSlotFile, MS_SYNC) == -1) {
+bool SchedResource::flush()
+{
+  if (::msync(slotFile, lengthSlotFile, MS_SYNC) == -1)
+  {
     perror("Sincronizzazione slot file su disco in errore!");
     return false;
   }
@@ -103,13 +119,15 @@ bool SchedResource::flush() {
 }
 
 int SchedResource::createLockFile(bool wait /*= true*/,
-                                  long timeoutMillis /*= 0*/) {
+                                  long timeoutMillis /*= 0*/)
+{
   return lockFile.createLockFile(wait, timeoutMillis);
 }
 
 int SchedResource::removeLockFile() { return lockFile.removeLockFile(); }
 
-slotType *SchedResource::getSlot(int day) {
+slotType *SchedResource::getSlot(int day)
+{
   if (day < 0 || day >= 365)
     throw StructureException("Valore giorno non valido.");
 
@@ -117,29 +135,35 @@ slotType *SchedResource::getSlot(int day) {
   return &slotFile->arrySlot[offset];
 }
 
-void SchedResource::initializeSlotFile() {
-  if (slotFile->initalized == 0) {
+void SchedResource::initializeSlotFile()
+{
+  if (slotFile->initalized == 0)
+  {
     slotType *ptSlots = slotFile->arrySlot;
     memset(ptSlots, 0, sizeof(slotType) * slotFile->numSlotsTotali);
     slotFile->initalized = 1;
   }
 }
 
-void SchedResource::clearAllSlots(int stato) {
+void SchedResource::clearAllSlots(int stato)
+{
   slotType *ptSlots = slotFile->arrySlot;
-  for (int i = 0; i < slotFile->numSlotsTotali; i++, ptSlots++) {
+  for (int i = 0; i < slotFile->numSlotsTotali; i++, ptSlots++)
+  {
     ptSlots->status = stato;
     ptSlots->info = 0;
   }
 }
 
-void SchedResource::populateHeaderProp(Properties &properties) {
+void SchedResource::populateHeaderProp(Properties &properties)
+{
   if (slotFile != nullptr)
     toProperties(*slotFile, properties);
 }
 
 void SchedResource::reserveSlot(int giorno, int slotgiorno, u_int64_t uniqueid,
-                                Properties &properties) {
+                                Properties &properties)
+{
   if (!isInitialized())
     throw StructureException("risorsa non inizializzata");
 
@@ -158,7 +182,8 @@ void SchedResource::reserveSlot(int giorno, int slotgiorno, u_int64_t uniqueid,
 }
 
 void SchedResource::findFreeSlot(Properties &properties,
-                                 IntPairVector &risultati) {
+                                 IntPairVector &risultati)
+{
   if (!isInitialized())
     throw StructureException("risorsa non inizializzata");
 
@@ -166,7 +191,8 @@ void SchedResource::findFreeSlot(Properties &properties,
 }
 
 void SchedResource::clearSlot(int giorno, int slotgiorno, u_int64_t uniqueid,
-                              Properties &properties) {
+                              Properties &properties)
+{
   if (!isInitialized())
     throw StructureException("risorsa non inizializzata");
 
@@ -184,7 +210,8 @@ void SchedResource::clearSlot(int giorno, int slotgiorno, u_int64_t uniqueid,
                   properties);
 }
 
-void SchedResource::clearSlot(u_int64_t uniqueid, Properties &properties) {
+void SchedResource::clearSlot(u_int64_t uniqueid, Properties &properties)
+{
   if (!isInitialized())
     throw StructureException("risorsa non inizializzata");
 
@@ -198,20 +225,27 @@ SchedResourceLock::SchedResourceLock(SchedResource &__tolock,
                                      bool __verbose /*= false*/,
                                      bool wait /*= true*/,
                                      long timeoutMillis /*= 0*/)
-    : reslock(__tolock), verbose(__verbose) {
+    : reslock(__tolock), verbose(__verbose)
+{
   if (verbose)
     cout << "Attempt to lock " << reslock.getSlotFile()->codiceRisorsa
          << std::endl;
 
   int fd = reslock.createLockFile(wait, timeoutMillis);
   if (fd > 0)
-    ::write(fd, marker.c_str(), marker.length());
-  else if (verbose)
-    cout << "Failed lock " << reslock.getSlotFile()->codiceRisorsa << std::endl;
+    if (::write(fd, marker.c_str(), marker.length()) == 0)
+    {
+      reslock.removeLockFile();
+      cout << "Failed lock " << reslock.getSlotFile()->codiceRisorsa << std::endl;
+    }
+    else if (verbose)
+      cout << "Failed lock " << reslock.getSlotFile()->codiceRisorsa << std::endl;
 }
 
-SchedResourceLock::~SchedResourceLock() {
-  if (reslock.isLocked()) {
+SchedResourceLock::~SchedResourceLock()
+{
+  if (reslock.isLocked())
+  {
     reslock.removeLockFile();
     if (verbose)
       cout << "Unlock " << reslock.getSlotFile()->codiceRisorsa << std::endl;
@@ -226,42 +260,52 @@ SchedResourceMultiLock::SchedResourceMultiLock(const String &__marker,
       timeoutMillis(__timeoutMillis) {}
 SchedResourceMultiLock::~SchedResourceMultiLock() { unlook(); }
 
-bool SchedResourceMultiLock::addResource(SchedResourcePtr toLock) {
+bool SchedResourceMultiLock::addResource(SchedResourcePtr toLock)
+{
   resources.push_back(toLock);
   return true;
 }
 
-bool SchedResourceMultiLock::isLocked() const {
-  for (auto p : resources) {
+bool SchedResourceMultiLock::isLocked() const
+{
+  for (auto p : resources)
+  {
     if (!p->isLocked())
       return false;
   }
   return true;
 }
 
-bool SchedResourceMultiLock::look() {
-  for (auto p : resources) {
-    if (!p->isLocked()) {
-
+bool SchedResourceMultiLock::look()
+{
+  for (auto p : resources)
+  {
+    if (!p->isLocked())
+    {
       if (verbose)
         cout << "Attempt to lock " << p->getSlotFile()->codiceRisorsa
              << std::endl;
 
       int fd = p->createLockFile(wait, timeoutMillis);
-      if (fd == -1) {
+      if (fd == -1)
+      {
         unlook();
         return false;
       }
 
-      ::write(fd, marker.c_str(), marker.length());
+      if (::write(fd, marker.c_str(), marker.length()) == 0)
+        return false;
     }
   }
   return true;
 }
 
-bool SchedResourceMultiLock::unlook() {
-  for (auto p : resources) {
-    if (p->isLocked()) {
+bool SchedResourceMultiLock::unlook()
+{
+  for (auto p : resources)
+  {
+    if (p->isLocked())
+    {
       p->removeLockFile();
 
       if (verbose)
@@ -271,6 +315,7 @@ bool SchedResourceMultiLock::unlook() {
   return true;
 }
 
-String SchedResource::dumpXml(Properties &properties) {
+String SchedResource::dumpXml(Properties &properties)
+{
   return dumpXmlWorker(slotFile, "resource", properties);
 }

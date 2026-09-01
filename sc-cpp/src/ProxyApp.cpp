@@ -27,6 +27,7 @@
 #include <boost/program_options/value_semantic.hpp>
 #include <boost/program_options/variables_map.hpp>
 #include <boost/program_options/version.hpp>
+#include <fstream>
 #include <unistd.h>
 
 #define LOCK_RUNNER std::lock_guard<std::mutex> lck(mtxRunner);
@@ -48,25 +49,30 @@ COMMAND_ITEM2(stamp, 3, "stamp <codice> <algo> [parameters algo]",
               "inizializza la risorsa con l'algoritmo indicato")
 COMMAND_ITEM2(stampfile, 3, "stampfile <nomefile> <algo> [parameters algo]",
               "come stamp ma con indicazione esplicita del nome file")
-COMMAND_ITEM2(dump, 2, "dump <codice> [dayStart] [dayStop]",
+COMMAND_ITEM2(dump, 2, "dump <codice> [dayStart] [dayStop] [fileoutput]",
               "dump della risorsa con il codice indicato")
-COMMAND_ITEM2(dumpfile, 2, "dumpfile <nomefile> [dayStart] [dayStop]",
+COMMAND_ITEM2(dumpfile, 2,
+              "dumpfile <nomefile> [dayStart] [dayStop] [fileoutput]",
               "come dump ma con indicazione esplicita del nome file")
-COMMAND_ITEM2(dumpxml, 2, "dumpxml <codice> [dayStart] [dayStop]",
+COMMAND_ITEM2(dumpxml, 2, "dumpxml <codice> [dayStart] [dayStop] [fileoutput]",
               "dump della risorsa con il codice indicato in formato XML")
-COMMAND_ITEM2(dumpfilexml, 2, "dumpfilexml <nomefile> [dayStart] [dayStop]",
+COMMAND_ITEM2(dumpfilexml, 2,
+              "dumpfilexml <nomefile> [dayStart] [dayStop] [fileoutput]",
               "come dumpxml ma con indicazione esplicita del nome file")
 COMMAND_ITEM2(merge, 3, "merge <codice> <algo> [parameters algo]",
               "merge della risorsa")
-COMMAND_ITEM(dumpmerge, 1, "dumpmerge [dayStart] [dayStop]",
+COMMAND_ITEM(dumpmerge, 1, "dumpmerge [dayStart] [dayStop] [fileoutput]",
              "dump della fusione corrente")
+COMMAND_ITEM(dumpmergexml, 1, "dumpmergexml [dayStart] [dayStop] [fileoutput]",
+             "dump della fusione corrente in formato XML")
 COMMAND_ITEM(infomerge, 1, "infomerge", "informazioni della fusione corrente")
 COMMAND_ITEM(clearmerge, 1, "clearmerge", "pulisce la fusione corrente")
 END_COMMAND_LIST()
 
 ProxyApp::ProxyApp()
     : configFile("config.xml"), verbose(0), workPath("/tmp/euridice"),
-      merger(getpid()) {
+      merger(getpid())
+{
   doc = NULL;
   root_element = NULL;
   __registerConsoleCommands();
@@ -84,14 +90,17 @@ ProxyApp::ProxyApp()
   LIBXML_TEST_VERSION
 }
 
-ProxyApp::~ProxyApp() {
-  if (doc != NULL) {
+ProxyApp::~ProxyApp()
+{
+  if (doc != NULL)
+  {
     // free the document
     xmlFreeDoc(doc);
   }
 }
 
-int ProxyApp::main(int argc, char **argv) {
+int ProxyApp::main(int argc, char **argv)
+{
   // Declare the supported options.
   po::options_description desc("Allowed options");
   desc.add_options()("help", "produce help message")("verbose",
@@ -108,7 +117,8 @@ int ProxyApp::main(int argc, char **argv) {
   po::store(po::parse_command_line(argc, argv, desc), vm);
   po::notify(vm);
 
-  if (vm.count("help")) {
+  if (vm.count("help"))
+  {
     cout << desc << "\n";
     return 1;
   }
@@ -118,13 +128,18 @@ int ProxyApp::main(int argc, char **argv) {
     buildDir = vm.count("builddir");
 
   // recupera tutti i parametri dopo --cmd
-  if (vm.count("cmd")) {
-    for (int i = 0; i < argc; i++) {
-      if (strcmp(argv[i], "--cmd") == 0) {
-        for (int j = i + 1; j < argc; j++) {
+  if (vm.count("cmd"))
+  {
+    for (int i = 0; i < argc; i++)
+    {
+      if (strcmp(argv[i], "--cmd") == 0)
+      {
+        for (int j = i + 1; j < argc; j++)
+        {
           directCommand.push_back(argv[j]);
         }
-        if (directCommand.empty()) {
+        if (directCommand.empty())
+        {
           cout << "Invalid parameters for --cmd; must specify command and its "
                   "arguments\n";
           return -1;
@@ -137,11 +152,13 @@ int ProxyApp::main(int argc, char **argv) {
   return rumble();
 }
 
-int ProxyApp::readConfig() {
+int ProxyApp::readConfig()
+{
   /* parse the file and get the DOM */
   doc = xmlReadFile(configFile.c_str(), NULL, 0);
 
-  if (doc == NULL) {
+  if (doc == NULL)
+  {
     printf("error: could not parse file %s\n", configFile.c_str());
     return -1;
   }
@@ -168,11 +185,14 @@ int ProxyApp::readConfig() {
  * Prints the names of the all the xml elements
  * that are siblings or children of a given xml node.
  */
-void ProxyApp::printElementNames(xmlNode *a_node) {
+void ProxyApp::printElementNames(xmlNode *a_node)
+{
   xmlNode *cur_node = NULL;
 
-  for (cur_node = a_node; cur_node; cur_node = cur_node->next) {
-    if (cur_node->type == XML_ELEMENT_NODE) {
+  for (cur_node = a_node; cur_node; cur_node = cur_node->next)
+  {
+    if (cur_node->type == XML_ELEMENT_NODE)
+    {
       printf("node type: Element, name: %s\n", cur_node->name);
     }
 
@@ -180,8 +200,10 @@ void ProxyApp::printElementNames(xmlNode *a_node) {
   }
 }
 
-int ProxyApp::rumble() {
-  try {
+int ProxyApp::rumble()
+{
+  try
+  {
     if (readConfig())
       return -1;
 
@@ -197,11 +219,13 @@ int ProxyApp::rumble() {
     if (scanArea())
       return -1;
 
-    if (!directCommand.empty()) {
+    if (!directCommand.empty())
+    {
       return runCommand();
     }
 
-    if (!scriptFile.empty()) {
+    if (!scriptFile.empty())
+    {
       return runCommandsFromFile();
     }
 
@@ -210,16 +234,21 @@ int ProxyApp::rumble() {
       return -1;
 
     return 0;
-  } catch (std::exception &e) {
+  }
+  catch (std::exception &e)
+  {
     fprintf(stderr, "Fatal error: %s\n", e.what());
     return -1;
-  } catch (...) {
+  }
+  catch (...)
+  {
     fprintf(stderr, "Fatal error: unknow cause\n");
     return -1;
   }
 }
 
-int ProxyApp::loadDefaults() {
+int ProxyApp::loadDefaults()
+{
   XmlHelper xh(root_element);
   const xmlNode *defaults = xh.findElementXml("defaults");
   if (defaults == NULL)
@@ -227,10 +256,12 @@ int ProxyApp::loadDefaults() {
 
   XmlHelper dh(defaults);
   const xmlNode *stamper = dh.findElementXml("stamper");
-  if (stamper != NULL) {
+  if (stamper != NULL)
+  {
     XmlHelper sh(stamper);
     NodeVector params = sh.getChildren("param");
-    for (auto p : params) {
+    for (auto p : params)
+    {
       XmlHelper ph(p);
       String name = ph.getAttribute("name");
       String value = ph.getAttribute("value");
@@ -241,7 +272,8 @@ int ProxyApp::loadDefaults() {
   return 0;
 }
 
-int ProxyApp::overrideCommandLine() {
+int ProxyApp::overrideCommandLine()
+{
   XmlHelper xh(root_element);
   const xmlNode *override = xh.findElementXml("override");
   if (override == NULL)
@@ -252,14 +284,16 @@ int ProxyApp::overrideCommandLine() {
   return 0;
 }
 
-int ProxyApp::setupDirectory() {
+int ProxyApp::setupDirectory()
+{
   String main("/tmp/euridice");
   String slot = main + "/slots";
   String logs = main + "/logs";
 
   XmlHelper xh(root_element);
   const xmlNode *dirs = xh.findElementXml("dirs");
-  if (dirs != NULL) {
+  if (dirs != NULL)
+  {
     XmlHelper xd(dirs);
     xd.findElementXmlContent("main", main);
     xd.findElementXmlContent("slot", slot);
@@ -299,8 +333,10 @@ int ProxyApp::setupDirectory() {
   return 0;
 }
 
-void ProxyApp::segnali(int segnale, siginfo_t *info, void *bo) {
-  switch (segnale) {
+void ProxyApp::segnali(int segnale, siginfo_t *info, void *bo)
+{
+  switch (segnale)
+  {
   case SIGCHLD:
     segnaleChld(info, bo);
     break;
@@ -319,69 +355,95 @@ void ProxyApp::segnali(int segnale, siginfo_t *info, void *bo) {
   }
 }
 
-void ProxyApp::segnaleChld(siginfo_t *info, void *bo) {
-  try {
+void ProxyApp::segnaleChld(siginfo_t *info, void *bo)
+{
+  try
+  {
     // se il PID non è associato ad una istanza in esecuzione cattura qui
     int exitCode = 0;
     int pid = waitpid(0, &exitCode, WNOHANG);
     if (pid)
       cout << "unqualifed child pid=" << pid
            << " defunct (exitCode=" << exitCode << ")\n";
-  } catch (std::exception &e) {
+  }
+  catch (std::exception &e)
+  {
     fprintf(stderr, "SIGCHLD error: %s\n", e.what());
-  } catch (...) {
+  }
+  catch (...)
+  {
     fprintf(stderr, "SIGCHLD error: unknow cause\n");
   }
 }
 
-void ProxyApp::segnaleHup(siginfo_t *info, void *bo) {
+void ProxyApp::segnaleHup(siginfo_t *info, void *bo)
+{
   cout << "Segnale HUP aggiornamento configurazione ricevuto.\n";
 
-  try {
+  try
+  {
     LOCK_RUNNER
 
     if (verbose)
       cout << "Segnale HUP aggiornamento configurazione eseguito.\n";
-  } catch (std::exception &e) {
+  }
+  catch (std::exception &e)
+  {
     fprintf(stderr, "SIGHUP error: %s\n", e.what());
-  } catch (...) {
+  }
+  catch (...)
+  {
     fprintf(stderr, "SIGHUP error: unknow cause\n");
   }
 }
 
-void ProxyApp::segnaleUsr1(siginfo_t *info, void *bo) {
+void ProxyApp::segnaleUsr1(siginfo_t *info, void *bo)
+{
   cout << "Segnale USR1 dump configurazione.\n";
 
-  try {
+  try
+  {
     LOCK_RUNNER
 
     if (verbose)
       cout << "Segnale USR1 dump configurazione eseguito.\n";
-  } catch (std::exception &e) {
+  }
+  catch (std::exception &e)
+  {
     fprintf(stderr, "SIGUSR1 error: %s\n", e.what());
-  } catch (...) {
+  }
+  catch (...)
+  {
     fprintf(stderr, "SIGUSR1 error: unknow cause\n");
   }
 }
 
-void ProxyApp::segnaleBus(siginfo_t *info, void *bo) {
+void ProxyApp::segnaleBus(siginfo_t *info, void *bo)
+{
   cout << "Segnale BUS troncamento inatteso di file mappato in memoria.\n";
 }
 
-int ProxyApp::mainLoop() {
-  try {
+int ProxyApp::mainLoop()
+{
+  try
+  {
     LOCK_RUNNER
     return mainLoopRunner();
-  } catch (std::exception &e) {
+  }
+  catch (std::exception &e)
+  {
     fprintf(stderr, "Fatal error: %s\n", e.what());
-  } catch (...) {
+  }
+  catch (...)
+  {
     fprintf(stderr, "Fatal error: unknow cause\n");
   }
 
   return -1;
 }
 
-int ProxyApp::mainLoopRunner() {
+int ProxyApp::mainLoopRunner()
+{
   runConsole();
   cout << "bye\n";
   return 0;
@@ -391,7 +453,8 @@ void ProxyApp::__registerCommandItem(ConsoleCommandVector &cmdarray,
                                      String commandName, int minParams,
                                      String helpCmd, String helpDescr,
                                      CommandFunction function,
-                                     CommandCompleter completeFunction) {
+                                     CommandCompleter completeFunction)
+{
   ConsoleCommand cmd;
   cmd.commandName = commandName;
   cmd.minParams = minParams;
@@ -402,11 +465,13 @@ void ProxyApp::__registerCommandItem(ConsoleCommandVector &cmdarray,
   cmdarray.push_back(cmd);
 }
 
-int ProxyApp::runConsole(const File *fileScript /* = nullptr */) {
+int ProxyApp::runConsole(const File *fileScript /* = nullptr */)
+{
   Console c(">");
   c.registerCommands(basicCommands);
 
-  if (fileScript != nullptr && fileScript->isFile()) {
+  if (fileScript != nullptr && fileScript->isFile())
+  {
     c.executeFile(fileScript->getAbsolutePath());
     return 0;
   }
@@ -414,16 +479,19 @@ int ProxyApp::runConsole(const File *fileScript /* = nullptr */) {
   using ret = Console::ReturnCode;
 
   int retCode;
-  do {
+  do
+  {
     retCode = c.readLine();
   } while (retCode != ret::Quit);
 
   return 0;
 }
 
-int ProxyApp::cmd_help(const StringVector &args) {
+int ProxyApp::cmd_help(const StringVector &args)
+{
   cout << "Help comandi:\n";
-  for (auto cmd : basicCommands) {
+  for (auto cmd : basicCommands)
+  {
     cout << "    " << cmd.helpCmd << "\n"
          << "\t- " << cmd.helpDescr << "\n";
   }
@@ -434,14 +502,16 @@ int ProxyApp::cmd_help(const StringVector &args) {
   return 0;
 }
 
-int ProxyApp::cmd_defval(const StringVector &args) {
+int ProxyApp::cmd_defval(const StringVector &args)
+{
   cout << toString(defslot) << "\n";
   return 0;
 }
 
 int ProxyApp::cmd_set(const StringVector &args) { return 0; }
 
-int ProxyApp::cmd_create(const StringVector &args) {
+int ProxyApp::cmd_create(const StringVector &args)
+{
   String codice = args[1];
   String nomeFile = nomeFileDaCodice(codice);
   if (args.size() >= 3)
@@ -449,7 +519,8 @@ int ProxyApp::cmd_create(const StringVector &args) {
 
   SlotFile generato;
   File genfile(slotDir, nomeFile);
-  if (genfile.isFile()) {
+  if (genfile.isFile())
+  {
     cout << "Il file " << genfile.getAbsolutePath()
          << " già esiste! Comando create ignorato.\n";
     return 0;
@@ -464,31 +535,45 @@ int ProxyApp::cmd_create(const StringVector &args) {
   return 0;
 }
 
-String ProxyApp::nomeFileDaCodice(String codice) {
+String ProxyApp::nomeFileDaCodice(String codice)
+{
   return "Slot_" + codice + ".bin";
 }
 
-int ProxyApp::cmd_list(const StringVector &args) {
+int ProxyApp::cmd_list(const StringVector &args)
+{
   FileVector files;
   slotDir.listFiles(files);
 
-  if (args.size() > 1 && (args[1] == "scan" || args[1] == "verbose")) {
+  if (args.size() > 1 && (args[1] == "scan" || args[1] == "verbose"))
+  {
     bool showdet = args[1] == "verbose";
 
-    for (auto f : files) {
+    for (auto f : files)
+    {
       SlotFile tmp;
       int fd;
-      if ((fd = open(f.c_str(), O_RDONLY)) != -1) {
-        read(fd, &tmp, sizeof(tmp));
+      if ((fd = open(f.c_str(), O_RDONLY)) != -1)
+      {
+        if (read(fd, &tmp, sizeof(tmp)) != sizeof(tmp))
+        {
+          cout << "Il file " << f.getAbsolutePath() << " è corrotto.\n";
+          close(fd);
+          continue;
+        }
         close(fd);
 
-        if (strncmp(MAGIC, tmp.magic, 2) == 0) {
+        if (strncmp(MAGIC, tmp.magic, 2) == 0)
+        {
           cout << f.getAbsolutePath() << "\n";
 
-          if (strncmp(FIRMA, tmp.firma, 16) == 0) {
+          if (strncmp(FIRMA, tmp.firma, 16) == 0)
+          {
             if (showdet)
               cout << toString(tmp) << "\n";
-          } else {
+          }
+          else
+          {
             String ss(tmp.firma);
             cout << "Formato incompatibile: atteso '" << FIRMA << "' letto '"
                  << trim(ss.substr(0, 16)) << "' versione non compatibile.\n";
@@ -506,10 +591,13 @@ int ProxyApp::cmd_list(const StringVector &args) {
   return 0;
 }
 
-int ProxyApp::runCommand() {
-  for (auto cmd : basicCommands) {
-    if (directCommand[0] == cmd.commandName) {
-      this->directCommand.erase(this->directCommand.begin());
+int ProxyApp::runCommand()
+{
+  for (auto cmd : basicCommands)
+  {
+    if (directCommand[0] == cmd.commandName)
+    {
+      // this->directCommand.erase(this->directCommand.begin());
       return cmd.function(this->directCommand);
     }
   }
@@ -518,20 +606,24 @@ int ProxyApp::runCommand() {
   return -1;
 }
 
-int ProxyApp::runCommandsFromFile() {
+int ProxyApp::runCommandsFromFile()
+{
   File fileScript(scriptFile);
-  if (!fileScript.isFile()) {
+  if (!fileScript.isFile())
+  {
     cout << "Script file " << scriptFile << " not exists.\n";
     return -1;
   }
   return runConsole(&fileScript);
 }
 
-int ProxyApp::cmd_stamp(const StringVector &args) {
+int ProxyApp::cmd_stamp(const StringVector &args)
+{
   String codice = args[1];
   String nomeFile = nomeFileDaCodice(codice);
   File genfile(slotDir, nomeFile);
-  if (!genfile.isFile()) {
+  if (!genfile.isFile())
+  {
     cout << "La risorsa con codice " << codice
          << " non ha un corrispondente file in " << slotDir.getAbsolutePath()
          << "\n";
@@ -541,10 +633,12 @@ int ProxyApp::cmd_stamp(const StringVector &args) {
   return stampFile(genfile, args);
 }
 
-int ProxyApp::cmd_stampfile(const StringVector &args) {
+int ProxyApp::cmd_stampfile(const StringVector &args)
+{
   String nomeFile = args[1];
   File genfile(slotDir, nomeFile);
-  if (!genfile.isFile()) {
+  if (!genfile.isFile())
+  {
     cout << "Il file indicato non esiste in " << slotDir.getAbsolutePath()
          << "\n";
     return -1;
@@ -553,14 +647,16 @@ int ProxyApp::cmd_stampfile(const StringVector &args) {
   return stampFile(genfile, args);
 }
 
-int ProxyApp::stampFile(const File &toStamp, const StringVector &args) {
+int ProxyApp::stampFile(const File &toStamp, const StringVector &args)
+{
   SchedStamper stamper;
   String algo = args[2];
 
   // verifica per algoritmo esistente
   StringVector names;
   stamper.getAlgoNames(names);
-  if (find(names.begin(), names.end(), algo) == names.end()) {
+  if (find(names.begin(), names.end(), algo) == names.end())
+  {
     cout << "Algoritmo " << algo << " inesistente: deve essere uno di "
          << join(names, ",", "'") << "\n";
     return 0;
@@ -575,7 +671,8 @@ int ProxyApp::stampFile(const File &toStamp, const StringVector &args) {
 
   // lock della risorsa
   SchedResourceLock reslock(res, "stamp", true, true, 3000);
-  if (!reslock.isLocked()) {
+  if (!reslock.isLocked())
+  {
     cout << "Non riesco a bloccare la risorsa; operazione abortita.\n";
     return 0;
   }
@@ -586,11 +683,13 @@ int ProxyApp::stampFile(const File &toStamp, const StringVector &args) {
   return 0;
 }
 
-int ProxyApp::cmd_dump(const StringVector &args) {
+int ProxyApp::cmd_dump(const StringVector &args)
+{
   String codice = args[1];
   String nomeFile = nomeFileDaCodice(codice);
   File genfile(slotDir, nomeFile);
-  if (!genfile.isFile()) {
+  if (!genfile.isFile())
+  {
     cout << "La risorsa con codice " << codice
          << " non ha un corrispondente file in " << slotDir.getAbsolutePath()
          << "\n";
@@ -600,10 +699,12 @@ int ProxyApp::cmd_dump(const StringVector &args) {
   return dumpFile(genfile, args);
 }
 
-int ProxyApp::cmd_dumpfile(const StringVector &args) {
+int ProxyApp::cmd_dumpfile(const StringVector &args)
+{
   String nomeFile = args[1];
   File genfile(slotDir, nomeFile);
-  if (!genfile.isFile()) {
+  if (!genfile.isFile())
+  {
     cout << "Il file indicato non esiste in " << slotDir.getAbsolutePath()
          << "\n";
     return -1;
@@ -612,10 +713,14 @@ int ProxyApp::cmd_dumpfile(const StringVector &args) {
   return dumpFile(genfile, args);
 }
 
-int ProxyApp::dumpFile(const File &toDump, const StringVector &args) {
+int ProxyApp::dumpFile(const File &toDump, const StringVector &args)
+{
   cout << "File: " << toDump.getAbsolutePath() << "\n";
 
   IntPair days = parseDays(args, 2);
+  String fileoutput;
+  if (args.size() >= 5)
+    fileoutput = args[4];
 
   // carica risorsa e applica stamper
   SchedResource res(toDump);
@@ -623,13 +728,39 @@ int ProxyApp::dumpFile(const File &toDump, const StringVector &args) {
 
   // lock della risorsa
   SchedResourceLock reslock(res, "dump", true, true, 3000);
-  if (!reslock.isLocked()) {
+  if (!reslock.isLocked())
+  {
     cout << "Non riesco a bloccare la risorsa; operazione abortita.\n";
     return 0;
   }
 
   if (res.isInitialized())
-    cout << dump(*res.getSlotFile(), days.first, days.second) << "\n";
+  {
+    String output = dump(*res.getSlotFile(), days.first, days.second);
+    if (fileoutput.empty())
+      cout << output << "\n";
+    else
+    {
+      cout << "Output inviato a " << fileoutput << "\n";
+
+      std::ofstream outputFile(fileoutput, std::ios::binary | std::ios::trunc);
+      if (!outputFile)
+      {
+        cout << "Non riesco ad aprire il file di output " << fileoutput << "\n";
+        return 0;
+      }
+
+      outputFile.write(output.data(),
+                       static_cast<std::streamsize>(output.size()));
+      outputFile.put('\n');
+      if (!outputFile)
+      {
+        cout << "Errore durante la scrittura del file di output " << fileoutput
+             << "\n";
+        return 0;
+      }
+    }
+  }
   else
     cout << "La risorsa non è stata inizializzata; usare uno stamper per "
             "poterla usare.\n";
@@ -638,11 +769,13 @@ int ProxyApp::dumpFile(const File &toDump, const StringVector &args) {
 }
 
 int ProxyApp::complete_stamp(const StringVector &args, StringVector &complete,
-                             int np) {
+                             int np)
+{
   if (np == 1)
     resourcesFromArea(complete);
 
-  if (np == 2) {
+  if (np == 2)
+  {
     SchedStamper stamper;
     stamper.getAlgoNames(complete);
   }
@@ -651,63 +784,75 @@ int ProxyApp::complete_stamp(const StringVector &args, StringVector &complete,
 }
 
 int ProxyApp::complete_stampfile(const StringVector &args,
-                                 StringVector &complete, int np) {
+                                 StringVector &complete, int np)
+{
   return 0;
 }
 
 int ProxyApp::complete_dump(const StringVector &args, StringVector &complete,
-                            int np) {
+                            int np)
+{
   if (np == 1)
     resourcesFromArea(complete);
   return 1;
 }
 
 int ProxyApp::complete_dumpfile(const StringVector &args,
-                                StringVector &complete, int np) {
+                                StringVector &complete, int np)
+{
   if (np == 1)
     filesFromArea(complete);
   return 1;
 }
 
 int ProxyApp::complete_dumpxml(const StringVector &args, StringVector &complete,
-                               int np) {
+                               int np)
+{
   if (np == 1)
     resourcesFromArea(complete);
   return 1;
 }
 
 int ProxyApp::complete_dumpfilexml(const StringVector &args,
-                                   StringVector &complete, int np) {
+                                   StringVector &complete, int np)
+{
   if (np == 1)
     filesFromArea(complete);
   return 1;
 }
 
-void ProxyApp::resourcesFromArea(StringVector &rv) {
-  for (auto it : cacheRisorse) {
+void ProxyApp::resourcesFromArea(StringVector &rv)
+{
+  for (auto it : cacheRisorse)
+  {
     rv.push_back(it.first);
   }
 }
 
-void ProxyApp::filesFromArea(StringVector &rv) {
-  for (auto it : cacheRisorse) {
+void ProxyApp::filesFromArea(StringVector &rv)
+{
+  for (auto it : cacheRisorse)
+  {
     for (auto f : it.second)
       rv.push_back(f.getAbsolutePath());
   }
 }
 
-int ProxyApp::cmd_merge(const StringVector &args) {
+int ProxyApp::cmd_merge(const StringVector &args)
+{
   String codice = args[1];
   String algo = args[2];
 
-  if (merger.checkRisorsa(codice)) {
+  if (merger.checkRisorsa(codice))
+  {
     cout << "La risorsa con codice " << codice << " è stata già inclusa.\n";
     return 0;
   }
 
   String nomeFile = nomeFileDaCodice(codice);
   File genfile(slotDir, nomeFile);
-  if (!genfile.isFile()) {
+  if (!genfile.isFile())
+  {
     cout << "La risorsa con codice " << codice
          << " non ha un corrispondente file in " << slotDir.getAbsolutePath()
          << "\n";
@@ -717,7 +862,8 @@ int ProxyApp::cmd_merge(const StringVector &args) {
   // verifica per algoritmo esistente
   StringVector names;
   merger.getAlgoNames(names);
-  if (find(names.begin(), names.end(), algo) == names.end()) {
+  if (find(names.begin(), names.end(), algo) == names.end())
+  {
     cout << "Algoritmo " << algo << " inesistente: deve essere uno di "
          << join(names, ",", "'") << "\n";
     return 0;
@@ -725,7 +871,8 @@ int ProxyApp::cmd_merge(const StringVector &args) {
 
   // carica risorsa
   SchedResourcePtr res = buildResource(genfile);
-  if (!res->isInitialized()) {
+  if (!res->isInitialized())
+  {
     cout << "La risorsa non è stata inizializzata; usare uno stamper per "
             "poterla usare.\n";
     return 0;
@@ -743,7 +890,8 @@ int ProxyApp::cmd_merge(const StringVector &args) {
 }
 
 int ProxyApp::complete_merge(const StringVector &args, StringVector &complete,
-                             int np) {
+                             int np)
+{
   if (np == 1)
     resourcesFromArea(complete);
 
@@ -753,22 +901,31 @@ int ProxyApp::complete_merge(const StringVector &args, StringVector &complete,
   return 0;
 }
 
-int ProxyApp::scanArea() {
+int ProxyApp::scanArea()
+{
   SimpleTimer st;
   cout << "Scan directory " << slotDir.getAbsolutePath() << " for data.\n";
 
   FileVector files;
   slotDir.listFiles(files);
 
-  for (auto f : files) {
+  for (auto f : files)
+  {
     SlotFile tmp;
     int fd;
-    if ((fd = open(f.c_str(), O_RDONLY)) != -1) {
-      read(fd, &tmp, sizeof(tmp));
+    if ((fd = open(f.c_str(), O_RDONLY)) != -1)
+    {
+      if (read(fd, &tmp, sizeof(tmp)) != sizeof(tmp))
+      {
+        close(fd);
+        continue;
+      }
       close(fd);
 
-      if (strncmp(MAGIC, tmp.magic, 2) == 0) {
-        if (strncmp(FIRMA, tmp.firma, 16) == 0) {
+      if (strncmp(MAGIC, tmp.magic, 2) == 0)
+      {
+        if (strncmp(FIRMA, tmp.firma, 16) == 0)
+        {
           cacheRisorse.aggiungi(tmp.codiceRisorsa, f);
         }
       }
@@ -779,35 +936,119 @@ int ProxyApp::scanArea() {
   return 0;
 }
 
-int ProxyApp::cmd_dumpmerge(const StringVector &args) {
+int ProxyApp::cmd_dumpmerge(const StringVector &args)
+{
   const SlotFile *ptSlot = merger.getMerged();
 
-  if (ptSlot == nullptr) {
+  if (ptSlot == nullptr)
+  {
     cout << "Il merger è vuoto\n";
     return 0;
   }
 
   IntPair days = parseDays(args, 1);
-  cout << dump(*ptSlot, days.first, days.second) << "\n";
+  String fileoutput;
+  if (args.size() >= 4)
+    fileoutput = args[3];
+
+  String output = dump(*ptSlot, days.first, days.second);
+
+  if (fileoutput.empty())
+    cout << output << "\n";
+  else
+  {
+    cout << "Output inviato a " << fileoutput << "\n";
+
+    std::ofstream outputFile(fileoutput, std::ios::binary | std::ios::trunc);
+    if (!outputFile)
+    {
+      cout << "Non riesco ad aprire il file di output " << fileoutput << "\n";
+      return 0;
+    }
+
+    outputFile.write(output.data(),
+                     static_cast<std::streamsize>(output.size()));
+    outputFile.put('\n');
+    if (!outputFile)
+    {
+      cout << "Errore durante la scrittura del file di output " << fileoutput
+           << "\n";
+      return 0;
+    }
+  }
+
   return 0;
 }
 
-int ProxyApp::cmd_infomerge(const StringVector &args) {
+int ProxyApp::cmd_dumpmergexml(const StringVector &args)
+{
+  const SlotFile *ptSlot = merger.getMerged();
+
+  if (ptSlot == nullptr)
+  {
+    cout << "Il merger è vuoto\n";
+    return 0;
+  }
+
+  IntPair days = parseDays(args, 1);
+  String fileoutput;
+  if (args.size() >= 4)
+    fileoutput = args[3];
+
+  Properties prop;
+  prop["daystart"] = days.first;
+  prop["daystop"] = days.second;
+  String output = merger.dumpXml(prop);
+
+  if (fileoutput.empty())
+    cout << output << "\n";
+  else
+  {
+    cout << "Output inviato a " << fileoutput << "\n";
+
+    std::ofstream outputFile(fileoutput, std::ios::binary | std::ios::trunc);
+    if (!outputFile)
+    {
+      cout << "Non riesco ad aprire il file di output " << fileoutput << "\n";
+      return 0;
+    }
+
+    String hxml = "<?xml version=\"1.0\"?>\n";
+    outputFile.write(hxml.data(), static_cast<std::streamsize>(hxml.size()));
+    outputFile.write(output.data(),
+                     static_cast<std::streamsize>(output.size()));
+    outputFile.put('\n');
+    if (!outputFile)
+    {
+      cout << "Errore durante la scrittura del file di output " << fileoutput
+           << "\n";
+      return 0;
+    }
+  }
+
+  return 0;
+}
+
+int ProxyApp::cmd_infomerge(const StringVector &args)
+{
   cout << merger.toString() << "\n";
   return 0;
 }
 
-int ProxyApp::cmd_clearmerge(const StringVector &args) {
+int ProxyApp::cmd_clearmerge(const StringVector &args)
+{
   merger.clear();
   cout << "Accorpamento risorse svuotato.\n";
   return 0;
 }
 
-int ProxyApp::cmd_dumpxml(const StringVector &args) {
+int ProxyApp::cmd_dumpxml(const StringVector &args)
+{
   String codice = args[1];
   String nomeFile = nomeFileDaCodice(codice);
   File genfile(slotDir, nomeFile);
-  if (!genfile.isFile()) {
+  if (!genfile.isFile())
+  {
     cout << "La risorsa con codice " << codice
          << " non ha un corrispondente file in " << slotDir.getAbsolutePath()
          << "\n";
@@ -817,10 +1058,12 @@ int ProxyApp::cmd_dumpxml(const StringVector &args) {
   return dumpFileXML(genfile, args);
 }
 
-int ProxyApp::cmd_dumpfilexml(const StringVector &args) {
+int ProxyApp::cmd_dumpfilexml(const StringVector &args)
+{
   String nomeFile = args[1];
   File genfile(slotDir, nomeFile);
-  if (!genfile.isFile()) {
+  if (!genfile.isFile())
+  {
     cout << "Il file indicato non esiste in " << slotDir.getAbsolutePath()
          << "\n";
     return -1;
@@ -829,10 +1072,14 @@ int ProxyApp::cmd_dumpfilexml(const StringVector &args) {
   return dumpFileXML(genfile, args);
 }
 
-int ProxyApp::dumpFileXML(const File &toDump, const StringVector &args) {
+int ProxyApp::dumpFileXML(const File &toDump, const StringVector &args)
+{
   cout << "File: " << toDump.getAbsolutePath() << "\n";
 
   IntPair days = parseDays(args, 2);
+  String fileoutput;
+  if (args.size() >= 5)
+    fileoutput = args[4];
 
   // carica risorsa e applica stamper
   SchedResource res(toDump);
@@ -840,17 +1087,46 @@ int ProxyApp::dumpFileXML(const File &toDump, const StringVector &args) {
 
   // lock della risorsa
   SchedResourceLock reslock(res, "dump", true, true, 3000);
-  if (!reslock.isLocked()) {
+  if (!reslock.isLocked())
+  {
     cout << "Non riesco a bloccare la risorsa; operazione abortita.\n";
     return 0;
   }
 
-  if (res.isInitialized()) {
+  if (res.isInitialized())
+  {
     Properties prop;
     prop["daystart"] = days.first;
     prop["daystop"] = days.second;
-    cout << res.dumpXml(prop) << "\n";
-  } else
+    String output = res.dumpXml(prop);
+
+    if (fileoutput.empty())
+      cout << output << "\n";
+    else
+    {
+      cout << "Output inviato a " << fileoutput << "\n";
+
+      std::ofstream outputFile(fileoutput, std::ios::binary | std::ios::trunc);
+      if (!outputFile)
+      {
+        cout << "Non riesco ad aprire il file di output " << fileoutput << "\n";
+        return 0;
+      }
+
+      String hxml = "<?xml version=\"1.0\"?>\n";
+      outputFile.write(hxml.data(), static_cast<std::streamsize>(hxml.size()));
+      outputFile.write(output.data(),
+                       static_cast<std::streamsize>(output.size()));
+      outputFile.put('\n');
+      if (!outputFile)
+      {
+        cout << "Errore durante la scrittura del file di output " << fileoutput
+             << "\n";
+        return 0;
+      }
+    }
+  }
+  else
     cout << "La risorsa non è stata inizializzata; usare uno stamper per "
             "poterla usare.\n";
 

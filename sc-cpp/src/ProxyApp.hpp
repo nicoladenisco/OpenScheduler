@@ -14,7 +14,8 @@
 #include <libxml/tree.h>
 #include <mutex>
 
-class ProxyApp {
+class ProxyApp
+{
 public:
   ProxyApp();
   ~ProxyApp();
@@ -57,6 +58,7 @@ private:
   int cmd_dumpfilexml(const StringVector &args);
   int cmd_merge(const StringVector &args);
   int cmd_dumpmerge(const StringVector &args);
+  int cmd_dumpmergexml(const StringVector &args);
   int cmd_infomerge(const StringVector &args);
   int cmd_clearmerge(const StringVector &args);
 
@@ -103,23 +105,22 @@ public:
   Classificatore<String, File> cacheRisorse;
 };
 
-#define BEGIN_COMMAND_LIST()                                                   \
-  void ProxyApp::__registerConsoleCommands() {                                 \
+#define BEGIN_COMMAND_LIST()                 \
+  void ProxyApp::__registerConsoleCommands() \
+  {                                          \
     ConsoleCommandVector &cmdarray = basicCommands;
 
-#define COMMAND_ITEM(nome, minpar, hpar, hdesc)                                \
-  __registerCommandItem(                                                       \
-      cmdarray, #nome, minpar, hpar, hdesc,                                    \
-      [this](const Arguments &args) { return this->cmd_##nome(args); },        \
+#define COMMAND_ITEM(nome, minpar, hpar, hdesc)                         \
+  __registerCommandItem(                                                \
+      cmdarray, #nome, minpar, hpar, hdesc,                             \
+      [this](const Arguments &args) { return this->cmd_##nome(args); }, \
       nullptr);
 
-#define COMMAND_ITEM2(nome, minpar, hpar, hdesc)                               \
-  __registerCommandItem(                                                       \
-      cmdarray, #nome, minpar, hpar, hdesc,                                    \
-      [this](const Arguments &args) { return this->cmd_##nome(args); },        \
-      [this](const Arguments &args, StringVector &complete, int np) {          \
-        return this->complete_##nome(args, complete, np);                      \
-      });
+#define COMMAND_ITEM2(nome, minpar, hpar, hdesc)                        \
+  __registerCommandItem(                                                \
+      cmdarray, #nome, minpar, hpar, hdesc,                             \
+      [this](const Arguments &args) { return this->cmd_##nome(args); }, \
+      [this](const Arguments &args, StringVector &complete, int np) { return this->complete_##nome(args, complete, np); });
 
 #define END_COMMAND_LIST() }
 

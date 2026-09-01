@@ -1,0 +1,21 @@
+{
+  "tasks": [
+    {
+      "type": "cppbuild",
+      "label": "compila progetto",
+      "command": "${workspaceFolder}/nb-build.sh",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [
+        "$gcc"
+      ],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "detail": "Attività generata dal debugger."
+    }
+  ],
+  "version": "2.0.0"
+}

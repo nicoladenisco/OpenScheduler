@@ -10,7 +10,8 @@
  * Inizializza uno slot file.
  */
 void initSlotFile(int anno, int slotOra, int oraIniziale, int oraFinale,
-                  String codiceRisorsa, SlotFile &sf) {
+                  String codiceRisorsa, SlotFile &sf)
+{
   if (oraIniziale >= oraFinale)
     throw StructureException("Errore definizione ore: oraIniziale deve essere "
                              "minore ma diversa da oraFinale");
@@ -24,11 +25,13 @@ void initSlotFile(int anno, int slotOra, int oraIniziale, int oraFinale,
         "Errore definizione slotOra: deve essere compreso fra 1 e 59");
 
   // inizializza struttura
+  String s_anno = format("%04d", anno);
   memset(&sf, 0, sizeof(sf));
   memset(&sf, ' ', 2 + 16 + 4);
   strncpy(sf.magic, MAGIC, 2);
   strncpy(sf.firma, FIRMA, 16);
-  snprintf(sf.sanno, 5, "%04d", anno);
+  strncpy(sf.sanno, s_anno.c_str(), 4);
+  sf.zero = 0;
 
   // imposta parametri nella struttura
   strncpy(sf.codiceRisorsa, codiceRisorsa.c_str(), sizeof(sf.codiceRisorsa));
@@ -52,40 +55,52 @@ void initSlotFile(int anno, int slotOra, int oraIniziale, int oraFinale,
  * Inizializza uno slot file e lo salva su disco.
  */
 void initSlotFile(int anno, int slotOra, int oraIniziale, int oraFinale,
-                  String codiceRisorsa, SlotFile &sf, File &tosave) {
+                  String codiceRisorsa, SlotFile &sf, File &tosave)
+{
   initSlotFile(anno, slotOra, oraIniziale, oraFinale, codiceRisorsa, sf);
 
   int fd;
-  if ((fd = open(tosave.c_str(), O_RDWR | O_CREAT | O_EXCL, 0664)) == -1) {
-    if (errno == EEXIST) {
+  if ((fd = open(tosave.c_str(), O_RDWR | O_CREAT | O_EXCL, 0664)) == -1)
+  {
+    if (errno == EEXIST)
+    {
       throw StructureException(
           "Il file indicato già esiste: operazione non possibile.");
-    } else {
+    }
+    else
+    {
       throw StructureException("Errore generico IO (open).");
     }
   }
 
-  if (ftruncate(fd, sf.dimensioneFile) == -1) {
+  if (ftruncate(fd, sf.dimensioneFile) == -1)
+  {
     close(fd);
     throw StructureException("Errore generico IO (ftruncate).");
   }
 
   lseek(fd, 0, SEEK_SET);
-  write(fd, &sf, sizeof(sf));
+  int nb = write(fd, &sf, sizeof(sf));
   close(fd);
+
+  if (nb != sizeof(sf))
+    throw StructureException("Errore generico IO (write).");
 }
 
-static String fmtfield(String des, const char *val, const char *sep) {
+static String fmtfield(String des, const char *val, const char *sep)
+{
   return format("%-16.16s %s%s", des.c_str(), val, sep);
 }
 
-static String fmtfield(String des, int val, const char *sep) {
+static String fmtfield(String des, int val, const char *sep)
+{
   return format("%-16.16s %d%s", des.c_str(), val, sep);
 }
 
 #define TOS(x) fmtfield(#x, sf.x, s)
 
-String toString(const SlotFile &sf, String separator /*= "\n"*/) {
+String toString(const SlotFile &sf, String separator /*= "\n"*/)
+{
   const char *s = separator.c_str();
 
   String tmp = TOS(magic) + TOS(codiceRisorsa) + TOS(anno) + TOS(slotOra) +
@@ -97,7 +112,8 @@ String toString(const SlotFile &sf, String separator /*= "\n"*/) {
 }
 
 String dump(const SlotFile &sf, int dayStart /*= 0*/, int dayStop /*= 365*/,
-            String separator /*= "\n"*/) {
+            String separator /*= "\n"*/)
+{
   String rv, bo;
   rv.reserve((sf.numSlotsTotali * sizeof(slotType)) + 1000);
   std::map<int, String> display;
@@ -107,10 +123,12 @@ String dump(const SlotFile &sf, int dayStart /*= 0*/, int dayStop /*= 365*/,
   display[3] = "X";
 
   // tabella orario; solo se c'è spazio (slotOra > 2)
-  if (sf.slotOra > 2) {
+  if (sf.slotOra > 2)
+  {
     int ora = sf.oraIniziale;
     bo.append("   ");
-    for (int i = 0; i < sf.numSlotsGiorno; i++) {
+    for (int i = 0; i < sf.numSlotsGiorno; i++)
+    {
       if ((i % sf.slotOra) == 0)
         bo.append(format("|%-*d", sf.slotOra, ora++));
     }
@@ -122,10 +140,12 @@ String dump(const SlotFile &sf, int dayStart /*= 0*/, int dayStop /*= 365*/,
   int offset = dayStart * sf.numSlotsGiorno;
   const slotType *ptSlot = sf.arrySlot + offset;
 
-  for (int g = dayStart; g < dayStop; g++) {
+  for (int g = dayStart; g < dayStop; g++)
+  {
     String giorno = format("%03d", g + 1);
     rv.append(giorno);
-    for (int i = 0; i < sf.numSlotsGiorno; i++) {
+    for (int i = 0; i < sf.numSlotsGiorno; i++)
+    {
 
       if ((i % sf.slotOra) == 0)
         rv.append("|");
@@ -138,7 +158,8 @@ String dump(const SlotFile &sf, int dayStart /*= 0*/, int dayStop /*= 365*/,
     rv.append(separator);
   }
 
-  if (sf.slotOra > 2) {
+  if (sf.slotOra > 2)
+  {
     int ora = sf.oraIniziale;
     rv.append(bo);
   }
@@ -152,7 +173,8 @@ static String strfield(int val) { return format("%d", val); }
 
 #define TOPROP(x) prop[#x] = strfield(sf.x)
 
-void toProperties(const SlotFile &sf, Properties &prop) {
+void toProperties(const SlotFile &sf, Properties &prop)
+{
   TOPROP(magic);
   TOPROP(codiceRisorsa);
   TOPROP(anno);
@@ -167,11 +189,12 @@ void toProperties(const SlotFile &sf, Properties &prop) {
   TOPROP(dimensioneFile);
 }
 
-#define TOXML(x)                                                               \
-  rv.append("<header name=\"#x\">" + strfield(sf.x) + "</header>")
+#define TOXML(x) \
+  rv.append(format("<header name=\"%s\">%s</header>%s", #x, strfield(sf.x).c_str(), separator.c_str()))
 
 String toXML(const SlotFile &sf, int dayStart /*= 0*/, int dayStop /*= 365*/,
-             String rootName /*= "resource"*/, String separator /*= "\n"*/) {
+             String rootName /*= "resource"*/, String separator /*= "\n"*/)
+{
   String rv;
   rv.reserve(1024 + (sf.dimensioneByte * 4));
 
@@ -199,12 +222,15 @@ String toXML(const SlotFile &sf, int dayStart /*= 0*/, int dayStop /*= 365*/,
   int offset = dayStart * sf.numSlotsGiorno;
   const slotType *ptSlot = sf.arrySlot + offset;
 
-  for (int g = dayStart; g < dayStop; g++) {
-    for (int i = 0; i < sf.numSlotsGiorno; i++) {
-      rv.append(
-            format("<slot day=\"%d\" pos=\"%d\" state=\"%d\" unique=\"%d\" />",
-                   g, i, (int)ptSlot->status, (int)ptSlot->info))
-          .append(separator);
+  for (int g = dayStart; g < dayStop; g++)
+  {
+    for (int i = 0; i < sf.numSlotsGiorno; i++)
+    {
+      if (ptSlot->status != SLOT_UNAVAILABLE)
+        rv.append(
+              format("<slot day=\"%d\" pos=\"%d\" state=\"%d\" unique=\"%d\" />",
+                     g, i, (int)ptSlot->status, (int)ptSlot->info))
+            .append(separator);
       ptSlot++;
     }
   }
