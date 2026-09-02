@@ -34,6 +34,14 @@ public:
     }
   }
 
+  // Metodo per classificare un elemento
+  // EstraiChiave è un tipo generico per accettare lambda
+  template <typename Func> void aggiungi(const T &item, Func estraiChiave) {
+    // Applichiamo la lambda per ottenere la chiave
+    K chiave = estraiChiave(item);
+    avviungi(chiave, item);
+  }
+
   // Aggiunge un metodo sicuro per inserire i dati
   void aggiungi(const K &chiave, const T &valore) {
     (*this)[chiave].push_back(valore);

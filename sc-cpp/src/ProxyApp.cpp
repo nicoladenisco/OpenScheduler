@@ -67,6 +67,10 @@ COMMAND_ITEM(dumpmergexml, 1, "dumpmergexml [dayStart] [dayStop] [fileoutput]",
              "dump della fusione corrente in formato XML")
 COMMAND_ITEM(infomerge, 1, "infomerge", "informazioni della fusione corrente")
 COMMAND_ITEM(clearmerge, 1, "clearmerge", "pulisce la fusione corrente")
+COMMAND_ITEM(
+    removelock, 1, "removelock [deep]",
+    "rimuove lock delle risorse; [deep] rimuove LOCK dai files risorse")
+COMMAND_ITEM(rescan, 1, "rescan", "legge directory slots")
 END_COMMAND_LIST()
 
 ProxyApp::ProxyApp()
@@ -80,7 +84,12 @@ ProxyApp::ProxyApp()
   if (strStartWith(workPath, "/tmp"))
     buildDir = true;
 
-  initSlotFile(2026, 4, 8, 18, "DUMMY", defslot);
+  time_t t;
+  time(&t);
+  localtime_r(&t, &adesso);
+  annoSlot = adesso.tm_year + 1900;
+
+  initSlotFile(annoSlot, 4, 8, 18, "DUMMY", defslot);
 
   /*
    * this initialize the library and check potential ABI mismatches
@@ -174,6 +183,31 @@ int ProxyApp::readConfig()
    * have been allocated by the parser.
    */
   xmlCleanupParser();
+
+  XmlHelper root(root_element);
+
+  NodePtr n1 = root.findPathXml("dirs/main");
+  if (n1 != NULL)
+  {
+    XmlHelper xh1(n1);
+    workDir = File(xh1.getContent());
+    slotDir = File(workDir, "slots");
+    logsDir = File(workDir, "logs");
+  }
+
+  NodePtr n2 = root.findPathXml("dirs/slot");
+  if (n2 != NULL)
+  {
+    XmlHelper xh2(n2);
+    slotDir = File(xh2.getContent());
+  }
+
+  NodePtr n3 = root.findPathXml("dirs/logs");
+  if (n3 != NULL)
+  {
+    XmlHelper xh3(n3);
+    logsDir = File(xh3.getContent());
+  }
 
   return 0;
 }
@@ -537,7 +571,14 @@ int ProxyApp::cmd_create(const StringVector &args)
 
 String ProxyApp::nomeFileDaCodice(String codice)
 {
-  return "Slot_" + codice + ".bin";
+  const auto p = cacheRisorse.find(codice);
+  if (p != cacheRisorse.end())
+  {
+    return p->second[0].getName();
+  }
+
+  String s_anno = format("%04d", annoSlot);
+  return "Slot_" + codice + "_" + s_anno + ".bin";
 }
 
 int ProxyApp::cmd_list(const StringVector &args)
@@ -1130,5 +1171,63 @@ int ProxyApp::dumpFileXML(const File &toDump, const StringVector &args)
     cout << "La risorsa non è stata inizializzata; usare uno stamper per "
             "poterla usare.\n";
 
+  return 0;
+}
+
+int ProxyApp::cmd_removelock(const StringVector &args)
+{
+  bool deep = false;
+  if (args.size() >= 2)
+    deep = args[1] == "deep";
+
+  // chiude e sblocca le risorse aperte nel merger
+  if (merger.getMerged() != nullptr)
+  {
+    cout << "Chiudo il merger liberando tutte le risorse.\n";
+    merger.clear();
+  }
+
+  for (const auto &[chiave, lista] : cacheRisorse)
+  {
+    cout << "Sblocco risorsa " << chiave << "\n";
+
+    for (auto originFile : lista)
+    {
+      File lockFile(originFile.getAbsolutePath() + ".lock");
+      if (lockFile.exist())
+        lockFile.deleteFiles();
+
+      if (deep && originFile.exist())
+      {
+        // carica la risorsa e riporta tutti gli slot SLOT_LOOKED in
+        // SLOT_SCHEDULABLE
+        SchedResource r(originFile);
+
+        int num = 0;
+        SlotFile *sf = r.getSlotFile();
+        slotType *ptSlot = sf->arrySlot;
+        for (int i = 0; i < sf->numSlotsTotali; i++)
+        {
+          if (ptSlot->status == SLOT_LOOKED)
+          {
+            ptSlot->status = SLOT_SCHEDULABLE;
+            num++;
+          }
+
+          ptSlot++;
+        }
+
+        cout << "Sblocco slots per risorsa " << originFile.getAbsolutePath() << "; sbloccati " << num
+             << " slots.\n";
+      }
+    }
+  }
+
+  return 0;
+}
+
+int ProxyApp::cmd_rescan(const StringVector &args)
+{
+  scanArea();
   return 0;
 }

@@ -9,25 +9,31 @@
       "type": "cppdbg",
       "request": "launch",
       "program": "${workspaceFolder}/debug/oskcli",
-      "args": ["--cmd", "dumpxml", "R001", "0", "365", "/tmp/r001.xml"],
+      "args": [
+        "--cmd",
+        "dumpxml",
+        "R001",
+        "0",
+        "365",
+        "/tmp/r001.xml"
+      ],
       "stopAtEntry": false,
       "cwd": "${workspaceFolder}",
       "environment": [],
       "externalConsole": false,
       "MIMode": "gdb",
       "setupCommands": [
-          {
-              "description": "Abilita la riformattazione per gdb",
-              "text": "-enable-pretty-printing",
-              "ignoreFailures": true
-          },
-          {
-              "description": "Imposta Versione Disassembly su Intel",
-              "text": "-gdb-set disassembly-flavor intel",
-              "ignoreFailures": true
-          }
+        {
+          "description": "Abilita la riformattazione per gdb",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        },
+        {
+          "description": "Imposta Versione Disassembly su Intel",
+          "text": "-gdb-set disassembly-flavor intel",
+          "ignoreFailures": true
+        }
       ]
     }
-
   ]
 }

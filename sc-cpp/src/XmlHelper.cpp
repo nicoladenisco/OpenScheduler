@@ -3,7 +3,7 @@
 #include <boost/tokenizer.hpp>
 
 XmlHelper::XmlHelper(const xmlNode *__node)
-: node(__node)
+    : node(__node)
 {
 }
 
@@ -11,9 +11,9 @@ NodeVector XmlHelper::getChildren() const
 {
   NodeVector children;
 
-  for(auto cur_node = node->children; cur_node; cur_node = cur_node->next)
+  for (auto cur_node = node->children; cur_node; cur_node = cur_node->next)
   {
-    if(cur_node->type == XML_ELEMENT_NODE)
+    if (cur_node->type == XML_ELEMENT_NODE)
       children.push_back(cur_node);
   }
 
@@ -24,12 +24,12 @@ NodeVector XmlHelper::getChildren(String nome) const
 {
   NodeVector children;
 
-  for(auto cur_node = node->children; cur_node; cur_node = cur_node->next)
+  for (auto cur_node = node->children; cur_node; cur_node = cur_node->next)
   {
-    if(cur_node->type == XML_ELEMENT_NODE)
+    if (cur_node->type == XML_ELEMENT_NODE)
     {
-      String nomeNodo = (char*) cur_node->name;
-      if(nome == nomeNodo)
+      String nomeNodo = (char *)cur_node->name;
+      if (nome == nomeNodo)
         children.push_back(cur_node);
     }
   }
@@ -41,13 +41,13 @@ StringMap XmlHelper::getAttributes() const
 {
   StringMap attributes;
 
-  for(auto attr = node->properties; attr; attr = attr->next)
+  for (auto attr = node->properties; attr; attr = attr->next)
   {
-    if(attr->type != XML_ATTRIBUTE_NODE || attr->children == nullptr || attr->children->content == nullptr)
+    if (attr->type != XML_ATTRIBUTE_NODE || attr->children == nullptr || attr->children->content == nullptr)
       continue;
 
-    String nomeAttr = (char*) attr->name;
-    String valoreAttr = (char*) attr->children->content;
+    String nomeAttr = (char *)attr->name;
+    String valoreAttr = (char *)attr->children->content;
     attributes[nomeAttr] = valoreAttr;
   }
 
@@ -56,15 +56,15 @@ StringMap XmlHelper::getAttributes() const
 
 String XmlHelper::getAttribute(String nome) const
 {
-  for(auto attr = node->properties; attr; attr = attr->next)
+  for (auto attr = node->properties; attr; attr = attr->next)
   {
-    if(attr->type != XML_ATTRIBUTE_NODE || attr->children == nullptr || attr->children->content == nullptr)
+    if (attr->type != XML_ATTRIBUTE_NODE || attr->children == nullptr || attr->children->content == nullptr)
       continue;
 
-    String nomeAttr = (char*) attr->name;
-    String valoreAttr = (char*) attr->children->content;
+    String nomeAttr = (char *)attr->name;
+    String valoreAttr = (char *)attr->children->content;
 
-    if(nome == nomeAttr)
+    if (nome == nomeAttr)
       return valoreAttr;
   }
 
@@ -73,25 +73,25 @@ String XmlHelper::getAttribute(String nome) const
 
 const NodePtr XmlHelper::findElementXml(String nome, const xmlNode *from /*= NULL*/) const
 {
-  if(from == NULL)
+  if (from == NULL)
     from = node->children;
 
-  if(from == NULL)
+  if (from == NULL)
     return NULL;
 
-  for(auto cur_node = from; cur_node; cur_node = cur_node->next)
+  for (auto cur_node = from; cur_node; cur_node = cur_node->next)
   {
-    if(cur_node->type == XML_ELEMENT_NODE)
+    if (cur_node->type == XML_ELEMENT_NODE)
     {
-      String nomeNodo = (char*) cur_node->name;
-      if(nome == nomeNodo)
-        return (NodePtr) cur_node;
+      String nomeNodo = (char *)cur_node->name;
+      if (nome == nomeNodo)
+        return (NodePtr)cur_node;
     }
 
-    if(cur_node->children != NULL)
+    if (cur_node->children != NULL)
     {
       const NodePtr rv = findElementXml(nome, cur_node->children);
-      if(rv != NULL)
+      if (rv != NULL)
         return rv;
     }
   }
@@ -101,11 +101,11 @@ const NodePtr XmlHelper::findElementXml(String nome, const xmlNode *from /*= NUL
 
 String XmlHelper::getContent() const
 {
-  for(xmlNode *n = node->children; n; n = n->next)
+  for (xmlNode *n = node->children; n; n = n->next)
   {
-    if(n->type == XML_TEXT_NODE && n->content != NULL)
+    if (n->type == XML_TEXT_NODE && n->content != NULL)
     {
-      return (char*) n->content;
+      return (char *)n->content;
     }
   }
 
@@ -115,14 +115,14 @@ String XmlHelper::getContent() const
 bool XmlHelper::findElementXmlContent(String nome, String &content) const
 {
   const NodePtr node = findElementXml(nome);
-  if(node == NULL || node->children == NULL)
+  if (node == NULL || node->children == NULL)
     return false;
 
-  for(xmlNode *n = node->children; n; n = n->next)
+  for (xmlNode *n = node->children; n; n = n->next)
   {
-    if(n->type == XML_TEXT_NODE && n->content != NULL)
+    if (n->type == XML_TEXT_NODE && n->content != NULL)
     {
-      content = (char*) n->content;
+      content = (char *)n->content;
       return true;
     }
   }
@@ -133,7 +133,7 @@ bool XmlHelper::findElementXmlContent(String nome, String &content) const
 bool XmlHelper::findElementXmlContent(String nome, int &content) const
 {
   String tmp;
-  if(findElementXmlContent(nome, tmp))
+  if (findElementXmlContent(nome, tmp))
   {
     content = atoi(tmp.c_str());
     return true;
@@ -144,30 +144,33 @@ bool XmlHelper::findElementXmlContent(String nome, int &content) const
 
 const NodePtr XmlHelper::findPathXml(String path, const xmlNode *from /*= NULL*/) const
 {
-  if(from == NULL)
+  if (from == NULL)
     from = node->children;
 
-  if(from == NULL)
+  if (from == NULL)
     return NULL;
 
   auto pos = path.find('/');
   String nome = pos == String::npos ? path : path.substr(0, pos);
   String npat = pos == String::npos ? "" : path.substr(pos + 1);
 
-  for(auto cur_node = from; cur_node; cur_node = cur_node->next)
+  for (auto cur_node = from; cur_node; cur_node = cur_node->next)
   {
-    if(cur_node->type == XML_ELEMENT_NODE)
+    if (cur_node->type == XML_ELEMENT_NODE)
     {
-      String nomeNodo = (char*) cur_node->name;
-      if(nome == nomeNodo)
-        return (NodePtr) cur_node;
-    }
+      String nomeNodo = (char *)cur_node->name;
+      if (nome == nomeNodo)
+      {
+        if (pos == String::npos)
+          return (NodePtr)cur_node;
 
-    if(cur_node->children != NULL)
-    {
-      const NodePtr rv = findPathXml(npat, cur_node->children);
-      if(rv != NULL)
-        return rv;
+        if (cur_node->children != NULL)
+        {
+          const NodePtr rv = findPathXml(npat, cur_node->children);
+          if (rv != NULL)
+            return rv;
+        }
+      }
     }
   }
 
@@ -177,14 +180,14 @@ const NodePtr XmlHelper::findPathXml(String path, const xmlNode *from /*= NULL*/
 bool XmlHelper::findPathXmlContent(String path, String &content) const
 {
   const NodePtr node = findPathXml(path);
-  if(node == NULL || node->children == NULL)
+  if (node == NULL || node->children == NULL)
     return false;
 
-  for(xmlNode *n = node->children; n; n = n->next)
+  for (xmlNode *n = node->children; n; n = n->next)
   {
-    if(n->type == XML_TEXT_NODE && n->content != NULL)
+    if (n->type == XML_TEXT_NODE && n->content != NULL)
     {
-      content = (char*) n->content;
+      content = (char *)n->content;
       return true;
     }
   }
@@ -195,7 +198,7 @@ bool XmlHelper::findPathXmlContent(String path, String &content) const
 bool XmlHelper::findPathXmlContent(String path, int &content) const
 {
   String tmp;
-  if(findPathXmlContent(path, tmp))
+  if (findPathXmlContent(path, tmp))
   {
     content = atoi(tmp.c_str());
     return true;

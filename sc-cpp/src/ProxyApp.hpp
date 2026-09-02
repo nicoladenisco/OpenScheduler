@@ -13,6 +13,7 @@
 #include <libxml/parser.h>
 #include <libxml/tree.h>
 #include <mutex>
+#include <ctime>
 
 class ProxyApp
 {
@@ -61,6 +62,8 @@ private:
   int cmd_dumpmergexml(const StringVector &args);
   int cmd_infomerge(const StringVector &args);
   int cmd_clearmerge(const StringVector &args);
+  int cmd_removelock(const StringVector &args);
+  int cmd_rescan(const StringVector &args);
 
   int complete_stamp(const StringVector &args, StringVector &complete, int np);
   int complete_stampfile(const StringVector &args, StringVector &complete,
@@ -103,6 +106,8 @@ public:
   ConsoleCommandVector basicCommands;
   SchedMerger merger;
   Classificatore<String, File> cacheRisorse;
+  int annoSlot;
+  tm adesso;
 };
 
 #define BEGIN_COMMAND_LIST()                 \
